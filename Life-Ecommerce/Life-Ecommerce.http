@@ -1,0 +1,6 @@
+@Life_Ecommerce_HostAddress = http://localhost:5147
+
+GET {{Life_Ecommerce_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

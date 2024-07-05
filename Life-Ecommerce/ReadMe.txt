@@ -1,0 +1,1 @@
+﻿Ktu vendosen controllerat

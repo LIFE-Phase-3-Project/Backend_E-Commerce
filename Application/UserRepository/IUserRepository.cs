@@ -16,7 +16,7 @@ namespace Application.UserRepository
 
         Task<IEnumerable<User>> GetUsersByRoleId(int roliId);
         Task<User> UpdateUser(User objUser);
-        bool DeleteUser(int ID);
+        Task<bool> DeleteUser(int id);
 
         string GetUserRole(int roleId);
         //Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);

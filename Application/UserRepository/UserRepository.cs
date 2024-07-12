@@ -25,7 +25,12 @@ namespace Application.UserRepository
             {
                 throw new InvalidOperationException("User with this Email already exists");
             }
-            
+
+            var hashedPass = BCrypt.Net.BCrypt.HashPassword(u.Password);
+
+            u.Password = hashedPass;
+
+
             _unitOfWork.Repository<User>().Create(u);
             await _unitOfWork.CompleteAsync();
         }

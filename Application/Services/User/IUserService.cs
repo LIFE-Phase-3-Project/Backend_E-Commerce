@@ -1,15 +1,16 @@
-﻿using Domain.User;
+﻿using Domain.DTOs.User;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.UserRepository
+namespace Application.Services.UserRepository
 {
-    public interface IUserRepository
+    public interface IUserService
     {
-        Task AddUser(User u);
+        Task AddUser(RegisterUserDto u);
         Task<IEnumerable<User>> GetUsers();
 
         Task<User> GetUserById(int id);

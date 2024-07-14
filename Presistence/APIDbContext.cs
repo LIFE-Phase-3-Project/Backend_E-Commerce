@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities;
-using Domain.User;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -14,11 +13,14 @@ namespace Presistence
     {
         public APIDbContext(DbContextOptions<APIDbContext> options) : base(options)
         {
-
+            
         }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<SubCategory> SubCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +33,14 @@ namespace Presistence
                 .HasOne(u => u.UserRole)
                 .WithMany()
                 .HasForeignKey(u => u.RoleId);
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // Only call this if no options have been configured yet
+            if (!optionsBuilder.IsConfigured)
+            {
+                // Configuration logic here
+            }
         }
     }
 }

@@ -3,11 +3,11 @@ using Application;
 
 namespace Presistence;
 
-public class LifeEccommerceRepository<Tentity> : ILifeEccommerceRepository<Tentity> where Tentity : class
+public class LifeEcommerceRepository<Tentity> : ILifeEcommerceRepository<Tentity> where Tentity : class
 {
     private readonly APIDbContext _dbContext;
 
-    public LifeEccommerceRepository(APIDbContext dbContext)
+    public LifeEcommerceRepository(APIDbContext dbContext)
     {
         _dbContext = dbContext;
     }

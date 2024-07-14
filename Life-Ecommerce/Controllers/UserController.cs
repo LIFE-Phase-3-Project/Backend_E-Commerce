@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Application.UserRepository;
-using Domain.User;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Presistence;
-using Life_Ecommerce.TokenService;
+using Application.Services.UserRepository;
+using Domain.DTOs.User;
+using Domain.Entities;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -13,17 +10,17 @@ namespace Life_Ecommerce.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        public readonly IUserRepository userRepository;
+        public readonly IUserService userRepository;
         public readonly APIDbContext _context;
 
-        public UserController(IUserRepository userRepository, APIDbContext con)
+        public UserController(IUserService userRepository, APIDbContext con)
         {
             this.userRepository = userRepository;
             this._context = con;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(User u)
+        public async Task<IActionResult> Post(RegisterUserDto u)
         {
              await userRepository.AddUser(u);
             return Ok(u); 
@@ -34,8 +31,14 @@ namespace Life_Ecommerce.Controllers
         [Route("GetUsers")]
         public async Task<IActionResult> Get()
         {
-            var users = await userRepository.GetUsers();
-            return Ok(users);
+            var userRole = HttpContext.Items["UserRole"] as string;
+            if (userRole == "SuperAdmin")
+            {
+                var users = await userRepository.GetUsers();
+                return Ok(users);
+            }
+            return Unauthorized("You are not authorized to view this content");
+
         }
         [HttpPut]
         [Route("UpdateUser")]

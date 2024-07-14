@@ -26,7 +26,7 @@ public class UnitOfWork : IUnitOfWork
         return numberOfAffectedRows > 0;
     }
 
-    public ILifeEccommerceRepository<TEntity> Repository<TEntity>() where TEntity : class
+    public ILifeEcommerceRepository<TEntity> Repository<TEntity>() where TEntity : class
     {
         if (_repositories == null)
             _repositories = new Hashtable();
@@ -35,13 +35,13 @@ public class UnitOfWork : IUnitOfWork
 
         if (!_repositories.Contains(type))
         {
-            var repositoryType = typeof(LifeEccommerceRepository<>);
+            var repositoryType = typeof(LifeEcommerceRepository<>);
 
             var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(TEntity)), _dbContext);
 
             _repositories.Add(type, repositoryInstance);
         }
 
-        return (ILifeEccommerceRepository<TEntity>)_repositories[type];
+        return (ILifeEcommerceRepository<TEntity>)_repositories[type];
     }
 }

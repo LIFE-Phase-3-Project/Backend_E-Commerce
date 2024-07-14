@@ -1,5 +1,6 @@
-﻿using Domain.Entities;
-using Domain.User;
+﻿using AutoMapper;
+using Domain.DTOs.User;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
 using System;
@@ -8,30 +9,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.UserRepository
+namespace Application.Services.UserRepository
 {
-    public class UserRepository : IUserRepository
+    public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public UserRepository(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
-        
-        public async Task AddUser(User u)
+
+        public async Task AddUser(RegisterUserDto u)
         {
+            var userToRegister = _mapper.Map<User>(u);
             var user = await _unitOfWork.Repository<User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
             if (user != null)
             {
                 throw new InvalidOperationException("User with this Email already exists");
             }
 
-            var hashedPass = BCrypt.Net.BCrypt.HashPassword(u.Password);
+            var hashedPass = BCrypt.Net.BCrypt.HashPassword(userToRegister.Password);
 
-            u.Password = hashedPass;
+            userToRegister.Password = hashedPass;
+            userToRegister.RoleId = 3;
 
 
-            _unitOfWork.Repository<User>().Create(u);
+            _unitOfWork.Repository<User>().Create(userToRegister);
             await _unitOfWork.CompleteAsync();
         }
 
@@ -67,7 +72,7 @@ namespace Application.UserRepository
                 var deleted = _unitOfWork.Complete();
                 return deleted;
             }
-            
+
             return false;
         }
 
@@ -80,12 +85,12 @@ namespace Application.UserRepository
         public string GetUserRole(int roleId)
         {
             var roleName = _unitOfWork.Repository<Role>().GetByCondition(x => x.Id == roleId).Select(r => r.RoleName).FirstOrDefault();
-            
+
             if (roleName == null)
             {
                 throw new KeyNotFoundException("Role not found");
             }
-            
+
             return roleName;
         }
 
@@ -105,7 +110,7 @@ namespace Application.UserRepository
         {
             _unitOfWork.Repository<User>().Update(objUser);
             await _unitOfWork.CompleteAsync();
-    
+
             return objUser;
         }
     }

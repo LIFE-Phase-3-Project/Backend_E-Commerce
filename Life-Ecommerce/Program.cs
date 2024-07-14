@@ -1,15 +1,25 @@
 using Application;
 using Presistence;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Application.UserRepository;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Application.Services.UserRepository;
+using Life_Ecommerce.TokenService;
+using Domain.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+var mapperConfiguration = new MapperConfiguration(
+                        mc => mc.AddProfile(new AutoMapperConfiguration()));
+
+IMapper mapper = mapperConfiguration.CreateMapper();
+
+builder.Services.AddSingleton(mapper);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -18,7 +28,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<APIDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection")));
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -81,6 +91,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<AuthMiddleware>();
+
 app.UseAuthentication();
 
 app.MapControllers();

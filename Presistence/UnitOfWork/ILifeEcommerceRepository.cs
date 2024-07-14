@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 
 namespace Application;
 
-public interface ILifeEccommerceRepository<Tentity> where Tentity : class
+public interface ILifeEcommerceRepository<Tentity> where Tentity : class
 {
     IQueryable<Tentity> GetByCondition(Expression<Func<Tentity, bool>> expression);
     IQueryable<Tentity> GetById(Expression<Func<Tentity, bool>> expression);

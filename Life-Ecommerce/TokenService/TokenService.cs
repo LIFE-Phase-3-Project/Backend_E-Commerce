@@ -17,9 +17,9 @@ namespace Life_Ecommerce.TokenService
                 {
                     Subject = new ClaimsIdentity(new[]
                     {
-                    new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-                    new Claim(ClaimTypes.Role, role),
-                     new Claim(ClaimTypes.Email, email)
+                        new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                        new Claim(ClaimTypes.Role, role),
+                        new Claim(ClaimTypes.Email, email)
                 }),
                     Expires = DateTime.UtcNow.AddDays(1),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

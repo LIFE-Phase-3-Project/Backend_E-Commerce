@@ -22,7 +22,7 @@ namespace Life_Ecommerce.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(RegisterUserDto u)
         {
-             await userRepository.AddUser(u);
+            await userRepository.AddUser(u);
             return Ok(u); 
 
         }
@@ -101,6 +101,8 @@ namespace Life_Ecommerce.Controllers
             var users = await userRepository.GetUsersByRoleId(roleId);
             return Ok(users);
         }
+        
+        
 
 
     }

@@ -21,10 +21,14 @@ namespace Presistence
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<SubCategory> SubCategories { get; set; }
+        
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureUser(modelBuilder);
+            ConfigureProduct(modelBuilder);
         }
 
         private void ConfigureUser(ModelBuilder modelBuilder)
@@ -34,6 +38,15 @@ namespace Presistence
                 .WithMany()
                 .HasForeignKey(u => u.RoleId);
         }
+        
+        private void ConfigureProduct(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.Property(e => e.Price).HasPrecision(18, 2);
+            });
+        }
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             // Only call this if no options have been configured yet

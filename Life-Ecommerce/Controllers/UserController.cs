@@ -3,6 +3,7 @@ using Presistence;
 using Application.Services.UserRepository;
 using Domain.DTOs.User;
 using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -79,7 +80,7 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteUser")]  
+        [Route("DeleteUser")] 
         public JsonResult Delete(int id)
         {
             userRepository.DeleteUser(id);

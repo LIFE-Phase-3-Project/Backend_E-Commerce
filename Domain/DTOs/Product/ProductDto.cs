@@ -14,5 +14,5 @@ public class ProductDto
     public decimal Price { get; set; }
     public int Ratings { get; set; }
     public int Stock { get; set; }
-    public List<Review> Reviews { get; set; }
+    public List<Entities.Review> Reviews { get; set; }
 }

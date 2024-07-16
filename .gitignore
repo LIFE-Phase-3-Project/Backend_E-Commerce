@@ -362,5 +362,7 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+Life-Ecommerce/APIDbContextFactory.cs
+Life-Ecommerce/appsettings.json
 
 /Presistence/APIDBContextFactory.cs

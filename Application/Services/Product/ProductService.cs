@@ -1,5 +1,4 @@
 using AutoMapper;
-using Domain;
 using Domain.DTOs.Product;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,7 +58,7 @@ public class ProductService : IProductService
             return;
         }
 
-        _mapper.Map(updateProductDto, product);
+         _mapper.Map(updateProductDto, product);
 
         _unitOfWork.Repository<Domain.Entities.Product>().Update(product);
         await _unitOfWork.CompleteAsync();

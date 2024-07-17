@@ -40,9 +40,11 @@ namespace Life_Ecommerce.TokenService
                     var role = jwtToken.Claims.First(claim => claim.Type == "role").Value;
 
                     context.Items["UserRole"] = role;
+                    context.Items["UserId"] = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
                 }
-                catch
+                catch(Exception ex)
                 {
+                    Console.WriteLine($"Authentication failed: {ex.Message}");
                     context.Response.StatusCode = 401;
                     await context.Response.WriteAsync("Unauthorized");
                     return;

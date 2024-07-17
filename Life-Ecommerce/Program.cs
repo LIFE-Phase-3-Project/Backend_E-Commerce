@@ -11,6 +11,7 @@ using Application.Services.Review;
 using Application.Services.UserRepository;
 using Life_Ecommerce.TokenService;
 using Domain.Helpers;
+using Application.Services.ShoppingCart;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -95,11 +97,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
-
-app.UseMiddleware<AuthMiddleware>();
-
 app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<AuthMiddleware>();
 
 app.MapControllers();
 

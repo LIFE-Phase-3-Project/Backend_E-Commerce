@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   life-backend-dev:
     image: e-commerce-backend:latest

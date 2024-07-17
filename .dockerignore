@@ -1,0 +1,11 @@
+**/[b|B]in/
+**/[O|o]bj/
+.git
+.github
+.vs
+.gitattributes
+.gitignore
+Dockerfile
+.dockerignore
+.env
+.vscode

@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  life-backend-dev:
+    image: e-commerce-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: life-backend-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/src
+
+  life-backend-prod:
+    image: e-commerce-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: life-backend-prod
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    ports:
+      - "8081:8081"

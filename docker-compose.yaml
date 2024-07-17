@@ -11,6 +11,8 @@ services:
       - "8080:8080"
     volumes:
       - .:/src
+    networks:
+      - life-network
 
   life-backend-prod:
     image: e-commerce-backend:latest
@@ -22,3 +24,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
     ports:
       - "8081:8081"
+    networks:
+      - life-network
+
+networks:
+  life-network:
+    external: true
+    name: life-network

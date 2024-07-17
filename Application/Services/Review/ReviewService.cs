@@ -45,14 +45,14 @@ public class ReviewService : IReviewService
         return createdReviewDto;
     }
     
-    public async Task<IEnumerable<ReadReviewDto>> GetReviewsByProductIdAsync(int productId)
+    public async Task<IEnumerable<ReviewDto>> GetReviewsByProductIdAsync(int productId)
     {
         var reviews = await _unitOfWork.Repository<Domain.Entities.Review>()
             .GetByCondition(r => r.ProductId == productId)
             .Include(r => r.User)
             .ToListAsync();
 
-        return _mapper.Map<IEnumerable<ReadReviewDto>>(reviews);
+        return _mapper.Map<IEnumerable<ReviewDto>>(reviews);
     }
     
     public async Task<bool> DeleteReviewAsync(int reviewId, string token)

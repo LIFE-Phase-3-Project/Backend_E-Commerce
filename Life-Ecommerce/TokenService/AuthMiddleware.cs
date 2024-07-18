@@ -39,15 +39,17 @@
 //                    var jwtToken = (JwtSecurityToken)validatedToken;
 //                    var role = jwtToken.Claims.First(claim => claim.Type == "role").Value;
 
-//                    context.Items["UserRole"] = role;
-//                }
-//                catch
-//                {
-//                    context.Response.StatusCode = 401;
-//                    await context.Response.WriteAsync("Unauthorized");
-//                    return;
-//                }
-//            }
+                    context.Items["UserRole"] = role;
+                    context.Items["UserId"] = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Authentication failed: {ex.Message}");
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Unauthorized");
+                    return;
+                }
+            }
 
 //            await _next(context);
 //        }

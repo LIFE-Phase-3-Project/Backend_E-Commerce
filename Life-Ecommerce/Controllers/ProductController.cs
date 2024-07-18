@@ -39,7 +39,8 @@ public class ProductController : ControllerBase
     public async Task<ActionResult> AddProduct([FromBody] CreateProductDto createProductDto)
     {
         await _productService.AddProductAsync(createProductDto);
-        return CreatedAtAction(nameof(GetProductById), new { id = createProductDto.Title }, createProductDto);
+        // return CreatedAtAction(nameof(GetProductById), new { id = createProductDto.Title }, createProductDto);
+        return Ok("Product added succesfully");
     }
 
     [HttpPut("{id}")]
@@ -67,5 +68,19 @@ public class ProductController : ControllerBase
         }
 
         return NoContent();
+    }
+    
+    [HttpGet("category/{categoryId}")]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategoryId(int categoryId)
+    {
+        var products = await _productService.GetProductsByCategoryIdAsync(categoryId);
+        return Ok(products);
+    }
+
+    [HttpGet("subcategory/{subCategoryId}")]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsBySubCategoryId(int subCategoryId)
+    {
+        var products = await _productService.GetProductsBySubCategoryIdAsync(subCategoryId);
+        return Ok(products);
     }
 }

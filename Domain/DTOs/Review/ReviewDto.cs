@@ -3,7 +3,7 @@ using Domain.DTOs.User;
 
 namespace Domain.DTOs.Review;
 
-public class ReadReviewDto
+public class ReviewDto
 {
     public int Id { get; set; }
     public string Comment { get; set; }

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace Domain.Entities
 {
@@ -16,8 +12,9 @@ namespace Domain.Entities
 
         [ForeignKey("Category")]
         public int CategoryId { get; set; }
+        [JsonIgnore]
         public Category Category { get; set; }
-        
+        [JsonIgnore]
         public List<Product> Products { get; set; }
     }
 }

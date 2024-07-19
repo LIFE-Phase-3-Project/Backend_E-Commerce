@@ -15,7 +15,7 @@ namespace Domain.Helpers
         CreateMap<Product, ProductDto>().ReverseMap();
         CreateMap<Review, CreateReviewDto>().ReverseMap();
 
-        CreateMap<Review, ReadReviewDto>()
+        CreateMap<Review, ReviewDto>()
             .ForMember(dest => dest.UserOverview, opt => opt.MapFrom(src => src.User));
         
         CreateMap<User, UserOverviewDto>().ReverseMap();

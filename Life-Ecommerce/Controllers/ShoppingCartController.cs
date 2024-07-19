@@ -1,6 +1,7 @@
 ﻿using Application.Services.ShoppingCart;
 using Domain.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -13,76 +14,110 @@ namespace Life_Ecommerce.Controllers
         {
             _shoppingCartService = shoppingCartService;
         }
-        [HttpPost("AddItemToCart/{ProductId}")]
-        public async Task<ActionResult> AddItem(int ProductId)
+
+        private (int? userId, string cartIdentifier) GetUserOrCartIdentifier()
         {
             var userId = HttpContext.Items["UserId"] as string;
-            var intUserId = int.Parse(userId);
-            if (userId == null)
+            string cartIdentifier = HttpContext.Session.GetString("CartIdentifier");
+
+            if (int.TryParse(userId, out var intUserId))
             {
-                return Unauthorized("You are not authorized to view this content");
-            }
-            
-            var response = await _shoppingCartService.AddItem(ProductId, intUserId);
-            if (response)
-            {
-                return Ok("Item added successfully.");
+                return (intUserId, null); // Registered user
             }
             else
             {
-                return BadRequest("Could not add item to cart.");
+                return (null, cartIdentifier); // Guest user or guest user without a cart
+            }
+        }
+        [HttpPost("AddItemToCart/{ProductId}")]
+        public async Task<ActionResult> AddItem(int ProductId)
+        {
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            if (userId.HasValue)
+            {
+                var success = await _shoppingCartService.AddItem(ProductId, userId, null);
+                if (success) return Ok("Item added successfully.");
+                else return BadRequest("Could not add item to cart.");
+            }
+            else
+            {
+                if (cartIdentifier == null)
+                {
+                    // For unregistered users without a cart
+                    cartIdentifier = await _shoppingCartService.CreateCartForGuests();
+                    HttpContext.Session.SetString("CartIdentifier", cartIdentifier);
+                }
+                var success = await _shoppingCartService.AddItem(ProductId, null, cartIdentifier);
+                if (success) return Ok("Item added successfully.");
+                else return BadRequest("Could not add item to cart.");
             }
         }
         [HttpDelete("DeleteItem/{ProductId}")] 
         public async Task<IActionResult> RemoveItem(int ProductId)
         {
-            var userId = HttpContext.Items["UserId"] as string;
-            var intUserId = int.Parse(userId);
-            var result = await _shoppingCartService.RemoveItem(ProductId, intUserId);
-            if (result)
-            {
-                return Ok("Item removed successfully.");
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            if (userId.HasValue) {
+                var result = await _shoppingCartService.RemoveItem(ProductId, userId, null);
+                if (result) return Ok("Item removed successfully.");
+                else return BadRequest("Could not remove item from cart.");
             }
             else
             {
-                return BadRequest("Could not remove item from cart.");
+                var result = await _shoppingCartService.RemoveItem(ProductId, null, cartIdentifier);
+                if (result) return Ok("Item removed successfully.");
+                else return BadRequest("Could not remove item from cart.");
+
             }
-            
+
         }
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
-           var userId = int.Parse(HttpContext.Items["UserId"] as string);
-           var cart = await _shoppingCartService.GetCartContents(userId);
-           return Ok(cart);
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+
+            if (userId != null)
+            {
+                var cart = await _shoppingCartService.GetCartContents(userId, null);
+                return Ok(cart);
+            } else if (cartIdentifier != null)
+            {
+                var cart = await _shoppingCartService.GetCartContents(null, cartIdentifier);
+                return Ok(cart);
+            } else return Ok("Cart is Empty"); 
         }
+
         [HttpPut("UpdateQuantity/{ProductId}/{Quantity}")]
         public async Task<IActionResult> UpdateItemQuantity(int ProductId, int Quantity)
         {
-            var userId = int.Parse(HttpContext.Items["UserId"] as string);
-            var response = await _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, userId);
-            if (response)
-            {
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            if (userId.HasValue) {
+                var response = _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, userId, null);
                 return Ok("Item quantity updated successfully.");
-            }
-            else
+            } else if (cartIdentifier != null)
             {
-                return BadRequest("Could not update item quantity.");
-            }
+                var response = _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, null, cartIdentifier);
+                return Ok("Item quantity updated successfully.");
+            } else return BadRequest("Could not update item quantity.");
         }
         [HttpDelete("ClearCart")]
         public async Task<IActionResult> ClearCart()
         {
-            var userId = int.Parse(HttpContext.Items["UserId"] as string);
-            var response =  _shoppingCartService.ClearCart(userId);
-            if (response.IsCompletedSuccessfully)
-            {
-                return Ok("Cart cleared successfully.");
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            if (userId.HasValue) { 
+                var response =  _shoppingCartService.ClearCart(userId, null);
+                if (response.IsCompletedSuccessfully) return Ok("Cart cleared successfully.");
+                else return BadRequest("Could not clear cart.");
             }
             else
             {
-                return BadRequest("Could not clear cart.");
+                var response =  _shoppingCartService.ClearCart(null, cartIdentifier);
+                if (response.IsCompletedSuccessfully) return Ok("Cart cleared successfully.");
+                else return BadRequest("Could not clear cart.");
+
+
             }
+            
+
         }
 
     }

@@ -11,4 +11,5 @@ public interface IProductService
     Task<bool> DeleteProductAsync(int id);
     Task<IEnumerable<ProductDto>> GetProductsByCategoryIdAsync(int categoryId);
     Task<IEnumerable<ProductDto>> GetProductsBySubCategoryIdAsync(int subCategoryId);
+    // Task SoftDeleteProduct(int productId);
 }

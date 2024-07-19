@@ -15,10 +15,21 @@ using Domain.Entities;
 using Life_Ecommerce.TokenService;
 using Domain.Helpers;
 using Application.Services.ShoppingCart;
+using Application.Services.Wishlist;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDistributedMemoryCache(); // Add this line
+
+builder.Services.AddSession(options =>
+{
+    // Set a reasonable timeout for session
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    // Make the session cookie essential
+    options.Cookie.IsEssential = true;
+});
 
 var mapperConfiguration = new MapperConfiguration(
                         mc => mc.AddProfile(new AutoMapperConfiguration()));
@@ -41,6 +52,7 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+builder.Services.AddScoped<IWishlistService, WishlistService>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -105,7 +117,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<AuthMiddleware>();
-
+app.UseSession();
 app.MapControllers();
 
 app.Run();

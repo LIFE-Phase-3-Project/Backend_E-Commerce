@@ -111,4 +111,13 @@ public class ProductService : IProductService
 
         return _mapper.Map<IEnumerable<ProductDto>>(products);
     }
+    public async void SoftDeleteProduct(int productId)
+    {
+        var product = await _unitOfWork.Repository<Domain.Entities.Product>().GetById(x => x.Id == productId).FirstOrDefaultAsync();
+        if (product != null)
+        {
+            product.IsDeleted = true;
+            _unitOfWork.Complete();
+        }
+    }
 }

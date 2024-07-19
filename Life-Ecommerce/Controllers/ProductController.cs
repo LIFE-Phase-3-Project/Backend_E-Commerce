@@ -83,4 +83,11 @@ public class ProductController : ControllerBase
         var products = await _productService.GetProductsBySubCategoryIdAsync(subCategoryId);
         return Ok(products);
     }
+
+    /*[HttpDelete("softdelete/{productId}")]
+    public async Task<ActionResult> SoftDeleteProduct(int productId)
+    {
+        await _productService.SoftDeleteProduct(productId);
+        return NoContent();
+    }*/
 }

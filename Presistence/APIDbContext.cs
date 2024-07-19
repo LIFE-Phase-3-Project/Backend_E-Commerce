@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 
 namespace Presistence
@@ -25,14 +26,21 @@ namespace Presistence
 
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<WishlistEntry> WishlistEntries { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureUser(modelBuilder);
             ConfigureProduct(modelBuilder);
             ConfigureCategory(modelBuilder);
             ConfigureSubCategory(modelBuilder);
+            ConfigureWishlistEntry(modelBuilder);
         }
 
+        private void ConfigureWishlistEntry(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<WishlistEntry>().HasKey(w => new { w.UserId, w.ProductId });
+
+        }
         private void ConfigureUser(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
@@ -43,13 +51,15 @@ namespace Presistence
 
         private void ConfigureProduct(ModelBuilder modelBuilder)
         {
+
+
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.Property(e => e.Price).HasPrecision(18, 2);
-
-                entity.HasOne(p => p.Category)
+                entity.HasQueryFilter(p => !p.IsDeleted);
+                entity.HasOne(p => p.SubCategory)
                       .WithMany(c => c.Products)
-                      .HasForeignKey(p => p.CategoryId)
+                      .HasForeignKey(p => p.SubCategoryId)
                       .OnDelete(DeleteBehavior.Restrict); // Specify delete behavior
             });
         }
@@ -62,6 +72,7 @@ namespace Presistence
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict); // Specify delete behavior
         }
+
 
         private void ConfigureSubCategory(ModelBuilder modelBuilder)
         {

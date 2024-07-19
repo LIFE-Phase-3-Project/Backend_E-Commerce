@@ -1,6 +1,6 @@
 services:
   life-backend-dev:
-    image: e-commerce-backend:latest
+    image: backend:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,7 +15,7 @@ services:
       - life-network
 
   life-backend-prod:
-    image: e-commerce-backend:latest
+    image: backend:latest
     build:
       context: .
       dockerfile: Dockerfile

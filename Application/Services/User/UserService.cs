@@ -106,12 +106,33 @@ namespace Application.Services.UserRepository
                 .ToListAsync();
         }
 
-        public async Task<User> UpdateUser(User objUser)
+        public Task<User> UpdateUser(User objUser)
         {
-            _unitOfWork.Repository<User>().Update(objUser);
-            await _unitOfWork.CompleteAsync();
-
-            return objUser;
+            throw new NotImplementedException();
         }
+
+        //public async Task<User> UpdateUser(User objUser)
+        //{
+        //    // Kontrollo për ekzistencën e përdoruesit
+        //    var existingUser = await _unitOfWork.Repository<User>().GetById(objUser.Id);
+        //    if (existingUser == null)
+        //    {
+        //        throw new InvalidOperationException("User not found");
+        //    }
+
+        //    // Kontrollo për ndryshim në fjalëkalim
+        //    if (objUser.Password != existingUser.Password)
+        //    {
+        //        // Enkripto fjalëkalimin e ri
+        //        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(objUser.Password);
+        //        objUser.Password = hashedPassword;
+        //    }
+
+        //    // Bëj update të përdoruesit në bazën e të dhënave
+        //    _unitOfWork.Repository<User>().Update(objUser);
+        //    await _unitOfWork.CompleteAsync();
+
+        //    return objUser;
+        //}
     }
 }

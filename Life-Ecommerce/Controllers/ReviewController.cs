@@ -1,6 +1,5 @@
 using Application.Services.Review;
 using Domain.DTOs.Review;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Life_Ecommerce.Controllers;
@@ -17,7 +16,6 @@ public class ReviewController : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize]
     public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto reviewDto)
     {
         // Extract the token from the request header

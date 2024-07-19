@@ -45,6 +45,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<APIDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection")));
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -53,6 +54,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
+
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddSingleton(new TranslationService("YOUR_GOOGLE_API_KEY"));
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -116,6 +120,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+//app.UseMiddleware<AuthMiddleware>();
+
 app.UseMiddleware<AuthMiddleware>();
 app.UseSession();
 app.MapControllers();

@@ -1,5 +1,7 @@
 using Application.Services.Product;
 using Domain.DTOs.Product;
+using Domain.Entities;
+using Domain.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Life_Ecommerce.Controllers;
@@ -13,6 +15,24 @@ public class ProductController : ControllerBase
     public ProductController(IProductService productService)
     {
         _productService = productService;
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchProducts([FromQuery] ProductFilterModel filters, int page = 1, int pageSize = 10)
+    {
+        if (page < 1 || pageSize < 1)
+        {
+            return BadRequest("Invalid pagination parameters.");
+        }
+
+        var paginatedProducts = await _productService.GetPaginatedProductsAsync(filters, page, pageSize);
+
+        if (paginatedProducts == null || !paginatedProducts.Items.Any())
+        {
+            return NotFound("No products found for the specified criteria.");
+        }
+
+        return Ok(paginatedProducts);
     }
 
     [HttpGet]
@@ -71,23 +91,46 @@ public class ProductController : ControllerBase
     }
     
     [HttpGet("category/{categoryId}")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategoryId(int categoryId)
+    public async Task<IActionResult> GetProductsByCategoryId(int categoryId, int page = 1, int pageSize = 10)
     {
-        var products = await _productService.GetProductsByCategoryIdAsync(categoryId);
-        return Ok(products);
+        if (page < 1 || pageSize < 1)
+        {
+            return BadRequest("Invalid pagination parameters.");
+        }
+
+        var paginatedProducts = await _productService.GetProductsByCategoryIdAsync(categoryId, page, pageSize);
+
+        if (paginatedProducts == null || !paginatedProducts.Items.Any())
+        {
+            return NotFound("No products found for the specified criteria.");
+        }
+
+        return Ok(paginatedProducts);
     }
 
     [HttpGet("subcategory/{subCategoryId}")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsBySubCategoryId(int subCategoryId)
+    public async Task<IActionResult> GetProductsBySubCategoryId(int subCategoryId, int page = 1, int pageSize = 10)
     {
-        var products = await _productService.GetProductsBySubCategoryIdAsync(subCategoryId);
-        return Ok(products);
+        if (page < 1 || pageSize < 1)
+        {
+            return BadRequest("Invalid pagination parameters.");
+        }
+
+        var paginatedProducts = await _productService.GetProductsBySubCategoryIdAsync(subCategoryId, page, pageSize);
+
+        if (paginatedProducts == null || !paginatedProducts.Items.Any())
+        {
+            return NotFound("No products found for the specified criteria.");
+        }
+
+        return Ok(paginatedProducts);
     }
 
-    /*[HttpDelete("softdelete/{productId}")]
+    [HttpDelete("softdelete/{productId}")]
     public async Task<ActionResult> SoftDeleteProduct(int productId)
     {
         await _productService.SoftDeleteProduct(productId);
         return NoContent();
-    }*/
+    }
 }
+

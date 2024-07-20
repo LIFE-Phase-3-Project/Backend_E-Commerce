@@ -121,7 +121,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//app.UseMiddleware<AuthMiddleware>();
 
 app.UseMiddleware<AuthMiddleware>();
 app.UseSession();

@@ -1,7 +1,9 @@
 using AutoMapper;
 using Domain.DTOs.Product;
 using Domain.Entities;
+using Domain.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Application.Services.Product;
 
@@ -16,6 +18,82 @@ public class ProductService : IProductService
         _mapper = mapper;
     }
 
+    public async Task<PaginatedInfo<ProductDto>> GetPaginatedProductsAsync(
+    ProductFilterModel filters,
+    int page, int pageSize)
+    {
+        var query = _unitOfWork.Repository<Domain.Entities.Product>()
+            .GetAll()
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(filters.SearchTerm))
+        {
+            query = query.Where(p => p.Title.Contains(filters.SearchTerm) || p.Description.Contains(filters.SearchTerm));
+        }
+
+        if (filters.MinPrice.HasValue)
+        {
+            query = query.Where(p => p.Price >= filters.MinPrice.Value);
+        }
+
+        if (filters.MaxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= filters.MaxPrice.Value);
+        }
+
+        if (filters.CategoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == filters.CategoryId.Value);
+        }
+        if (!string.IsNullOrEmpty(filters.SortOrder))
+        {
+            query = filters.SortOrder.ToLower() switch
+            {
+                "a-z" => query.OrderBy(p => p.Title),
+                "z-a" => query.OrderByDescending(p => p.Title),
+                _ => query
+            };
+        }
+
+
+
+
+        var totalCount = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        var productDtos = _mapper.Map<IEnumerable<ProductDto>>(items);
+
+        return new PaginatedInfo<ProductDto>
+        {
+            Items = productDtos.ToList(),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+
+    public async Task<PaginatedInfo<ProductDto>> GetPaginatedProductsAsync(
+    Expression<Func<Domain.Entities.Product, bool>> filter,
+    int page, int pageSize)
+    {
+        var query = _unitOfWork.Repository<Domain.Entities.Product>()
+            .GetByCondition(filter)
+            .Include(p => p.Reviews)
+            .Include(p => p.Category);
+
+        var totalCount = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        var productDtos = _mapper.Map<IEnumerable<ProductDto>>(items);
+
+        return new PaginatedInfo<ProductDto>
+        {
+            Items = productDtos.ToList(),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
     public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
     {
         var products = await _unitOfWork.Repository<Domain.Entities.Product>().GetAll()
@@ -90,28 +168,18 @@ public class ProductService : IProductService
         return true;
     }
     
-    public async Task<IEnumerable<ProductDto>> GetProductsByCategoryIdAsync(int categoryId)
+    public async Task<PaginatedInfo<ProductDto>> GetProductsByCategoryIdAsync(int categoryId, int page, int pageSize)
     {
-        var products = await _unitOfWork.Repository<Domain.Entities.Product>()
-            .GetByCondition(p => p.CategoryId == categoryId)
-            .Include(p => p.Reviews)
-            .Include(p => p.Category)
-            .ToListAsync();
+        return await GetPaginatedProductsAsync(p => p.CategoryId == categoryId, page, pageSize);
 
-        return _mapper.Map<IEnumerable<ProductDto>>(products);
+
     }
 
-    public async Task<IEnumerable<ProductDto>> GetProductsBySubCategoryIdAsync(int subCategoryId)
+    public async Task<PaginatedInfo<ProductDto>> GetProductsBySubCategoryIdAsync(int subCategoryId, int page, int pageSize)
     {
-        var products = await _unitOfWork.Repository<Domain.Entities.Product>()
-            .GetByCondition(p => p.SubCategoryId == subCategoryId)
-            .Include(p => p.Reviews)
-            .Include(p => p.Category)
-            .ToListAsync();
-
-        return _mapper.Map<IEnumerable<ProductDto>>(products);
+        return await GetPaginatedProductsAsync(p => p.SubCategoryId == subCategoryId, page, pageSize);
     }
-    public async void SoftDeleteProduct(int productId)
+    public async Task SoftDeleteProduct(int productId)
     {
         var product = await _unitOfWork.Repository<Domain.Entities.Product>().GetById(x => x.Id == productId).FirstOrDefaultAsync();
         if (product != null)

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using Domain.DTOs.ShoppingCart;
 
 namespace Application.Services.ShoppingCart
 {
@@ -21,29 +22,53 @@ namespace Application.Services.ShoppingCart
             _mapper = mapper;
         }
 
-        public async Task<bool> AddItem(int productId, int userId)
+        public async Task<string> CreateCartForGuests()
         {
-            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                      .GetByCondition(c => c.UserId == userId)
-                      .FirstOrDefaultAsync();
-            if (cart == null)
+            var cartIdentifier = Guid.NewGuid().ToString();
+            var cart = new Domain.Entities.ShoppingCart
             {
-                var newCart = new Domain.Entities.ShoppingCart
+                CartIdentifier = cartIdentifier,
+                UserId = null,
+                DateCreated = DateTime.Now,
+                DateModified = DateTime.Now,
+            };
+              _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Create(cart);
+            await _unitOfWork.CompleteAsync();
+            return cartIdentifier;
+        }
+        public async Task<bool> AddItem(int productId, int? userId, string cartIdentifier)
+        {
+            var cart = new Domain.Entities.ShoppingCart();
+            if (userId.HasValue)
+            {
+                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                          .GetByCondition(c => c.UserId == userId)
+                          .FirstOrDefaultAsync();
+                if (cart == null)
                 {
-                    CartIdentifier = Guid.NewGuid().ToString(), // Generate a unique identifier
-                    UserId = userId,
-                    DateCreated = DateTime.Now,
-                    DateModified = DateTime.Now,
-                };
+                    var newCart = new Domain.Entities.ShoppingCart
+                    {
+                        CartIdentifier = Guid.NewGuid().ToString(), // Generate a unique identifier
+                        UserId = userId,
+                        DateCreated = DateTime.Now,
+                        DateModified = DateTime.Now,
+                    };
 
-                _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Create(newCart);
-                await _unitOfWork.CompleteAsync(); // Ensure the new cart is saved before querying it again
+                    _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Create(newCart);
+                    await _unitOfWork.CompleteAsync(); // Ensure the new cart is saved before querying it again
 
-                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                      .GetByCondition(c => c.UserId == userId)
-                      .FirstOrDefaultAsync();
+                    cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                          .GetByCondition(c => c.UserId == userId)
+                          .FirstOrDefaultAsync();
+                }
             }
+            else
+            {
+                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                      .GetByCondition(c => c.CartIdentifier == cartIdentifier)
+                      .FirstOrDefaultAsync();
 
+            }
             if (cart != null) 
             {
                 var cartItem = new CartItem
@@ -73,12 +98,20 @@ namespace Application.Services.ShoppingCart
             return false; 
         }
 
-        public Task ClearCart(int userId)
+        public Task ClearCart(int? userId, string cartIdentifier)
         {
-            var yourCart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
-             if (yourCart == null) return Task.CompletedTask; // No cart found for the user (userId
-             int cartId = yourCart.Id;
-            var itemsToRemove = _unitOfWork.Repository<CartItem>().GetByCondition(c => c.ShoppingCartId == cartId).ToList();
+            var cart = new Domain.Entities.ShoppingCart();
+            if (userId.HasValue)
+            {
+                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
+                if (cart == null) return Task.CompletedTask;
+            } else
+            {
+
+                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.CartIdentifier == cartIdentifier).FirstOrDefault();
+                if (cart == null) return Task.CompletedTask;
+            }
+            var itemsToRemove = _unitOfWork.Repository<CartItem>().GetByCondition(c => c.ShoppingCartId == cart.Id).ToList();
             if (itemsToRemove != null)
             {
                 foreach (var item in itemsToRemove)
@@ -90,33 +123,65 @@ namespace Application.Services.ShoppingCart
             return Task.CompletedTask;
                 
         }
-        public async Task<Domain.Entities.ShoppingCart> GetCartContents(int userId)
+        public async Task<ShoppingCartDto> GetCartContents(int? userId, string cardIdentifier)
         {
-            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                        .GetByCondition(c => c.UserId == userId)
-                        .Include(c => c.CartItems)
-                        .ThenInclude(ci => ci.Product)
-                        .FirstOrDefaultAsync();
-
-            // if (cart == null) return Enumerable.Empty<ShoppingCartItemDto>();
+            var cart = new Domain.Entities.ShoppingCart();
+            if (userId != null)
+            {
+                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                    .GetByCondition(c => c.UserId == userId)
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                    .FirstOrDefaultAsync();
+            }
+            else if (cardIdentifier != null) {
+                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                    .GetByCondition(c => c.CartIdentifier == cardIdentifier)
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                    .FirstOrDefaultAsync();
+            } else
+            {
+                return null;
+            }
+            if (cart == null) return null;
 
             var cartItemsDto = cart.CartItems.Select(ci => new ShoppingCartItemDto
             {
                 ProductId = ci.ProductId,
-                Title = ci.Product.Title, 
+                Title = ci.Product.Title,
                 Price = ci.Product.Price,
                 Quantity = ci.Quantity
             }).ToList();
 
-            return cart;
+            var cartDto = new ShoppingCartDto
+            {
+                CartIdentifier = cart.CartIdentifier,
+                DateCreated = cart.DateCreated,
+                DateModified = cart.DateModified,
+                Items = cartItemsDto
+            };
+
+            return cartDto;
         }
 
 
-        public Task<bool> RemoveItem(int ProductId, int userId)
+
+        public Task<bool> RemoveItem(int ProductId, int? userId, string cardIdentifier)
         {
-            var yourCart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
-            if (yourCart == null) return Task.FromResult(false); // No cart found for the user (userId
-            int cartId = yourCart.Id;
+            var cart = new Domain.Entities.ShoppingCart();
+            if (userId != null)
+            {
+                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
+                if (cart == null) return Task.FromResult(false);
+            }
+            else if (cardIdentifier != null)
+            {
+                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.CartIdentifier == cardIdentifier).FirstOrDefault();
+                if (cart == null) return Task.FromResult(false);
+            }
+            if (cart == null) return Task.FromResult(false); // No cart found for the user (userId
+            int cartId = cart.Id;
             var itemToRemove = _unitOfWork.Repository<CartItem>().GetByCondition(c => c.ShoppingCartId ==cartId && c.ProductId == ProductId).FirstOrDefault();
             if (itemToRemove != null)
             {
@@ -127,11 +192,20 @@ namespace Application.Services.ShoppingCart
             return Task.FromResult(false);
         }
 
-        public Task<bool> UpdateItemQuantity(int ProductId, int Quantity, int userId)
+        public Task<bool> UpdateItemQuantity(int ProductId, int Quantity, int? userId, string cardIdentifier)
         {
-            var yourCart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
-            if (yourCart == null) return Task.FromResult(false); // No cart found for the user (userId
-            int cartId = yourCart.Id;
+            var cart = new Domain.Entities.ShoppingCart();
+            if (userId != null)
+            {
+                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
+                if (cart == null) return Task.FromResult(false);
+            }
+            else if (cardIdentifier != null)
+            {
+                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.CartIdentifier == cardIdentifier).FirstOrDefault();
+                if (cart == null) return Task.FromResult(false);
+            }
+            int cartId = cart.Id;
             var itemToUpdate = _unitOfWork.Repository<CartItem>().GetByCondition(c => c.ShoppingCartId == cartId && c.ProductId == ProductId).FirstOrDefault();
             if (itemToUpdate != null)
             {

@@ -46,7 +46,7 @@ namespace Life_Ecommerce.TokenService
                         IssuerSigningKey = new SymmetricSecurityKey(key),
                         ValidateIssuer = false,
                         ValidateAudience = false,
-                        ClockSkew = TimeSpan.Zero
+                        ClockSkew = TimeSpan.FromMinutes(5)
                     }, out SecurityToken validatedToken);
 
                     return principal;

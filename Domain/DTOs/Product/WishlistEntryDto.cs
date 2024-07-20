@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace Domain.DTOs.Product
 {
-    public class ShoppingCartItemDto
+    public class WishlistEntryDto
     {
         public int ProductId { get; set; }
-        public string Title { get; set; }
+        public string Name { get; set; }
         public decimal Price { get; set; }
-        public int Quantity { get; set; }
-        public decimal TotalPrice => Price * Quantity;
-    }
 
+        public string Image { get; set; }
+
+        public string Description { get; set; }
+    }
 }

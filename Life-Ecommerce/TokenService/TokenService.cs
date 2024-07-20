@@ -37,7 +37,7 @@ namespace Life_Ecommerce.TokenService
                     throw new ArgumentNullException(nameof(token), "Token cannot be null.");
                 }
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes("OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA"); // Use the same secret key used to generate the token
+                var key = Encoding.ASCII.GetBytes("OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA"); 
                 try
                 {
                     var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters

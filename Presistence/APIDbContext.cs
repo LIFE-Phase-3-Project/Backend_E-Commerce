@@ -25,12 +25,17 @@ namespace Presistence
 
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+
+        public DbSet<OrderDetail> OrderDetails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureUser(modelBuilder);
             ConfigureProduct(modelBuilder);
             ConfigureCategory(modelBuilder);
             ConfigureSubCategory(modelBuilder);
+            ConfigureOrderDetail(modelBuilder);
         }
 
         private void ConfigureUser(ModelBuilder modelBuilder)
@@ -76,6 +81,26 @@ namespace Presistence
                 .WithMany(sc => sc.Products)
                 .HasForeignKey(p => p.SubCategoryId)
                 .OnDelete(DeleteBehavior.Restrict); // Specify delete behavior
+        }
+
+        private void ConfigureOrderDetail(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrderDetail>(entity =>
+            {
+                entity.Property(e => e.Price).HasPrecision(18, 2);
+
+                entity.HasOne(od => od.OrderData)
+                      .WithMany()
+                      .HasForeignKey(od => od.OrderId);
+
+                entity.HasOne(od => od.Product)
+                      .WithMany()
+                      .HasForeignKey(od => od.ProductId);
+
+                entity.HasOne(od => od.User)
+                      .WithMany()
+                      .HasForeignKey(od => od.UserId);
+            });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

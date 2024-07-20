@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using Domain.DTOs.User;
 using Domain.Entities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,11 +18,17 @@ namespace Application.Services.UserRepository
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly APIDbContext _appDBContext;
+
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, APIDbContext context)
         {
             _unitOfWork = unitOfWork;
+            _appDBContext = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper;
+           
         }
+
+  
 
         public async Task AddUser(RegisterUserDto u)
         {
@@ -40,41 +49,43 @@ namespace Application.Services.UserRepository
             await _unitOfWork.CompleteAsync();
         }
 
-        public Task<bool> ChangePassword(int userId, string oldPassword, string newPassword)
+   
+
+        public async Task<bool> ChangePassword(int userId, string oldPassword, string newPassword)
         {
-            throw new NotImplementedException();
+            var user = await _unitOfWork.Repository<User>().GetById(u => u.Id == userId).FirstOrDefaultAsync();
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(oldPassword, user.Password))
+            {
+                Console.WriteLine("Old password does not match.");
+                return false;
+            }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            _unitOfWork.Repository<User>().Update(user);
+            await _unitOfWork.CompleteAsync();
+
+            return true;
         }
 
-        //public async Task<bool> ChangePassword(int userId, string oldPassword, string newPassword)
-        //{
-
-        //    var user = _appDBContext.Users.FirstOrDefault(u => u.Id == userId);
-
-        //    if (user == null || !BCrypt.Net.BCrypt.Verify(oldPassword, user.Password))
-        //    {
-        //        Console.WriteLine("Old password does not match.");
-        //        return false;
-        //    }
-
-        //    user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
-
-        //    await _appDBContext.SaveChangesAsync();
-
-        //    return true;
-        //}
 
         public async Task<bool> DeleteUser(int id)
         {
+           
             var user = await _unitOfWork.Repository<User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
             if (user != null)
             {
+           
                 _unitOfWork.Repository<User>().Delete(user);
                 var deleted = _unitOfWork.Complete();
                 return deleted;
             }
+           
 
             return false;
         }
+
 
         public async Task<User> GetUserById(int id)
         {
@@ -106,33 +117,30 @@ namespace Application.Services.UserRepository
                 .ToListAsync();
         }
 
-        public Task<User> UpdateUser(User objUser)
+       
+
+        public async Task<User> UpdateUser(User objUser)
         {
-            throw new NotImplementedException();
+            var existingUser = await _unitOfWork.Repository<User>().GetById(x => x.Id == objUser.Id).FirstOrDefaultAsync();
+            if (existingUser == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+
+            if (objUser.Password != existingUser.Password)
+            {
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(objUser.Password);
+                existingUser.Password = hashedPassword;
+            }
+
+            _mapper.Map(objUser, existingUser);
+
+            _unitOfWork.Repository<User>().Update(existingUser);
+            await _unitOfWork.CompleteAsync();
+
+            return existingUser;
         }
 
-        //public async Task<User> UpdateUser(User objUser)
-        //{
-        //    // Kontrollo për ekzistencën e përdoruesit
-        //    var existingUser = await _unitOfWork.Repository<User>().GetById(objUser.Id);
-        //    if (existingUser == null)
-        //    {
-        //        throw new InvalidOperationException("User not found");
-        //    }
-
-        //    // Kontrollo për ndryshim në fjalëkalim
-        //    if (objUser.Password != existingUser.Password)
-        //    {
-        //        // Enkripto fjalëkalimin e ri
-        //        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(objUser.Password);
-        //        objUser.Password = hashedPassword;
-        //    }
-
-        //    // Bëj update të përdoruesit në bazën e të dhënave
-        //    _unitOfWork.Repository<User>().Update(objUser);
-        //    await _unitOfWork.CompleteAsync();
-
-        //    return objUser;
-        //}
     }
 }

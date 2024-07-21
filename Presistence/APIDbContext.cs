@@ -34,6 +34,7 @@ namespace Presistence
             ConfigureCategory(modelBuilder);
             ConfigureSubCategory(modelBuilder);
             ConfigureWishlistEntry(modelBuilder);
+            SeedData.Seed(modelBuilder);
         }
 
         private void ConfigureWishlistEntry(ModelBuilder modelBuilder)

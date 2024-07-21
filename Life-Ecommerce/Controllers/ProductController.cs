@@ -27,7 +27,7 @@ public class ProductController : ControllerBase
 
         var paginatedProducts = await _productService.GetPaginatedProductsAsync(filters, page, pageSize);
 
-        if (paginatedProducts == null || !paginatedProducts.Items.Any())
+        if (paginatedProducts == null || !paginatedProducts.Data.Any())
         {
             return NotFound("No products found for the specified criteria.");
         }
@@ -100,7 +100,7 @@ public class ProductController : ControllerBase
 
         var paginatedProducts = await _productService.GetProductsByCategoryIdAsync(categoryId, page, pageSize);
 
-        if (paginatedProducts == null || !paginatedProducts.Items.Any())
+        if (paginatedProducts == null || !paginatedProducts.Data.Any())
         {
             return NotFound("No products found for the specified criteria.");
         }
@@ -118,7 +118,7 @@ public class ProductController : ControllerBase
 
         var paginatedProducts = await _productService.GetProductsBySubCategoryIdAsync(subCategoryId, page, pageSize);
 
-        if (paginatedProducts == null || !paginatedProducts.Items.Any())
+        if (paginatedProducts == null || !paginatedProducts.Data.Any())
         {
             return NotFound("No products found for the specified criteria.");
         }

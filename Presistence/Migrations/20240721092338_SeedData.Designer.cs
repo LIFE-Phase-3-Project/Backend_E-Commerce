@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Presistence;
 
@@ -11,9 +12,11 @@ using Presistence;
 namespace Presistence.Migrations
 {
     [DbContext(typeof(APIDbContext))]
-    partial class APIDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240721092338_SeedData")]
+    partial class SeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -509,7 +512,7 @@ namespace Presistence.Migrations
                             Email = "admin@user.com",
                             FirstName = "Admin",
                             LastName = "Admin",
-                            Password = "$2a$10$O5YzMHshCXXJ9NeUEcFbbufLi7cBK3vs.1N/hkkLG6XY2MCidrCcm",
+                            Password = "admin",
                             PhoneNumber = "1234567890",
                             RoleId = 1
                         },
@@ -520,7 +523,7 @@ namespace Presistence.Migrations
                             Email = "employee@user.com",
                             FirstName = "Employee",
                             LastName = "Employee",
-                            Password = "$2a$10$ezb1pPRjQPsbrcBNQjniWuVBxAzDTyG6ZvL8uSIGHt4CJipk/WCbS",
+                            Password = "employee",
                             PhoneNumber = "1234567890",
                             RoleId = 2
                         },
@@ -531,7 +534,7 @@ namespace Presistence.Migrations
                             Email = "user3@example.com",
                             FirstName = "User3",
                             LastName = "Last3",
-                            Password = "$2a$10$fSO9qH.5nOpgFI8mTw3V/uRxFqH6qqaSRzu.cjuBcvbTJPrIROb.6",
+                            Password = "pass3",
                             PhoneNumber = "1234567893",
                             RoleId = 3
                         },
@@ -542,7 +545,7 @@ namespace Presistence.Migrations
                             Email = "user4@example.com",
                             FirstName = "User4",
                             LastName = "Last4",
-                            Password = "$2a$10$aihCPqeLpJVJWtrLUTqMKO4jMhTy1XQOIxb5ZwUPMCBqj4IeV2Cqy",
+                            Password = "pass4",
                             PhoneNumber = "1234567894",
                             RoleId = 3
                         },
@@ -553,7 +556,7 @@ namespace Presistence.Migrations
                             Email = "user5@example.com",
                             FirstName = "User5",
                             LastName = "Last5",
-                            Password = "$2a$10$JQN6tlklQnrP0MRQGJno8uC7EzudpI4ZYjV77JjRzlvTGiFv2d9em",
+                            Password = "pass5",
                             PhoneNumber = "1234567895",
                             RoleId = 3
                         },
@@ -564,7 +567,7 @@ namespace Presistence.Migrations
                             Email = "user6@example.com",
                             FirstName = "User6",
                             LastName = "Last6",
-                            Password = "$2a$10$c1dPmSQGSTnQfX9cR9u2b.j9VNpiz7acQ06HJSrn8b5a7/RBdKSUC",
+                            Password = "pass6",
                             PhoneNumber = "1234567896",
                             RoleId = 3
                         },
@@ -575,7 +578,7 @@ namespace Presistence.Migrations
                             Email = "user7@example.com",
                             FirstName = "User7",
                             LastName = "Last7",
-                            Password = "$2a$10$Ywa4r5dws1x9H2JMoqDf2uZB5AngY7NxlXKCiBASLVhILLoUFGEzS",
+                            Password = "pass7",
                             PhoneNumber = "1234567897",
                             RoleId = 3
                         });

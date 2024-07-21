@@ -65,7 +65,7 @@ public class ProductService : IProductService
 
         return new PaginatedInfo<ProductDto>
         {
-            Items = productDtos.ToList(),
+            Data = productDtos.ToList(),
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount
@@ -88,7 +88,7 @@ public class ProductService : IProductService
 
         return new PaginatedInfo<ProductDto>
         {
-            Items = productDtos.ToList(),
+            Data = productDtos.ToList(),
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount

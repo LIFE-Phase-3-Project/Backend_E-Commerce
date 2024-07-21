@@ -96,7 +96,9 @@ namespace Life_Ecommerce.Controllers
             } else if (cartIdentifier != null)
             {
                 var response = _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, null, cartIdentifier);
-                return Ok("Item quantity updated successfully.");
+                if (response.Result) return Ok("Item quantity updated successfully.");
+                else return BadRequest("Could not update item quantity.");
+
             } else return BadRequest("Could not update item quantity.");
         }
         [HttpDelete("ClearCart")]

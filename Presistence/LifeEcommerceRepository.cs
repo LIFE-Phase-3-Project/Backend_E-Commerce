@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Application;
+using Domain.Entities;
 
 namespace Presistence;
 
@@ -52,6 +53,11 @@ public class LifeEcommerceRepository<Tentity> : ILifeEcommerceRepository<Tentity
     public async Task GetById(int id)
     {
          await _dbContext.Set<Tentity>().FindAsync(id);
+    }
+
+    public async Task<Tentity> GetByIdAsync(int id)
+    {
+        return await _dbContext.Set<Tentity>().FindAsync(id);
     }
 
     public async Task SaveChangesAsync()

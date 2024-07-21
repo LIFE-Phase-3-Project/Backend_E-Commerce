@@ -1,3 +1,4 @@
+using Domain.Entities;
 using System.Linq.Expressions;
 
 namespace Application;
@@ -15,4 +16,6 @@ public interface ILifeEcommerceRepository<Tentity> where Tentity : class
     void DeleteRange(List<Tentity> entity);
     Task SaveChangesAsync();
     Task GetById(int id);
+    Task<Tentity> GetByIdAsync(int productId);
+   
 }

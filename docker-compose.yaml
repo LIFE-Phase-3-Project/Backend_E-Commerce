@@ -1,0 +1,33 @@
+services:
+  life-backend-dev:
+    image: europe-west3-docker.pkg.dev/e-commerce-life/backend-repo/backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: life-backend-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/src
+    networks:
+      - life-network
+
+  life-backend-prod:
+    image: europe-west3-docker.pkg.dev/e-commerce-life/backend-repo/backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: life-backend-prod
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    ports:
+      - "443:443"
+    networks:
+      - life-network
+
+networks:
+  life-network:
+    external: true
+    name: life-network

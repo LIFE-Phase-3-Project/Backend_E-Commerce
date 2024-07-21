@@ -14,4 +14,5 @@ public interface ILifeEcommerceRepository<Tentity> where Tentity : class
     void Delete(Tentity entity);
     void DeleteRange(List<Tentity> entity);
     Task SaveChangesAsync();
+    Task GetById(int id);
 }

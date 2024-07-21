@@ -58,6 +58,7 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddSingleton(new TranslationService("YOUR_GOOGLE_API_KEY"));
 
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -121,6 +122,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<AuthMiddleware>();
 
 app.UseMiddleware<AuthMiddleware>();
 app.UseSession();

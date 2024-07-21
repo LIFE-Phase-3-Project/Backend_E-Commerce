@@ -42,7 +42,7 @@ namespace Life_Ecommerce.TokenService
                     context.Items["UserRole"] = role;
                     context.Items["UserId"] = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine($"Authentication failed: {ex.Message}");
                     context.Response.StatusCode = 401;
@@ -50,6 +50,7 @@ namespace Life_Ecommerce.TokenService
                     return;
                 }
             }
+
             await _next(context);
         }
     }

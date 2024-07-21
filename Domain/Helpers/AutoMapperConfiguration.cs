@@ -30,6 +30,7 @@ namespace Domain.Helpers
         
         CreateMap<CreateSubCategoryDto, SubCategory>();
         CreateMap<UpdateSubCategoryDto, SubCategory>();
+        CreateMap<ChangePasswordDto, User>();
         }
         
     }

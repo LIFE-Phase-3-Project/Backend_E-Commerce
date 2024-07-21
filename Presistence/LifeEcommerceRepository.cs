@@ -49,6 +49,11 @@ public class LifeEcommerceRepository<Tentity> : ILifeEcommerceRepository<Tentity
         return _dbContext.Set<Tentity>().Where(expression);
     }
 
+    public async Task GetById(int id)
+    {
+         await _dbContext.Set<Tentity>().FindAsync(id);
+    }
+
     public async Task SaveChangesAsync()
     {
         await _dbContext.SaveChangesAsync();

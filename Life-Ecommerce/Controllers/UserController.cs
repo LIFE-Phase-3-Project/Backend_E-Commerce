@@ -103,8 +103,26 @@ namespace Life_Ecommerce.Controllers
             var users = await userRepository.GetUsersByRoleId(roleId);
             return Ok(users);
         }
-        
-        
+
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            if (changePasswordDto == null || string.IsNullOrEmpty(changePasswordDto.OldPassword) || string.IsNullOrEmpty(changePasswordDto.NewPassword))
+            {
+                return BadRequest("Invalid password change request.");
+            }
+
+            var result = await userRepository.ChangePassword(changePasswordDto.UserId, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
+
+            if (result)
+            {
+                return Ok("Password changed successfully.");
+            }
+            else
+            {
+                return BadRequest("Old password does not match or user not found.");
+            }
+        }
 
 
     }

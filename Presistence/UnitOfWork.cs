@@ -26,6 +26,11 @@ public class UnitOfWork : IUnitOfWork
         return numberOfAffectedRows > 0;
     }
 
+    public void Dispose()
+    {
+        _dbContext.Dispose();
+    }
+
     public ILifeEcommerceRepository<TEntity> Repository<TEntity>() where TEntity : class
     {
         if (_repositories == null)

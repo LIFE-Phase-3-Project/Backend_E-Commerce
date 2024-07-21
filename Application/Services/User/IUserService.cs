@@ -20,6 +20,6 @@ namespace Application.Services.UserRepository
         Task<bool> DeleteUser(int id);
 
         string GetUserRole(int roleId);
-        //Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);
+        Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);
     }
 }

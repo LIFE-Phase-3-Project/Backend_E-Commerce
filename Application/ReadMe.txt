@@ -1,1 +1,0 @@
-﻿Ktu vendosen inteface-at per UnitWork edhe DBservice. Plus Servicet e moduleve 

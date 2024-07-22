@@ -42,7 +42,7 @@ namespace Application.Services.UserRepository
             var hashedPass = BCrypt.Net.BCrypt.HashPassword(userToRegister.Password);
 
             userToRegister.Password = hashedPass;
-            userToRegister.RoleId = 3;
+            
 
 
             _unitOfWork.Repository<User>().Create(userToRegister);

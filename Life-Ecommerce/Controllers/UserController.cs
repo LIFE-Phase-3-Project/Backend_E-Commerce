@@ -50,7 +50,7 @@ namespace Life_Ecommerce.Controllers
             return Ok("Updated Successfully");
         }
 
-        [HttpPost("/login")]
+        [HttpPost("login")]
         public IActionResult Login([FromBody] UserLogin Request)
         {
             var user = _context.Users.FirstOrDefault(user => user.Email == Request.Email);

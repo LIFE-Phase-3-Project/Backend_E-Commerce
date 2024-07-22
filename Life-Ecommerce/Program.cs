@@ -18,6 +18,7 @@ using Application.Services.ShoppingCart;
 using Application.Services.Wishlist;
 using Application.Services.Order;
 using Application.Repositories.OrderRepo;
+using Application.Services.TranslationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,8 +61,24 @@ builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
+
+
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<ITranslationService, TranslationService>(sp =>
+{
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = httpClientFactory.CreateClient();
+    var apiKey = builder.Configuration["DeepL:ApiKey"];
+    return new TranslationService(httpClient, apiKey);
+});
+
+// Add Localization services
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-builder.Services.AddSingleton(new TranslationService("YOUR_GOOGLE_API_KEY"));
+
+builder.Services.AddHttpContextAccessor();
+
+//builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+//builder.Services.AddSingleton(new TranslationService("YOUR_GOOGLE_API_KEY"));
 
 builder.Services.AddHttpContextAccessor();
 

@@ -1,5 +1,7 @@
 ﻿using Application.Services.ShoppingCart;
 using Domain.DTOs.Product;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -10,14 +12,16 @@ namespace Life_Ecommerce.Controllers
     public class ShoppingCartController : ControllerBase
     {
         private readonly IShoppingCartService _shoppingCartService;
-        public ShoppingCartController(IShoppingCartService shoppingCartService)
+        private readonly IDataProtectionProvider _dataProtectionProvider;
+        public ShoppingCartController(IShoppingCartService shoppingCartService, IDataProtectionProvider dataProtectionProvider)
         {
             _shoppingCartService = shoppingCartService;
+            _dataProtectionProvider = dataProtectionProvider;
         }
-
+       
         private (int? userId, string cartIdentifier) GetUserOrCartIdentifier()
         {
-            var userId = HttpContext.Items["UserId"] as string;
+           /* var userId = HttpContext.Items["UserId"] as string;
             string cartIdentifier = HttpContext.Session.GetString("CartIdentifier");
 
             if (int.TryParse(userId, out var intUserId))
@@ -27,6 +31,25 @@ namespace Life_Ecommerce.Controllers
             else
             {
                 return (null, cartIdentifier); // Guest user or guest user without a cart
+            }*/
+
+            var userId = HttpContext.Items["UserId"] as string;
+            string encryptedCartIdentifier;
+ 
+
+            if (int.TryParse(userId, out var intUserId))
+            {
+                return (intUserId, null); 
+            }
+            
+
+            else if (HttpContext.Request.Cookies.TryGetValue("CartIdentifier", out encryptedCartIdentifier))
+            {
+                var unprotectedCartIdentifier = _dataProtectionProvider.CreateProtector("CartIdentifierProtector").Unprotect(encryptedCartIdentifier);
+                return (null, unprotectedCartIdentifier); 
+            } else
+            {
+                return (null, null);
             }
         }
         [HttpPost("AddItemToCart/{ProductId}")]
@@ -45,7 +68,18 @@ namespace Life_Ecommerce.Controllers
                 {
                     // For unregistered users without a cart
                     cartIdentifier = await _shoppingCartService.CreateCartForGuests();
-                    HttpContext.Session.SetString("CartIdentifier", cartIdentifier);
+                    // Create a persistent cookie
+                    var cookieOptions = new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddDays(7), // Expires after 30 days
+                        HttpOnly = true, // Enhance security by making the cookie accessible only through the HTTP protocol
+                        IsEssential = true, 
+                        Secure = true, // Ensures the cookie is sent only over HTTPS
+
+                    };
+
+                    var protectedCartIdentifier = _dataProtectionProvider.CreateProtector("CartIdentifierProtector").Protect(cartIdentifier);
+                    HttpContext.Response.Cookies.Append("CartIdentifier", protectedCartIdentifier, cookieOptions);
                 }
                 var success = await _shoppingCartService.AddItem(ProductId, null, cartIdentifier);
                 if (success) return Ok("Item added successfully.");

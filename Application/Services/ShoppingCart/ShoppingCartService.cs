@@ -22,6 +22,49 @@ namespace Application.Services.ShoppingCart
             _mapper = mapper;
         }
 
+ // add new method to merge guest carts with logged in user carts
+        public async Task MergeGuestCart(string cartIdentifier, int userId)
+        {
+            var guestCart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                .GetByCondition(c => c.CartIdentifier == cartIdentifier)
+                .Include(c => c.CartItems)
+                .FirstOrDefaultAsync();
+
+            if (guestCart == null) return;
+
+            var userCart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                .GetByCondition(c => c.UserId == userId)
+                .Include(c => c.CartItems)
+                .FirstOrDefaultAsync();
+
+            if (userCart == null)
+            {
+                guestCart.UserId = userId;
+                await _unitOfWork.CompleteAsync();
+                return;
+            }
+
+            foreach (var item in guestCart.CartItems)
+            {
+                var existingItem = userCart.CartItems.FirstOrDefault(ci => ci.ProductId == item.ProductId);
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += item.Quantity;
+                }
+                else
+                {
+                    item.ShoppingCartId = userCart.Id;
+                    userCart.CartItems.Add(item);
+                }
+            }
+
+            _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Delete(guestCart);
+            await _unitOfWork.CompleteAsync();
+        }
+        
+
+
+
         public async Task<string> CreateCartForGuests()
         {
             var cartIdentifier = Guid.NewGuid().ToString();
@@ -34,6 +77,7 @@ namespace Application.Services.ShoppingCart
             };
               _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Create(cart);
             await _unitOfWork.CompleteAsync();
+
             return cartIdentifier;
         }
         public async Task<bool> AddItem(int productId, int? userId, string cartIdentifier)
@@ -82,6 +126,7 @@ namespace Application.Services.ShoppingCart
                 if (existingItem != null) 
                 {
                     existingItem.Quantity += 1;
+                    cart.DateModified = DateTime.Now;
                     await _unitOfWork.CompleteAsync();
                     return true;
 
@@ -89,6 +134,7 @@ namespace Application.Services.ShoppingCart
                 else
                 {
                     _unitOfWork.Repository<CartItem>().Create(cartItem);
+                    cart.DateModified = DateTime.Now;
                     await _unitOfWork.CompleteAsync();
                     return true;
                 }

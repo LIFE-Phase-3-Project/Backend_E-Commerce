@@ -16,6 +16,7 @@ namespace Application.Services.ShoppingCart
         Task<bool> RemoveItem(int ProductId, int? userId, string cartIdentifier);
         Task<bool> UpdateItemQuantity(int ProductId, int Quantity, int? userId, string cartIdentifier);
         Task ClearCart(int? userId, string cartIdentifier);
+        Task MergeGuestCart(string cartIdentifier, int userId);
 
     }
 }

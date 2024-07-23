@@ -24,11 +24,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDistributedMemoryCache(); // Add this line
-
+builder.Services.AddDataProtection(); // Add this line
 builder.Services.AddSession(options =>
 {
     // Set a reasonable timeout for session
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromDays(7);
+    options.Cookie.Name = "LifeEcommerce.Session";
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.HttpOnly = true;
     // Make the session cookie essential
     options.Cookie.IsEssential = true;

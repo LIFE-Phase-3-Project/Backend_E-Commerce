@@ -4,6 +4,8 @@ using Application.Services.UserRepository;
 using Domain.DTOs.User;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Application.Services.ShoppingCart;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -11,19 +13,24 @@ namespace Life_Ecommerce.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        public readonly IUserService userRepository;
+        public readonly IUserService _userService;
+        private readonly IShoppingCartService _shoppingCartService;
         public readonly APIDbContext _context;
+        private readonly IDataProtectionProvider _dataProtectionProvider;
 
-        public UserController(IUserService userRepository, APIDbContext con)
+        public UserController(IUserService userService, APIDbContext con, IDataProtectionProvider iDataProtectionProvider, IShoppingCartService shoppingCartService)
         {
-            this.userRepository = userRepository;
-            this._context = con;
+            _userService = userService;
+            _context = con;
+            _dataProtectionProvider = iDataProtectionProvider;
+            _shoppingCartService = shoppingCartService;
+            
         }
 
         [HttpPost]
         public async Task<IActionResult> Post(RegisterUserDto u)
         {
-            await userRepository.AddUser(u);
+            await _userService.AddUser(u);
             return Ok(u); 
 
         }
@@ -36,7 +43,7 @@ namespace Life_Ecommerce.Controllers
             var userRole = HttpContext.Items["UserRole"] as string;
             if (userRole == "SuperAdmin")
             {
-                var users = await userRepository.GetUsers();
+                var users = await _userService.GetUsers();
                 return Ok(users);
             }
             return Unauthorized("You are not authorized to view this content");
@@ -46,12 +53,12 @@ namespace Life_Ecommerce.Controllers
         [Route("UpdateUser")]
         public async Task<IActionResult> Put(User user)
         {
-            await userRepository.UpdateUser(user);
+            await _userService.UpdateUser(user);
             return Ok("Updated Successfully");
         }
 
         [HttpPost("/login")]
-        public IActionResult Login([FromBody] UserLogin Request)
+        public async Task<IActionResult> Login([FromBody] UserLogin Request)
         {
             var user = _context.Users.FirstOrDefault(user => user.Email == Request.Email);
 
@@ -60,12 +67,18 @@ namespace Life_Ecommerce.Controllers
                 return Unauthorized("Mejli ose fjalkalimi eshte gabim");
             }
 
-            var roleName = userRepository.GetUserRole(user.RoleId);
+            var roleName = _userService.GetUserRole(user.RoleId);
             var email = Request.Email;
 
             var token = TokenService.TokenService.GenerateToken(user.Id, roleName, email);
+            string encryptedCartIdentifier;
+            if (HttpContext.Request.Cookies.TryGetValue("CartIdentifier", out encryptedCartIdentifier))
+            {
+                var unprotectedCartIdentifier = _dataProtectionProvider.CreateProtector("CartIdentifierProtector").Unprotect(encryptedCartIdentifier);
+                await _shoppingCartService.MergeGuestCart(unprotectedCartIdentifier, user.Id);
+                HttpContext.Response.Cookies.Delete("CartIdentifier");
 
-
+            }
             return Ok(new
             {
                 IsAuthenticated = true,
@@ -84,7 +97,7 @@ namespace Life_Ecommerce.Controllers
         [Route("DeleteUser")] 
         public JsonResult Delete(int id)
         {
-            userRepository.DeleteUser(id);
+            _userService.DeleteUser(id);
             return new JsonResult("Deleted Successfully");
         }
 
@@ -93,14 +106,14 @@ namespace Life_Ecommerce.Controllers
         [Route("GetUserByID/{Id}")]
         public async Task<IActionResult> GetUserByID(int Id)
         {
-            return Ok(await userRepository.GetUserById(Id));
+            return Ok(await _userService.GetUserById(Id));
         }
 
         [HttpGet]
         [Route("GetUsersByRoleId")]
         public async Task<IActionResult> GetUsersByRoleId(int roleId)
         {
-            var users = await userRepository.GetUsersByRoleId(roleId);
+            var users = await _userService.GetUsersByRoleId(roleId);
             return Ok(users);
         }
 
@@ -112,7 +125,7 @@ namespace Life_Ecommerce.Controllers
                 return BadRequest("Invalid password change request.");
             }
 
-            var result = await userRepository.ChangePassword(changePasswordDto.UserId, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
+            var result = await _userService.ChangePassword(changePasswordDto.UserId, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
 
             if (result)
             {

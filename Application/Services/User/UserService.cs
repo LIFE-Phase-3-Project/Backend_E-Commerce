@@ -1,16 +1,8 @@
 ﻿using AutoMapper;
 using Domain.DTOs.User;
 using Domain.Entities;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services.UserRepository
 {
@@ -25,10 +17,10 @@ namespace Application.Services.UserRepository
             _unitOfWork = unitOfWork;
             _appDBContext = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper;
-           
+
         }
 
-  
+
 
         public async Task AddUser(RegisterUserDto u)
         {
@@ -42,14 +34,14 @@ namespace Application.Services.UserRepository
             var hashedPass = BCrypt.Net.BCrypt.HashPassword(userToRegister.Password);
 
             userToRegister.Password = hashedPass;
-            
+
 
 
             _unitOfWork.Repository<User>().Create(userToRegister);
             await _unitOfWork.CompleteAsync();
         }
 
-   
+
 
         public async Task<bool> ChangePassword(int userId, string oldPassword, string newPassword)
         {
@@ -72,16 +64,16 @@ namespace Application.Services.UserRepository
 
         public async Task<bool> DeleteUser(int id)
         {
-           
+
             var user = await _unitOfWork.Repository<User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
             if (user != null)
             {
-           
+
                 _unitOfWork.Repository<User>().Delete(user);
                 var deleted = _unitOfWork.Complete();
                 return deleted;
             }
-           
+
 
             return false;
         }
@@ -135,7 +127,7 @@ namespace Application.Services.UserRepository
                 .ToListAsync();
         }
 
-       
+
 
         public async Task<User> UpdateUser(User objUser)
         {

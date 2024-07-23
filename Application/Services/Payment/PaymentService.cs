@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Presistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Domain.DTOs.Payment;
+
 
 namespace Application.Services.Payment
 {
@@ -19,6 +23,8 @@ namespace Application.Services.Payment
             _mapper = mapper;
         }
 
+      
+
         public async Task<Domain.Entities.Payment> GetPaymentById(int id)
         {
             return await _unitOfWork.Repository < Domain.Entities.Payment > ().GetByIdAsync(id);
@@ -30,9 +36,24 @@ namespace Application.Services.Payment
 
         }
 
-        public Task<IEnumerable<Domain.Entities.Payment>> GetPayments()
+        public async Task<IEnumerable<Domain.Entities.Payment>> GetPayments()
         {
-            throw new NotImplementedException();
+            return await _unitOfWork.Repository<Domain.Entities.Payment>().ToListAsync();
+        }
+
+        public async Task<List<MonthlyPaymentDto>> GetPaymentsPerMonth()
+        {
+            var payments = await _unitOfWork.Repository<Domain.Entities.Payment>().GetAll().ToListAsync();
+
+            var monthlyCounts = payments
+                .GroupBy(p => p.PaymentDate.ToString("yyyy-MM"))
+                .Select(g => new MonthlyPaymentDto
+                {
+                    Month = g.Key,
+                    Payments = g.Count()
+                }).ToList();
+
+            return monthlyCounts;
         }
     }
 }

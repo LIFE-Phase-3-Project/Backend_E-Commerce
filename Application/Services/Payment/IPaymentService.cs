@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.DTOs.Payment;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,9 @@ namespace Application.Services.Payment
         Task<Domain.Entities.Payment> GetPaymentById(int id);
 
         Task<Domain.Entities.Payment> GetPaymentByOrderIdAsync(int orderId);
+
+
+        Task<List<MonthlyPaymentDto>> GetPaymentsPerMonth();
 
     }
 }

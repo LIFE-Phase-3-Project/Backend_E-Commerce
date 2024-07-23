@@ -17,5 +17,7 @@ public interface ILifeEcommerceRepository<Tentity> where Tentity : class
     Task SaveChangesAsync();
     Task GetById(int id);
     Task<Tentity> GetByIdAsync(int productId);
-   
+
+    Task<List<Tentity>> ToListAsync();
+
 }

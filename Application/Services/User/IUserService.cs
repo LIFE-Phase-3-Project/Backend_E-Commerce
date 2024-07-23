@@ -13,7 +13,7 @@ namespace Application.Services.UserRepository
         Task AddUser(RegisterUserDto u);
         Task<IEnumerable<User>> GetUsers();
 
-        Task<User> GetUserById(int id);
+        Task<UserWithRoleDto> GetUserById(int id);
 
         Task<IEnumerable<User>> GetUsersByRoleId(int roliId);
         Task<User> UpdateUser(User objUser);

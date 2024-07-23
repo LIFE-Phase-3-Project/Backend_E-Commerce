@@ -31,6 +31,8 @@ namespace Presistence
         public DbSet<Order> Orders { get; set; }
 
         public DbSet<OrderDetail> OrderDetails { get; set; }
+
+        public DbSet<Payment> Payments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureUser(modelBuilder);
@@ -39,6 +41,7 @@ namespace Presistence
             ConfigureSubCategory(modelBuilder);
             ConfigureWishlistEntry(modelBuilder);
             ConfigureOrderDetail(modelBuilder);
+            ConfigurePayment(modelBuilder);
         }
 
         private void ConfigureWishlistEntry(ModelBuilder modelBuilder)
@@ -111,6 +114,16 @@ namespace Presistence
                 entity.HasOne(od => od.User)
                       .WithMany()
                       .HasForeignKey(od => od.UserId);
+            });
+        }
+
+        private void ConfigurePayment(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasOne(p => p.Order)
+                      .WithOne(o => o.Payment)
+                      .HasForeignKey<Payment>(p => p.OrderId);
             });
         }
 

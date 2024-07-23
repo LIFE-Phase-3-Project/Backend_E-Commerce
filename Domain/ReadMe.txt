@@ -1,1 +1,0 @@
-﻿Ktu vendosen Entitetet, DTO's

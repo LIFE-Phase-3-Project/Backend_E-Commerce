@@ -87,11 +87,29 @@ namespace Application.Services.UserRepository
         }
 
 
-        public async Task<User> GetUserById(int id)
+        public async Task<UserWithRoleDto> GetUserById(int id)
         {
-            var user = await _unitOfWork.Repository<User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
-            return user;
+            var userWithRole = await _unitOfWork.Repository<User>()
+                .GetByCondition(user => user.Id == id)
+                .Join(_unitOfWork.Repository<Role>().GetAll(),
+                      user => user.RoleId,
+                      role => role.Id,
+                      (user, role) => new UserWithRoleDto
+                      {
+                          Id = user.Id,
+                          FirstName = user.FirstName,
+                          LastName = user.LastName,
+                          Email = user.Email,
+                          PhoneNumber = user.PhoneNumber,
+                          Address = user.Address,
+                          Password = user.Password,
+                          RoleName = role.RoleName
+                      })
+                .FirstOrDefaultAsync();
+
+            return userWithRole;
         }
+
 
         public string GetUserRole(int roleId)
         {

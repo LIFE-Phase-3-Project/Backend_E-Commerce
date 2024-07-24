@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Domain.DTOs.Category;
 using Domain.DTOs.Order;
+using Domain.DTOs.Payment;
 using Domain.DTOs.Product;
 using Domain.DTOs.Review;
 using Domain.DTOs.SubCategory;
@@ -36,6 +37,8 @@ namespace Domain.Helpers
             CreateMap<OrderCreateDto, Order>();
             CreateMap<OrderDto, Order>()
              .ReverseMap();
+
+            CreateMap<MonthlyPaymentDto, Payment>();
         }
         
     }

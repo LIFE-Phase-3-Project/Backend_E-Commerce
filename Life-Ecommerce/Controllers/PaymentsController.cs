@@ -1,4 +1,5 @@
 ﻿using Application.Services.Payment;
+using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,13 @@ namespace Life_Ecommerce.Controllers
             _paymentService = paymentService;
         }
 
+        [HttpGet("payments")]
+        public async Task<ActionResult<IEnumerable<Payment>>> GetPayments()
+        {
+            var payments = await _paymentService.GetPayments();
+            return Ok(payments);
+        }
+
         [HttpGet("order/{orderId}")]
         public async Task<IActionResult> GetPaymentByOrderId(int orderId)
         {
@@ -27,6 +35,15 @@ namespace Life_Ecommerce.Controllers
         {
             var payment = await _paymentService.GetPaymentById(paymentId);
             return Ok(payment);
+        }
+
+
+
+        [HttpGet("payments-per-month")]
+        public async Task<IActionResult> GetPaymentsPerMonth()
+        {
+            var monthlyPayments = await _paymentService.GetPaymentsPerMonth();
+            return Ok(monthlyPayments);
         }
     }
 }

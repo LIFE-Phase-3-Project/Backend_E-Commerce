@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Application;
 using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Presistence;
 
@@ -73,5 +74,10 @@ public class LifeEcommerceRepository<Tentity> : ILifeEcommerceRepository<Tentity
     public void UpdateRange(List<Tentity> entities)
     {
         _dbContext.Set<Tentity>().UpdateRange(entities);
+    }
+
+    public async Task<List<Tentity>> ToListAsync()
+    {
+        return await _dbContext.Set<Tentity>().ToListAsync();
     }
 }

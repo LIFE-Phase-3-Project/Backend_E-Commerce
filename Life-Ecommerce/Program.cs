@@ -11,13 +11,15 @@ using Application.Services.Product;
 using Application.Services.Review;
 using Application.Services.Subcategory;
 using Application.Services.UserRepository;
-using Domain.Entities;
 using Life_Ecommerce.TokenService;
 using Domain.Helpers;
 using Application.Services.ShoppingCart;
 using Application.Services.Wishlist;
 using Application.Services.Order;
 using Application.Repositories.OrderRepo;
+using Application.Services.ExternalAuth;
+using Life_Ecommerce.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -60,6 +62,7 @@ builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IExternalAuthService, ExternalAuthService>();
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddSingleton(new TranslationService("YOUR_GOOGLE_API_KEY"));
@@ -88,14 +91,16 @@ builder.Services.AddAuthentication(options =>
     {
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
         options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        options.Scope.Add("openid");
         options.Scope.Add("email");
         options.Scope.Add("profile");
         options.SaveTokens = true;
-        options.Events.OnRedirectToAuthorizationEndpoint = context =>
-        {
-            context.Response.Redirect(context.RedirectUri);
-            return Task.CompletedTask;
-        };
+        options.ClaimActions.MapJsonKey("urn:google:picture", "picture", "url");
+        // options.Events.OnRedirectToAuthorizationEndpoint = context =>
+        // {
+        //     context.Response.Redirect(context.RedirectUri);
+        //     return Task.CompletedTask;
+        // };
     });
 builder.Logging.AddConsole().SetMinimumLevel(LogLevel.Debug);
 
@@ -130,6 +135,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
        builder
+           .WithOrigins("https://localhost:3000", "http://localhost:3000")
            .AllowAnyMethod()
            .AllowAnyHeader()
            .AllowCredentials());

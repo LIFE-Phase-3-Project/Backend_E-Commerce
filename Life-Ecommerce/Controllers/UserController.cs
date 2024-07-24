@@ -11,61 +11,55 @@ namespace Life_Ecommerce.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        public readonly IUserService userRepository;
-        public readonly APIDbContext _context;
+        public readonly IUserService _userService;
 
-        public UserController(IUserService userRepository, APIDbContext con)
+        public UserController(IUserService userService)
         {
-            this.userRepository = userRepository;
-            this._context = con;
+            _userService = userService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(RegisterUserDto u)
+        public async Task<IActionResult> Post(RegisterUserDto registerUserDto)
         {
-            await userRepository.AddUser(u);
-            return Ok(u); 
-
+            await _userService.AddUser(registerUserDto);
+            return Ok(registerUserDto); 
         }
 
         [HttpGet]
         [Route("GetUsers")]
-       
         public async Task<IActionResult> Get()
         {
             var userRole = HttpContext.Items["UserRole"] as string;
             if (userRole == "SuperAdmin")
             {
-                var users = await userRepository.GetUsers();
+                var users = await _userService.GetUsers();
                 return Ok(users);
             }
             return Unauthorized("You are not authorized to view this content");
-
         }
+        
         [HttpPut]
         [Route("UpdateUser")]
         public async Task<IActionResult> Put(User user)
         {
-            await userRepository.UpdateUser(user);
+            await _userService.UpdateUser(user);
             return Ok("Updated Successfully");
         }
 
         [HttpPost("/login")]
-        public IActionResult Login([FromBody] UserLogin Request)
+        public IActionResult Login([FromBody] UserLoginDto request)
         {
-            var user = _context.Users.FirstOrDefault(user => user.Email == Request.Email);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(Request.Password, user.Password))
+            var user = _userService.AuthenticateUser(request.Email, request.Password);
+            if (user == null)
             {
-                return Unauthorized("Mejli ose fjalkalimi eshte gabim");
+                return Unauthorized("Email or password is incorrect");
             }
 
-            var roleName = userRepository.GetUserRole(user.RoleId);
-            var email = Request.Email;
+            var roleName = _userService.GetUserRole(user.RoleId);
+            var email = request.Email;
 
-            var token = TokenService.TokenService.GenerateToken(user.Id, roleName, email);
-
-
+            var token = _userService.GenerateToken(user.Id, roleName, email);
+            
             return Ok(new
             {
                 IsAuthenticated = true,
@@ -74,17 +68,11 @@ namespace Life_Ecommerce.Controllers
             });
         }
 
-        public class UserLogin
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
-
         [HttpDelete]
         [Route("DeleteUser")] 
         public JsonResult Delete(int id)
         {
-            userRepository.DeleteUser(id);
+            _userService.DeleteUser(id);
             return new JsonResult("Deleted Successfully");
         }
 
@@ -93,14 +81,15 @@ namespace Life_Ecommerce.Controllers
         [Route("GetUserByID/{Id}")]
         public async Task<IActionResult> GetUserByID(int Id)
         {
-            return Ok(await userRepository.GetUserById(Id));
+            var user = await _userService.GetUserById(Id);
+            return Ok(user);
         }
 
         [HttpGet]
         [Route("GetUsersByRoleId")]
         public async Task<IActionResult> GetUsersByRoleId(int roleId)
         {
-            var users = await userRepository.GetUsersByRoleId(roleId);
+            var users = await _userService.GetUsersByRoleId(roleId);
             return Ok(users);
         }
 
@@ -112,7 +101,7 @@ namespace Life_Ecommerce.Controllers
                 return BadRequest("Invalid password change request.");
             }
 
-            var result = await userRepository.ChangePassword(changePasswordDto.UserId, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
+            var result = await _userService.ChangePassword(changePasswordDto.UserId, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
 
             if (result)
             {

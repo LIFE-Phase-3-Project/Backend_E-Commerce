@@ -12,14 +12,13 @@ namespace Application.Services.UserRepository
     {
         Task AddUser(RegisterUserDto u);
         Task<IEnumerable<User>> GetUsers();
-
         Task<User> GetUserById(int id);
-
         Task<IEnumerable<User>> GetUsersByRoleId(int roliId);
         Task<User> UpdateUser(User objUser);
         Task<bool> DeleteUser(int id);
-
         string GetUserRole(int roleId);
         Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);
+        User AuthenticateUser(string email, string password);
+        string GenerateToken(int userId, string roleName, string email);
     }
 }

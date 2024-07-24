@@ -30,6 +30,10 @@ public class ProductService : IProductService
         {
             query = query.Where(p => p.Title.Contains(filters.SearchTerm) || p.Description.Contains(filters.SearchTerm));
         }
+        if (!string.IsNullOrEmpty(filters.Color))
+        {
+            query = query.Where(p => p.Color == filters.Color);
+        }
 
         if (filters.MinPrice.HasValue)
         {

@@ -35,6 +35,7 @@ namespace Domain.Helpers
             CreateMap<UpdateSubCategoryDto, SubCategory>();
             CreateMap<ChangePasswordDto, User>();
             CreateMap<OrderCreateDto, Order>();
+            CreateMap<MonthlyOrderDto, Order>();
             CreateMap<OrderDto, Order>()
              .ReverseMap();
 

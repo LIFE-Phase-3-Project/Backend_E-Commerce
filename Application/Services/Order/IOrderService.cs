@@ -1,4 +1,5 @@
 ﻿using Domain.DTOs.Order;
+using Domain.DTOs.Payment;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace Application.Services.Order
         Task<IEnumerable<OrderDto>> GetOrdersByUserId(int userId); 
 
         Task<bool> UpdateOrderStatus(int orderId, string newStatus);
+
+        Task<List<MonthlyOrderDto>> GetOrdersPerMonth();
 
     }
 }

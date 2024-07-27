@@ -1,6 +1,5 @@
 ﻿using Application.Services.Order;
 using Domain.DTOs.Order;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Life_Ecommerce.Controllers
@@ -64,6 +63,13 @@ namespace Life_Ecommerce.Controllers
                 return Ok();
 
             return BadRequest("Failed to update order status");
+        }
+
+        [HttpGet("orders-per-month")]
+        public async Task<IActionResult> GetOrdersPerMonth()
+        {
+            var monthlyOrders = await _orderService.GetOrdersPerMonth();
+            return Ok(monthlyOrders);
         }
     }
 }

@@ -2,8 +2,10 @@
 using Application.Services.ShoppingCart;
 using AutoMapper;
 using Domain.DTOs.Order;
+using Domain.DTOs.Payment;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Presistence.Migrations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,11 +136,24 @@ namespace Application.Services.Order
 
         public async Task<IEnumerable<OrderDto>> GetOrdersByUserId(int userId)
         {
-            // Use the repository method to get orders by user ID
             var orders = await _orderRepository.GetOrdersByUserIdAsync(userId);
 
-            // Map to DTOs
             return _mapper.Map<IEnumerable<OrderDto>>(orders);
+        }
+
+        public async Task<List<MonthlyOrderDto>> GetOrdersPerMonth()
+        {
+             var orders = await _unitOfWork.Repository<Domain.Entities.Order>().GetAll().ToListAsync();
+
+            var monthlyCounts = orders
+                .GroupBy(o => o.OrderDate.ToString("yyyy-MM"))
+                .Select(g => new MonthlyOrderDto
+                {
+                    Month = g.Key,
+                    Orders = g.Count()
+                }).ToList();
+
+            return monthlyCounts;
         }
 
         public async Task<bool> UpdateOrderStatus(int orderId, string newStatus)

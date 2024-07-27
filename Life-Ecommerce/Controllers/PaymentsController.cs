@@ -56,54 +56,20 @@ namespace Life_Ecommerce.Controllers
             return Ok(monthlyPayments);
         }
 
-        //[HttpPost("create-cash-payment")]
-        //public async Task<IActionResult> CreateCashPayment([FromBody] CreateCashPaymentDto createCashPaymentDto)
-        //{
-        //    //try
-        //    //{
-        //        // Retrieve the order details from the OrderService
-        //        var order = await _orderService.GetOrderById(createCashPaymentDto.OrderId);
-        //        if (order == null)
-        //        {
-        //            return NotFound("Order not found");
-        //        }
-
-        //        var payment = new Payment
-        //        {
-        //            PaymentDate = createCashPaymentDto.PaymentDate,
-        //            Amount = createCashPaymentDto.Amount,
-        //            PaymentStatus = "Completed", 
-        //            PaymentMethod = "Cash",
-        //            OrderId = createCashPaymentDto.OrderId,
-        //            TransactionId = "null"
-        //        };
-
-        //        _paymentService.Create(payment);
-        //        await _paymentService.SaveChangesAsync();
-
-        //        return Ok(payment);
-        //    //}
-        //    //catch (Exception ex)
-        //    //{
-        //    //    _logger.LogError(ex, "Error creating cash payment: " + ex.Message);
-        //    //    return StatusCode(500, "Error creating cash payment");
-        //    //}
-        //}
-
 
         [HttpPost("create-cash-payment")]
         public async Task<IActionResult> CreateCashPayment([FromBody] CreateCashPaymentDto createPaymentDto)
         {
-            //try
-            //{
+            try
+            {
                 var payment = await _paymentService.CreateCashPayment(createPaymentDto);
                 return Ok(payment);
-            //}
-            //catch (Exception ex)
-            //{
-                //_logger.LogError(ex, "Error creating cash payment: " + ex.Message);
-                //return StatusCode(500, "Error creating cash payment");
-           // }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating cash payment: " + ex.Message);
+                return StatusCode(500, "Error creating cash payment");
+            }
         }
 
         [HttpGet("transaction/{transactionId}")]

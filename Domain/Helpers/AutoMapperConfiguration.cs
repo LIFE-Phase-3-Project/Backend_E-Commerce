@@ -39,6 +39,8 @@ namespace Domain.Helpers
              .ReverseMap();
 
             CreateMap<MonthlyPaymentDto, Payment>();
+            CreateMap<CreatePaymentDto, Payment>();
+            CreateMap<CreateCashPaymentDto, Payment>();
         }
         
     }

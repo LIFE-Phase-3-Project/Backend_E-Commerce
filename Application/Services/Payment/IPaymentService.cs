@@ -18,6 +18,12 @@ namespace Application.Services.Payment
 
 
         Task<List<MonthlyPaymentDto>> GetPaymentsPerMonth();
+        Task<Domain.Entities.Payment?> GetPaymentByTransactionId(string id);
+
+        void Create(Domain.Entities.Payment payment);
+        Task SaveChangesAsync();
+
+        Task<Domain.Entities.Payment> CreateCashPayment(CreateCashPaymentDto createPaymentDto);
 
     }
 }

@@ -69,6 +69,7 @@ namespace Application.Services.Order
                 Country = orderDto.Country,
                 PostalCode = orderDto.PostalCode,
                 Name = orderDto.Name,
+                
             };
 
             _unitOfWork.Repository<Domain.Entities.Order>().Create(order);

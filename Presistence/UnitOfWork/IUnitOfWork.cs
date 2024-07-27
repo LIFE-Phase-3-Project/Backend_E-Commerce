@@ -6,7 +6,8 @@ public interface IUnitOfWork
 
     bool Complete();
     Task<bool> CompleteAsync();
+    Task SaveChangesAsync();
     //void Dispose();
 
-    
+
 }

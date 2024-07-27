@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace Domain.Entities
 {
@@ -23,10 +24,11 @@ namespace Domain.Entities
 
         public string PaymentMethod {  get; set; }
 
-        public string TransactionId { get; set; } = null;
+        public string TransactionId { get; set; } 
         public int OrderId { get; set; }
 
         [ForeignKey("OrderId")]
+        [JsonIgnore]
         public Order Order { get; set; }
     }
 }

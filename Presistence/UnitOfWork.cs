@@ -49,4 +49,9 @@ public class UnitOfWork : IUnitOfWork
 
         return (ILifeEcommerceRepository<TEntity>)_repositories[type];
     }
+
+    public async Task SaveChangesAsync()
+    {
+        await _dbContext.SaveChangesAsync();
+    }
 }

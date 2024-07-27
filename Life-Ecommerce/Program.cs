@@ -19,6 +19,8 @@ using Application.Services.Wishlist;
 using Application.Services.Order;
 using Application.Repositories.OrderRepo;
 using Application.Services.Payment;
+using Application.Services.User;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,9 +56,10 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection"))
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IProductService, Application.Services.Product.ProductService>();
+builder.Services.AddScoped<IReviewService, Application.Services.Review.ReviewService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();

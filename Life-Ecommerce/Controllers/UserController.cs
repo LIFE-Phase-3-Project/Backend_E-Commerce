@@ -6,6 +6,7 @@ using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Application.Services.ShoppingCart;
+using AutoMapper;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -17,14 +18,16 @@ namespace Life_Ecommerce.Controllers
         private readonly IShoppingCartService _shoppingCartService;
         public readonly APIDbContext _context;
         private readonly IDataProtectionProvider _dataProtectionProvider;
+        private readonly IMapper _mapper;
 
-        public UserController(IUserService userService, APIDbContext con, IDataProtectionProvider iDataProtectionProvider, IShoppingCartService shoppingCartService)
+        public UserController(IUserService userService, APIDbContext con, IDataProtectionProvider iDataProtectionProvider, IShoppingCartService shoppingCartService, IMapper mapper)
         {
             _userService = userService;
             _context = con;
             _dataProtectionProvider = iDataProtectionProvider;
             _shoppingCartService = shoppingCartService;
-            
+            _mapper = mapper;
+
         }
 
         [HttpPost]
@@ -49,12 +52,29 @@ namespace Life_Ecommerce.Controllers
             return Unauthorized("You are not authorized to view this content");
 
         }
-        [HttpPut]
-        [Route("UpdateUser")]
-        public async Task<IActionResult> Put(User user)
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto updateUserDto)
         {
-            await _userService.UpdateUser(user);
-            return Ok("Updated Successfully");
+            if (id != updateUserDto.Id)
+            {
+                return BadRequest("User ID mismatch.");
+            }
+
+            try
+            {
+                var user = _mapper.Map<User>(updateUserDto);
+                var updatedUser = await _userService.UpdateUser(user);
+                return Ok(updatedUser);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost("/login")]
@@ -95,10 +115,26 @@ namespace Life_Ecommerce.Controllers
 
         [HttpDelete]
         [Route("DeleteUser")] 
-        public JsonResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _userService.DeleteUser(id);
-            return new JsonResult("Deleted Successfully");
+            try
+            {
+                var result = await _userService.DeleteUser(id);
+                if (!result)
+                {
+                    return NotFound("User not found.");
+                }
+
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
 

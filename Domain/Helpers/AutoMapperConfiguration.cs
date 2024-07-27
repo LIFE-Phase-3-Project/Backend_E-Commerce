@@ -22,6 +22,7 @@ namespace Domain.Helpers
         
             CreateMap<User, UserOverviewDto>().ReverseMap();
             CreateMap<User, UserWithRoleDto>().ReverseMap();
+            CreateMap<User, UpdateUserDto>().ReverseMap();
             CreateMap<Category, CreateCategoryDto>().ReverseMap();
             CreateMap<Category, CategoryDto>().ReverseMap()
                 .ForMember(dest => dest.Subcategories, opt => opt.MapFrom(src => src.Subcategories));

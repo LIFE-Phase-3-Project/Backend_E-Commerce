@@ -11,12 +11,12 @@ namespace Application.Services.UserRepository
     public interface IUserService
     {
         Task AddUser(RegisterUserDto u);
-        Task<IEnumerable<User>> GetUsers();
+        Task<IEnumerable<Domain.Entities.User>> GetUsers();
 
         Task<UserWithRoleDto> GetUserById(int id);
 
-        Task<IEnumerable<User>> GetUsersByRoleId(int roliId);
-        Task<User> UpdateUser(User objUser);
+        Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roliId);
+        Task<Domain.Entities.User> UpdateUser(Domain.Entities.User objUser);
         Task<bool> DeleteUser(int id);
 
         string GetUserRole(int roleId);

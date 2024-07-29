@@ -103,8 +103,23 @@ namespace Application.Services.Order
 
             await _shoppingCartService.ClearCart(userId, cartIdentifier);
 
+            if (userId.HasValue)
+            {
+                var user = await _unitOfWork.Repository<Domain.Entities.User>()
+                    .GetByIdAsync(userId.Value);
+
+                if (user != null)
+                {
+                    var subject = "Order Confirmation";
+                    var message = $"Dear {user.FirstName},\n\nThank you for your order! Your order ID is {order.Id}. We will notify you when your order status changes.\n\nBest regards,\nLIFE";
+
+                    await _emailService.SendEmailAsync(user.Email, subject, message);
+                }
+            }
+
             return true;
         }
+
 
 
 
@@ -175,7 +190,7 @@ namespace Application.Services.Order
                 if (user != null)
                 {
                     var subject = "Order Status Update";
-                    var message = $"Dear {user.FirstName},\n\nYour order with ID {orderId} has been updated to '{newStatus}'.\n\nBest regards,\nYour Company";
+                    var message = $"Dear {user.FirstName},\n\nYour order with ID {orderId} has been updated to '{newStatus}'.\n\nBest regards,\nLife";
 
                     await _emailService.SendEmailAsync(user.Email, subject, message);
                 }

@@ -1,17 +1,9 @@
 ﻿using Application.Repositories.OrderRepo;
+using Application.Services.Email;
 using Application.Services.ShoppingCart;
 using AutoMapper;
 using Domain.DTOs.Order;
-using Domain.DTOs.Payment;
-using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Presistence.Migrations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services.Order
 {
@@ -20,23 +12,26 @@ namespace Application.Services.Order
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IShoppingCartService _shoppingCartService;
-        private readonly IOrderRepository _orderRepository; // Add this field
+        private readonly IOrderRepository _orderRepository;
+        private readonly IEmailService _emailService;
 
         public OrderService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IShoppingCartService shoppingCartService,
-            IOrderRepository orderRepository) // Add this parameter
+            IOrderRepository orderRepository,
+            IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _shoppingCartService = shoppingCartService;
-            _orderRepository = orderRepository; // Initialize the field
+            _orderRepository = orderRepository;
+            _emailService = emailService;
         }
+
 
         public async Task<bool> CreateOrder(int? userId, string cartIdentifier, OrderDto orderDto)
         {
-
             Domain.Entities.ShoppingCart cart;
             if (userId.HasValue)
             {
@@ -56,7 +51,7 @@ namespace Application.Services.Order
             }
 
             if (cart == null || !cart.CartItems.Any())
-                return false; 
+                return false;
 
             var order = new Domain.Entities.Order
             {
@@ -70,8 +65,7 @@ namespace Application.Services.Order
                 City = orderDto.City,
                 Country = orderDto.Country,
                 PostalCode = orderDto.PostalCode,
-                Name = orderDto.Name,
-                
+                Name = orderDto.Name
             };
 
             _unitOfWork.Repository<Domain.Entities.Order>().Create(order);
@@ -91,7 +85,7 @@ namespace Application.Services.Order
                 {
                     OrderId = order.Id,
                     ProductId = cartItem.ProductId,
-                    UserId = userId ?? 0, 
+                    UserId = userId ?? 0,
                     Count = cartItem.Quantity,
                     Price = cartItem.Product.Price
                 };
@@ -168,7 +162,28 @@ namespace Application.Services.Order
             _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
             await _unitOfWork.CompleteAsync();
 
+            var orderDetail = await _unitOfWork.Repository<Domain.Entities.OrderDetail>()
+                .GetAll() 
+                .Where(od => od.OrderId == orderId)
+                .FirstOrDefaultAsync();
+
+            if (orderDetail != null)
+            {
+                var user = await _unitOfWork.Repository<Domain.Entities.User>()
+                    .GetByIdAsync(orderDetail.UserId);
+
+                if (user != null)
+                {
+                    var subject = "Order Status Update";
+                    var message = $"Dear {user.FirstName},\n\nYour order with ID {orderId} has been updated to '{newStatus}'.\n\nBest regards,\nYour Company";
+
+                    await _emailService.SendEmailAsync(user.Email, subject, message);
+                }
+            }
+
             return true;
         }
+
+
     }
 }

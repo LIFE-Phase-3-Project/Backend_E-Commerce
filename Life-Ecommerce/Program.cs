@@ -21,6 +21,8 @@ using Application.Repositories.OrderRepo;
 using Application.Services.Payment;
 using Application.Services.User;
 using Stripe;
+using Application.Services.Email;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,8 +55,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<APIDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection")));
 
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -66,6 +68,7 @@ builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+
 
 
 builder.Services.AddHttpContextAccessor();

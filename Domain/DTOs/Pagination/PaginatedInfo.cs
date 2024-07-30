@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Helpers
+namespace Domain.DTOs.Pagination
 {
     public class PaginatedInfo<T> where T : class
     {

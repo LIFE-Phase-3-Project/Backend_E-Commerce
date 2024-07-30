@@ -115,10 +115,13 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
-       builder
+    {  
+        builder
            .AllowAnyMethod()
            .AllowAnyHeader()
-           .AllowCredentials());
+           .AllowCredentials()
+           .WithOrigins("http://localhost:3000");
+    });
 });
 
 var app = builder.Build();
@@ -131,6 +134,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -77,7 +77,7 @@ namespace Life_Ecommerce.Controllers
             }
         }
 
-        [HttpPost("/login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLogin Request)
         {
             var user = _context.Users.FirstOrDefault(user => user.Email == Request.Email);

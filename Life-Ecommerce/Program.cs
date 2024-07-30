@@ -11,9 +11,7 @@ using Application.Services.Product;
 using Application.Services.Review;
 using Application.Services.Subcategory;
 using Application.Services.UserRepository;
-using Domain.Entities;
 using Life_Ecommerce.TokenService;
-using Domain.Helpers;
 using Application.Services.ShoppingCart;
 using Application.Services.Wishlist;
 using Application.Services.Order;
@@ -23,12 +21,29 @@ using Application.Services.User;
 using Stripe;
 using Application.Services.Email;
 
+using Nest;
+using Domain.Helpers;
+using Application.Services.Search;
+
+using Elasticsearch.Net;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDistributedMemoryCache(); // Add this line
 builder.Services.AddDataProtection(); // Add this line
+
+// elastic Search
+var uri = new Uri(builder.Configuration["ElasticSearch:Uri"]);
+var password = builder.Configuration["ElasticSearch:Password"];
+var settings = new ConnectionSettings(uri)
+    .BasicAuthentication("elastic", password)
+    .DefaultIndex("products_v2");
+
+var elasticClient = new ElasticClient(settings);
+
+builder.Services.AddSingleton<IElasticClient>(elasticClient);
 builder.Services.AddSession(options =>
 {
     // Set a reasonable timeout for session
@@ -62,6 +77,9 @@ builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductService, Application.Services.Product.ProductService>();
 builder.Services.AddScoped<IReviewService, Application.Services.Review.ReviewService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();

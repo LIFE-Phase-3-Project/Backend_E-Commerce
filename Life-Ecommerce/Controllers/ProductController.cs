@@ -20,27 +20,28 @@ public class ProductController : ControllerBase
     [HttpGet("search")]
     public async Task<IActionResult> SearchProducts([FromQuery] ProductFilterModel filters, int page = 1, int pageSize = 10)
     {
-        if (page < 1 || pageSize < 1)
+        if (page < 1 || pageSize < 1 || pageSize > 50)
         {
             return BadRequest("Invalid pagination parameters.");
         }
 
         var paginatedProducts = await _productService.GetPaginatedProductsAsync(filters, page, pageSize);
 
-        if (paginatedProducts == null || !paginatedProducts.Items.Any())
-        {
-            return NotFound("No products found for the specified criteria.");
-        }
-
         return Ok(paginatedProducts);
     }
-
+    [HttpGet("testElastic")]
+    public async Task<IActionResult> TestElasticsearchConnection()
+    {
+        var result = await _productService.TestElasticsearchConnectionAsync();
+        return Ok(result);
+    }
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetAllProducts()
     {
         var products = await _productService.GetAllProductsAsync();
         return Ok(products);
     }
+
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDto>> GetProductById(int id)
@@ -59,12 +60,12 @@ public class ProductController : ControllerBase
     public async Task<ActionResult> AddProduct([FromBody] CreateProductDto createProductDto)
     {
         await _productService.AddProductAsync(createProductDto);
-        // return CreatedAtAction(nameof(GetProductById), new { id = createProductDto.Title }, createProductDto);
-        return Ok("Product added succesfully");
+
+        return Ok("Product added succesfully to the database and indexed to Elastic");
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateProduct(int id, [FromBody] CreateProductDto updateProductDto)
+    public async Task<ActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto updateProductDto)
     {
         var product = await _productService.GetProductByIdAsync(id);
 

@@ -14,6 +14,8 @@ namespace Domain.DTOs.Product
         public string? Color { get; set; }
         public int? CategoryId { get; set; }
         public int? SubCategoryId { get; set; }
+        public int? StockMin { get; set; }
+        public int? StockMax { get; set; }
         public string? SortOrder { get; set; }
     }
 }

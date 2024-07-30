@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Nest;
 using Domain.DTOs.Pagination;
+using Application.Services.ImageStorage;
 
 
 namespace Application.Services.Product;
@@ -16,12 +17,14 @@ public class ProductService : IProductService
     private readonly IMapper _mapper;
     private readonly ISearchService _searchService;
     private readonly IElasticClient _elasticClient;
-    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IElasticClient elasticClient, ISearchService searchService)
+    private readonly IStorageService _storageService;
+    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IElasticClient elasticClient, ISearchService searchService, IStorageService storageService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _searchService = searchService;
         _elasticClient = elasticClient;
+        _storageService = storageService;
     }
 
     public async Task<bool> TestElasticsearchConnectionAsync()
@@ -108,8 +111,15 @@ public class ProductService : IProductService
 
     public async Task AddProductAsync(CreateProductDto createProductDto)
     {
-        var product = _mapper.Map<Domain.Entities.Product>(createProductDto);
+        var images = new List<string>();
+        foreach (var item in createProductDto.Image)
+        {
+            var st = await _storageService.UploadFileAsync(item);
+            images.Add(st);
+        }
         
+        var product = _mapper.Map<Domain.Entities.Product>(createProductDto);
+        product.Image = images;
         //get subcategory to autoAssign category
         var subcategory = _unitOfWork.Repository<SubCategory>()
             .GetByCondition(x => x.SubCategoryId == product.SubCategoryId).FirstOrDefault();
@@ -127,23 +137,41 @@ public class ProductService : IProductService
         await _searchService.IndexProductAsync(productToIndex);
     }
 
-    public async Task UpdateProductAsync(int id, UpdateProductDto updateProductDto)
+    public async Task<bool> UpdateProductAsync(int id, UpdateProductDto updateProductDto)
     {
         var product = await _unitOfWork.Repository<Domain.Entities.Product>().GetByCondition(x => x.Id == id)
-            .FirstOrDefaultAsync();
+     .FirstOrDefaultAsync();
 
         if (product == null)
         {
-            return;
+            return false;
         }
 
-         _mapper.Map(updateProductDto, product);
+
+        foreach (var imageUrl in product.Image)
+        {
+            var fileName = Path.GetFileName(new Uri(imageUrl).LocalPath);
+            await _storageService.DeleteFileAsync(fileName);
+        }
+
+
+        var newImageUrls = new List<string>();
+        foreach (var image in updateProductDto.Image)
+        {
+            var imageUrl = await _storageService.UploadFileAsync(image);
+            newImageUrls.Add(imageUrl);
+        }
+
+        _mapper.Map(updateProductDto, product);
+        product.Image = newImageUrls;
 
         _unitOfWork.Repository<Domain.Entities.Product>().Update(product);
-        await _unitOfWork.CompleteAsync();
+        var result = await _unitOfWork.CompleteAsync();
         var productToIndex = _mapper.Map<ProductIndexDto>(product);
         await _searchService.IndexProductAsync(productToIndex);
-
+        if (result)
+            return true;
+        return false;
     }
 
     public async Task<bool> DeleteProductAsync(int id)

@@ -22,7 +22,6 @@ namespace Application.Services.ShoppingCart
             _mapper = mapper;
         }
 
- // add new method to merge guest carts with logged in user carts
         public async Task MergeGuestCart(string cartIdentifier, int userId)
         {
             var guestCart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()

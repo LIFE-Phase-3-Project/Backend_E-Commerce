@@ -1,3 +1,4 @@
+using Application.Services.ImageStorage;
 using Application.Services.Product;
 using Domain.DTOs.Product;
 using Domain.Entities;
@@ -11,8 +12,8 @@ namespace Life_Ecommerce.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
-
-    public ProductController(IProductService productService)
+    private readonly IStorageService _storageService;
+    public ProductController(IProductService productService, IStorageService storageService)
     {
         _productService = productService;
     }
@@ -57,7 +58,8 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> AddProduct([FromBody] CreateProductDto createProductDto)
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult> AddProduct([FromForm] CreateProductDto createProductDto)
     {
         await _productService.AddProductAsync(createProductDto);
 
@@ -65,17 +67,11 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto updateProductDto)
+    public async Task<ActionResult> UpdateProduct(int id, [FromForm] UpdateProductDto updateProductDto)
     {
-        var product = await _productService.GetProductByIdAsync(id);
 
-        if (product == null)
-        {
-            return NotFound();
-        }
-
-        await _productService.UpdateProductAsync(id, updateProductDto);
-        return NoContent();
+        var response = await _productService.UpdateProductAsync(id, updateProductDto);
+        return Ok(response);
     }
 
     [HttpDelete("{id}")]

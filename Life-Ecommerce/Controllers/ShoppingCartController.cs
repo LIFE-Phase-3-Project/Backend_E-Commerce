@@ -66,9 +66,8 @@ namespace Life_Ecommerce.Controllers
             {
                 if (cartIdentifier == null)
                 {
-                    // For unregistered users without a cart
+
                     cartIdentifier = await _shoppingCartService.CreateCartForGuests();
-                    // Create a persistent cookie
                     var cookieOptions = new CookieOptions
                     {
                         Expires = DateTime.Now.AddDays(7), // Expires after 30 days

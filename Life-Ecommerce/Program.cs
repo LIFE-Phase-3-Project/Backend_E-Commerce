@@ -27,12 +27,13 @@ using Application.Services.Search;
 
 using Elasticsearch.Net;
 using System;
+using Application.Services.ImageStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDistributedMemoryCache(); // Add this line
-builder.Services.AddDataProtection(); // Add this line
+builder.Services.AddDataProtection();
+builder.Services.AddDistributedMemoryCache();
 
 // elastic Search
 var uri = new Uri(builder.Configuration["ElasticSearch:Uri"]);
@@ -77,15 +78,14 @@ builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductService, Application.Services.Product.ProductService>();
 builder.Services.AddScoped<IReviewService, Application.Services.Review.ReviewService>();
-builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
 builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IStorageService, StorageService>();
 
 
 

@@ -19,6 +19,7 @@ namespace Domain.Helpers
             CreateMap<ProductDto, ProductIndexDto>().ReverseMap();
             CreateMap<Product, ProductIndexDto>().ReverseMap();
             CreateMap<Product, UpdateProductDto>().ReverseMap();
+            CreateMap<UpdateProductDto, ProductIndexDto>().ReverseMap();
 
 
             CreateMap<Review, ReviewDto>()

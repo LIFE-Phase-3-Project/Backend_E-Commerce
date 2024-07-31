@@ -32,14 +32,8 @@ namespace Application.Services.Order
 
         public async Task<bool> CreateOrder(int userId, OrderDto orderDto)
         {
-            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                .GetByCondition(c => c.UserId == userId)
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Product)
-                .Include(c => c.Discount)
-                .FirstOrDefaultAsync();
-
-            if (cart == null || !cart.CartItems.Any())
+            var cart = await _shoppingCartService.GetCartContents(userId, null);
+            if (cart == null || !cart.Items.Any())
                 return false;
 
             decimal orderTotal = cart.TotalPrice;
@@ -57,7 +51,8 @@ namespace Application.Services.Order
 
             _unitOfWork.Repository<Domain.Entities.Order>().Create(order);
             await _unitOfWork.CompleteAsync();
-            if (cart.Discount.UserId != null && cart.Discount.Code == "NewUserDiscount")
+
+            if (cart.DiscountPercentage != null)
             {
                 var discount = await _unitOfWork.Repository<Domain.Entities.Discount>()
                     .GetByCondition(d => d.UserId == userId && d.Code == "NewUserDiscount")
@@ -69,7 +64,7 @@ namespace Application.Services.Order
                     await _unitOfWork.CompleteAsync();
                 }
             }
-            foreach (var cartItem in cart.CartItems)
+            foreach (var cartItem in cart.Items)
             {
                 var product = await _unitOfWork.Repository<Domain.Entities.Product>()
                     .GetByIdAsync(cartItem.ProductId);
@@ -84,8 +79,8 @@ namespace Application.Services.Order
                     OrderId = order.Id,
                     ProductId = cartItem.ProductId,
                     Count = cartItem.Quantity,
-                    Price = cartItem.Product.DiscountedPrice
-
+                    Price = cartItem.TotalPrice,
+                    UserId = userId
                 };
 
                 _unitOfWork.Repository<Domain.Entities.OrderDetail>().Create(orderDetail);
@@ -110,9 +105,6 @@ namespace Application.Services.Order
 
             return true;
         }
-
-
-
 
         public async Task<IEnumerable<OrderDto>> GetAllOrders()
         {
@@ -189,7 +181,5 @@ namespace Application.Services.Order
 
             return true;
         }
-
-
     }
 }

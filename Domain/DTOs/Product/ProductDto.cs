@@ -15,6 +15,9 @@ public class ProductDto
     public decimal Price { get; set; }
     public decimal? DiscountPercentage { get; set; }
     public DateTime? DiscountExpiryDate { get; set; }
+    public decimal DiscountedPrice => DiscountPercentage.HasValue && DiscountExpiryDate > DateTime.Now
+        ? Price - (Price * DiscountPercentage.Value / 100)
+        : Price;
     public int Ratings { get; set; }
     public int Stock { get; set; }
     public List<Entities.Review> Reviews { get; set; }

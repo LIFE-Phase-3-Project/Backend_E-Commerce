@@ -58,15 +58,23 @@ namespace Application.Services.Search
             if (!string.IsNullOrEmpty(filters.SearchTerm))
             {
                 var lowercaseTerm = filters.SearchTerm.ToLower();
-               mustQueries.Add(new QueryContainer(new WildcardQuery
-               {
-                   Field = "title",
-                   Value = $"*{lowercaseTerm}*"
-               }) || new QueryContainer(new WildcardQuery
-               {
-                   Field = "description",
-                   Value = $"*{lowercaseTerm}*"
-               }));
+                mustQueries.Add(new QueryContainer(new MatchQuery
+                {
+                    Field = "title",
+                    Query = lowercaseTerm
+                }) || new QueryContainer(new MatchQuery
+                {
+                    Field = "description",
+                    Query = lowercaseTerm
+                }) || new QueryContainer(new WildcardQuery
+                {
+                    Field = "title",
+                    Value = $"*{lowercaseTerm}*"
+                }) || new QueryContainer(new WildcardQuery
+                {
+                    Field = "description",
+                    Value = $"*{lowercaseTerm}*"
+                }));
 
             }
             if (filters.StockMin.HasValue)

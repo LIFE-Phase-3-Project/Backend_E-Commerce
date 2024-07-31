@@ -195,15 +195,7 @@ namespace Application.Services.ShoppingCart
                     .FirstOrDefaultAsync();
             } else
             {
-                return new ShoppingCartDto
-                {
-                    CartIdentifier = string.Empty,
-                    DateCreated = DateTime.MinValue,
-                    DateModified = DateTime.MinValue,
-                    Items = new List<ShoppingCartItemDto>(),
-                    DiscountId = null,
-                    ShoppingDiscount = null
-                };
+                return null;
             }
             if (cart == null) return null;
 
@@ -212,6 +204,8 @@ namespace Application.Services.ShoppingCart
                 ProductId = ci.ProductId,
                 Title = ci.Product.Title,
                 Price = ci.Product.Price,
+                DiscountPercentage = ci.Product.DiscountPercentage,
+                DiscountExpiryDate = ci.Product.DiscountExpiryDate,
                 Quantity = ci.Quantity
             }).ToList();
 
@@ -221,8 +215,8 @@ namespace Application.Services.ShoppingCart
                 DateCreated = cart.DateCreated,
                 DateModified = cart.DateModified,
                 Items = cartItemsDto,
-                DiscountId = cart.DiscountId,
-                ShoppingDiscount = cart.Discount
+                DiscountPercentage = cart.Discount?.Percentage,
+                DiscountExpiryDate = cart.Discount?.ExpiryDate
             };
 
             return cartDto;

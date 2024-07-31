@@ -42,11 +42,7 @@ namespace Application.Services.Order
             if (cart == null || !cart.CartItems.Any())
                 return false;
 
-            decimal orderTotal = cart.CartItems.Sum(item => item.Product.Price * item.Quantity);
-            if (cart.Discount != null && cart.Discount.ExpiryDate > DateTime.Now)
-            {
-                orderTotal *= (1 - cart.Discount.Percentage / 100);
-            }
+            decimal orderTotal = cart.TotalPrice;
 
             var order = new Domain.Entities.Order
             {
@@ -61,7 +57,18 @@ namespace Application.Services.Order
 
             _unitOfWork.Repository<Domain.Entities.Order>().Create(order);
             await _unitOfWork.CompleteAsync();
-             
+            if (cart.Discount.UserId != null && cart.Discount.Code == "NewUserDiscount")
+            {
+                var discount = await _unitOfWork.Repository<Domain.Entities.Discount>()
+                    .GetByCondition(d => d.UserId == userId && d.Code == "NewUserDiscount")
+                    .FirstOrDefaultAsync();
+
+                if (discount != null)
+                {
+                    _unitOfWork.Repository<Domain.Entities.Discount>().Delete(discount);
+                    await _unitOfWork.CompleteAsync();
+                }
+            }
             foreach (var cartItem in cart.CartItems)
             {
                 var product = await _unitOfWork.Repository<Domain.Entities.Product>()
@@ -77,7 +84,7 @@ namespace Application.Services.Order
                     OrderId = order.Id,
                     ProductId = cartItem.ProductId,
                     Count = cartItem.Quantity,
-                    Price = cartItem.Product.Price
+                    Price = cartItem.Product.DiscountedPrice
 
                 };
 

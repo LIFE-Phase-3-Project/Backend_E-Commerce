@@ -20,21 +20,17 @@ namespace Domain.DTOs.ShoppingCart
         public List<ShoppingCartItemDto> Items { get; set; }
         public int TotalQuantity => Items.Sum(item => item.Quantity);
         // use discount to calculate total price just like in ShoppingCart.cs
-        public int? DiscountId { get; set; }
-
-
-        public Entities.Discount ShoppingDiscount { get; set; }
-
-
+        public decimal? DiscountPercentage { get; set; }
+        public DateTime? DiscountExpiryDate { get; set; }
 
         public decimal TotalPrice
         {
             get
             {
                 decimal total = Items.Sum(item => item.TotalPrice);
-                if (ShoppingDiscount != null && ShoppingDiscount.ExpiryDate > DateTime.Now)
+                if (DiscountPercentage.HasValue && DiscountExpiryDate > DateTime.Now)
                 {
-                    total *= (1 - ShoppingDiscount.Percentage / 100);
+                    total *= (1 - DiscountPercentage.Value / 100);
                 }
                 return total;
             }

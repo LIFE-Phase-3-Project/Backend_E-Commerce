@@ -48,7 +48,7 @@ namespace Application.Services.UserRepository
             var discount = new CreateDiscountDto
             {
                 UserId = newUser.Id,
-                Code = "New User Discount",
+                Code = "NewUserDiscount",
                 Percentage = 10,
                 ExpiryDate = DateTime.Now.AddDays(7),
             };

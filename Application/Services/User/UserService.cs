@@ -1,5 +1,7 @@
-﻿using Application.Services.User;
+﻿using Application.Services.Discount;
+using Application.Services.User;
 using AutoMapper;
+using Domain.DTOs.Discount;
 using Domain.DTOs.User;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +15,15 @@ namespace Application.Services.UserRepository
         private readonly IMapper _mapper;
         private readonly APIDbContext _appDBContext;
         private readonly IUserContext _userContext;
+        private readonly IDiscountService _discountService;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, APIDbContext context, IUserContext userContext)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, APIDbContext context, IUserContext userContext, IDiscountService discountService)
         {
             _unitOfWork = unitOfWork;
             _appDBContext = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper;
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _discountService = discountService;
         }
 
 
@@ -27,7 +31,7 @@ namespace Application.Services.UserRepository
         public async Task AddUser(RegisterUserDto u)
         {
             var userToRegister = _mapper.Map<Domain.Entities.User>(u);
-            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();_unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
             if (user != null)
             {
                 throw new InvalidOperationException("User with this Email already exists");
@@ -37,9 +41,18 @@ namespace Application.Services.UserRepository
 
             userToRegister.Password = hashedPass;
 
-
-
-            _unitOfWork.Repository<Domain.Entities.User>().Create(userToRegister);
+             _unitOfWork.Repository<Domain.Entities.User>().Create(userToRegister);
+            await _unitOfWork.CompleteAsync();
+            var newUser = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
+            //  create a discount entity for the new user
+            var discount = new CreateDiscountDto
+            {
+                UserId = newUser.Id,
+                Code = "New User Discount",
+                Percentage = 10,
+                ExpiryDate = DateTime.Now.AddDays(7),
+            };
+            await _discountService.CreateDiscount(discount);
             await _unitOfWork.CompleteAsync();
         }
 

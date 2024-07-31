@@ -3,7 +3,6 @@ using Presistence;
 using Application.Services.UserRepository;
 using Domain.DTOs.User;
 using Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Application.Services.ShoppingCart;
 using AutoMapper;

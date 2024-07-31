@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Domain.DTOs.ShoppingCart;
 using Google.Apis.Logging;
 using Microsoft.Extensions.Logging;
+using Application.Services.Discount;
 
 namespace Application.Services.ShoppingCart
 {
@@ -18,11 +19,13 @@ namespace Application.Services.ShoppingCart
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IDiscountService _discountService;
         // private readonly ILogger<ShoppingCartService> _logger;
-        public ShoppingCartService(IUnitOfWork unitOfWork, IMapper mapper)
+        public ShoppingCartService(IUnitOfWork unitOfWork, IMapper mapper, IDiscountService discountService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _discountService = discountService;
         }
 
         public async Task MergeGuestCart(string cartIdentifier, int userId)
@@ -213,8 +216,49 @@ namespace Application.Services.ShoppingCart
             return cartDto;
         }
 
+        public async Task<bool> ApplyDiscount(int userId, string cartIdentifier, string discountCode)
+        {
+            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                .GetByCondition(c => c.UserId == userId || c.CartIdentifier == cartIdentifier)
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync();
 
+            if (cart == null)
+                return false;
 
+            var discount = _discountService.ValidateDiscount(discountCode);
+
+            if (discount == null)
+                return false;
+
+            cart.DiscountId = discount.Id;
+            _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Update(cart);
+            await _unitOfWork.CompleteAsync();
+
+            return true;
+        }
+
+        public async Task<bool> RemoveDiscount(int userId, string cartIdentifier, string discountCode)
+        {
+            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                .GetByCondition(c => c.UserId == userId || c.CartIdentifier == cartIdentifier)
+                .FirstOrDefaultAsync();
+
+            if (cart == null)
+                return false;
+
+            var discount = cart.DiscountId;
+            if (discount == null)
+                return false;
+
+            cart.DiscountId = null;
+
+            _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Update(cart);
+            await _unitOfWork.CompleteAsync();
+
+            return true;
+        }
         public Task<bool> RemoveItem(int ProductId, int? userId, string cardIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();

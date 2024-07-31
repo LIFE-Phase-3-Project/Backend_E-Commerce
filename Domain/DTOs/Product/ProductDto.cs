@@ -13,6 +13,8 @@ public class ProductDto
     public string Color { get; set; }
     public List<string> Image { get; set; }
     public decimal Price { get; set; }
+    public decimal? DiscountPercentage { get; set; }
+    public DateTime? DiscountExpiryDate { get; set; }
     public int Ratings { get; set; }
     public int Stock { get; set; }
     public List<Entities.Review> Reviews { get; set; }

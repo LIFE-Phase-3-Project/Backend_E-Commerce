@@ -17,6 +17,10 @@ namespace Domain.Entities
         public DateTime PaymentDate { get; set; }
         public decimal OrderTotal { get; set; }
         public string OrderStatus { get; set; }
+        public string Name  { get; set; }
+        [ForeignKey("UserAddressId")]
+        public int UserAddressId { get; set; }
+        public UserAddress UserAddress { get; set; }
 
         public Payment Payment { get; set; }
     }

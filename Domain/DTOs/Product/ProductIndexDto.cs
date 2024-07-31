@@ -17,6 +17,8 @@ namespace Domain.DTOs.Product
 
         public string FirstImage { get; set; }
         public decimal Price { get; set; }
+        public decimal? DiscountPercentage { get; set; }
+        public DateTime? DiscountExpiryDate { get; set; }
 
         public int Stock { get; set; }
     }

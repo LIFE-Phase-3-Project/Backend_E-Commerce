@@ -30,47 +30,38 @@ namespace Application.Services.Order
         }
 
 
-        public async Task<bool> CreateOrder(int? userId, string cartIdentifier, OrderDto orderDto)
+        public async Task<bool> CreateOrder(int userId, OrderDto orderDto)
         {
-            Domain.Entities.ShoppingCart cart;
-            if (userId.HasValue)
-            {
-                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                    .GetByCondition(c => c.UserId == userId)
-                    .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.Product)
-                    .FirstOrDefaultAsync();
-            }
-            else
-            {
-                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                    .GetByCondition(c => c.CartIdentifier == cartIdentifier)
-                    .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.Product)
-                    .FirstOrDefaultAsync();
-            }
+            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                .GetByCondition(c => c.UserId == userId)
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .Include(c => c.Discount)
+                .FirstOrDefaultAsync();
 
             if (cart == null || !cart.CartItems.Any())
                 return false;
+
+            decimal orderTotal = cart.CartItems.Sum(item => item.Product.Price * item.Quantity);
+            if (cart.Discount != null && cart.Discount.ExpiryDate > DateTime.Now)
+            {
+                orderTotal *= (1 - cart.Discount.Percentage / 100);
+            }
 
             var order = new Domain.Entities.Order
             {
                 OrderDate = DateTime.Now,
                 ShippingDate = orderDto.ShippingDate,
                 PaymentDate = orderDto.PaymentDate,
-                OrderTotal = cart.TotalPrice,
+                OrderTotal = orderTotal,
                 OrderStatus = "Pending",
-                PhoneNumber = orderDto.PhoneNumber,
-                StreetAddress = orderDto.StreetAddress,
-                City = orderDto.City,
-                Country = orderDto.Country,
-                PostalCode = orderDto.PostalCode,
+                UserAddressId = orderDto.UserAddressId,
                 Name = orderDto.Name
             };
 
             _unitOfWork.Repository<Domain.Entities.Order>().Create(order);
             await _unitOfWork.CompleteAsync();
-
+             
             foreach (var cartItem in cart.CartItems)
             {
                 var product = await _unitOfWork.Repository<Domain.Entities.Product>()
@@ -85,9 +76,9 @@ namespace Application.Services.Order
                 {
                     OrderId = order.Id,
                     ProductId = cartItem.ProductId,
-                    UserId = userId ?? 0,
                     Count = cartItem.Quantity,
                     Price = cartItem.Product.Price
+
                 };
 
                 _unitOfWork.Repository<Domain.Entities.OrderDetail>().Create(orderDetail);
@@ -101,21 +92,14 @@ namespace Application.Services.Order
 
             await _unitOfWork.CompleteAsync();
 
-            await _shoppingCartService.ClearCart(userId, cartIdentifier);
+            await _shoppingCartService.ClearCart(userId, null);
 
-            if (userId.HasValue)
-            {
-                var user = await _unitOfWork.Repository<Domain.Entities.User>()
-                    .GetByIdAsync(userId.Value);
+            var user = await _unitOfWork.Repository<Domain.Entities.User>()
+                    .GetByIdAsync(userId);
+            var subject = "Order Confirmation";
+            var message = $"Dear {user.FirstName},\n\nThank you for your order! Your order ID is {order.Id}. We will notify you when your order status changes.\n\nBest regards,\nLIFE";
 
-                if (user != null)
-                {
-                    var subject = "Order Confirmation";
-                    var message = $"Dear {user.FirstName},\n\nThank you for your order! Your order ID is {order.Id}. We will notify you when your order status changes.\n\nBest regards,\nLIFE";
-
-                    await _emailService.SendEmailAsync(user.Email, subject, message);
-                }
-            }
+            await _emailService.SendEmailAsync(user.Email, subject, message);
 
             return true;
         }

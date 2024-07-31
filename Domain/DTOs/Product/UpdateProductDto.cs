@@ -21,6 +21,9 @@ namespace Domain.DTOs.Product
         public List<IFormFile> Image { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
+        public decimal? DiscountPercentage { get; set; }
+        public DateTime? DiscountExpiryDate { get; set; }
         public bool IsDeleted { get; set; }
+
     }
 }

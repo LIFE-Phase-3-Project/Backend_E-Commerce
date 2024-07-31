@@ -12,7 +12,6 @@ namespace Application.Services.UserRepository
     {
         Task AddUser(RegisterUserDto u);
         Task<IEnumerable<Domain.Entities.User>> GetUsers();
-
         Task<UserWithRoleDto> GetUserById(int id);
 
         Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roliId);

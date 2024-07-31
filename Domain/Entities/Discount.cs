@@ -13,10 +13,9 @@ namespace Domain.Entities
         public int? UserId { get; set; }
         public string Code { get; set; }
         public decimal Percentage { get; set; }
-        public DateTime CreatedAt   { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime CreatedAt   { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
         public  DateTime ExpiryDate { get; set; }
-        public Boolean Active { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
     }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.DTOs.Category;
+using Domain.DTOs.Discount;
 using Domain.DTOs.Order;
 using Domain.DTOs.Payment;
 using Domain.DTOs.Product;
@@ -23,6 +24,7 @@ namespace Domain.Helpers
             CreateMap<UpdateProductDto, ProductIndexDto>().ReverseMap();
             CreateMap<ProductIndexDto, ProductSearchDto>().ReverseMap();
 
+            CreateMap<Discount, CreateDiscountDto>().ReverseMap();
 
             CreateMap<Review, ReviewDto>()
                 .ForMember(dest => dest.UserOverview, opt => opt.MapFrom(src => src.User));

@@ -33,6 +33,10 @@ namespace Presistence
         public DbSet<OrderDetail> OrderDetails { get; set; }
 
         public DbSet<Payment> Payments { get; set; }
+
+        public DbSet<Discount> Discounts { get; set; }
+
+        public DbSet<UserAddress> UserAddresses { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureUser(modelBuilder);

@@ -17,13 +17,10 @@ public class Product
     public decimal Price { get; set; }
     public int Ratings { get; set; }
     public List<Review> Reviews { get; set; }
-    // se kam kuptu pse fronti ka kerku location per produkt
-    // public Location Location { get; set; }
     public int Stock { get; set; }
     public bool IsDeleted { get; set; }
-
-    public int DiscountId { get; set; }
-    public Discount Discount { get; set; }
+    public decimal? DiscountPercentage { get; set; } 
+    public DateTime? DiscountExpiryDate { get; set; } 
     public Category Category { get; set; } // Many to one - shumeProd to OneCat
     public SubCategory SubCategory { get; set; } // Many to one - shumeProd to OneSubcat
 }

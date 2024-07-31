@@ -12,7 +12,7 @@ namespace Application.Services.Order
     public interface IOrderService
     {
 
-         Task<bool> CreateOrder(int? userId, string cartIdentifier, OrderDto orderDto);
+         Task<bool> CreateOrder(int userId, OrderDto orderDto);
 
         Task<IEnumerable<OrderDto>> GetAllOrders(); 
 

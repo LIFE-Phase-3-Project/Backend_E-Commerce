@@ -28,6 +28,7 @@ using Application.Services.Search;
 using Elasticsearch.Net;
 using System;
 using Application.Services.ImageStorage;
+using Application.Services.Discount;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,6 +87,7 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IDiscountService, Application.Services.Discount.DiscountService>();
 
 
 

@@ -69,7 +69,7 @@ namespace Application.Services.Search
                 mustQueries.Add(new NumericRangeQuery
                 {
                     Field = "stock",
-                    LessThanOrEqualTo = filters.StockMin
+                    LessThanOrEqualTo =  filters.StockMax
                 });
             }
             if (filters.MinPrice.HasValue)
@@ -85,7 +85,7 @@ namespace Application.Services.Search
                 mustQueries.Add(new NumericRangeQuery
                 {
                     Field = "price",
-                    LessThanOrEqualTo = (double)filters.MaxPrice
+                    LessThanOrEqualTo = (double) filters.MaxPrice
                 });
             }
 

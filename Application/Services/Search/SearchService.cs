@@ -18,6 +18,19 @@ namespace Application.Services.Search
             var response = await _elasticsearchClient.IndexDocumentAsync(product);
             return response.IsValid;
         }
+        // method to remove a product from the index
+        public async Task<bool> DeleteProductFromIndexAsync(int productId)
+        {
+            var response = await _elasticsearchClient.DeleteByQueryAsync<ProductIndexDto>(q => q
+                .Query(q => q
+                    .Match(m => m
+                        .Field(f => f.Id)
+                        .Query(productId.ToString())
+                    )
+                )
+            );
+            return response.IsValid;
+        }
 
 
         public async Task<IEnumerable<ProductIndexDto>> SearchProductsAsYouType(string query)

@@ -7,6 +7,7 @@ namespace Application.Services.Search
         Task<bool> IndexProductAsync(ProductIndexDto product);
         Task<IEnumerable<ProductIndexDto>> SearchProductsAsYouType(string query);
         Task<PaginatedInfo<ProductIndexDto>> SearchProductsAsync(ProductFilterModel filters, int page, int pageSize);
+        Task<bool> DeleteProductFromIndexAsync(int productId);
     }
 }
     

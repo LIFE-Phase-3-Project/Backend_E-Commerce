@@ -182,6 +182,8 @@ public class ProductService : IProductService
 
         _unitOfWork.Repository<Domain.Entities.Product>().Delete(product);
         await _unitOfWork.CompleteAsync();
+        await _searchService.DeleteProductFromIndexAsync(product.Id);
+
         return true;
     }
     
@@ -204,5 +206,7 @@ public class ProductService : IProductService
             product.IsDeleted = true;
             _unitOfWork.Complete();
         }
+        // remove product from elastic search
+     await _searchService.DeleteProductFromIndexAsync(productId);
     }
 }

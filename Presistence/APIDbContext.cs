@@ -72,7 +72,7 @@ namespace Presistence
                 entity.HasOne(p => p.SubCategory)
                       .WithMany(c => c.Products)
                       .HasForeignKey(p => p.SubCategoryId)
-                      .OnDelete(DeleteBehavior.Restrict); // Specify delete behavior
+                      .OnDelete(DeleteBehavior.Restrict); 
             });
         }
 

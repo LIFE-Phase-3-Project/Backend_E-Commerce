@@ -1,0 +1,348 @@
+Index: Life-Ecommerce/Program.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using Application;\nusing Presistence;\nusing AutoMapper;\nusing Microsoft.EntityFrameworkCore;\nusing Microsoft.OpenApi.Models;\nusing Microsoft.AspNetCore.Authentication.JwtBearer;\nusing Microsoft.IdentityModel.Tokens;\nusing System.Text;\nusing Application.Services.Category;\nusing Application.Services.Product;\nusing Application.Services.Review;\nusing Application.Services.Subcategory;\nusing Application.Services.UserRepository;\nusing Domain.Entities;\nusing Life_Ecommerce.TokenService;\nusing Domain.Helpers;\nusing Application.Services.ShoppingCart;\nusing Application.Services.Wishlist;\nusing Application.Services.Order;\nusing Application.Repositories.OrderRepo;\nusing Application.Services.Payment;\n\nvar builder = WebApplication.CreateBuilder(args);\n\n// Add services to the container.\nbuilder.Services.AddDistributedMemoryCache(); // Add this line\nbuilder.Services.AddDataProtection(); // Add this line\nbuilder.Services.AddSession(options =>\n{\n    // Set a reasonable timeout for session\n    options.IdleTimeout = TimeSpan.FromDays(7);\n    options.Cookie.Name = \"LifeEcommerce.Session\";\n    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;\n    options.Cookie.HttpOnly = true;\n    // Make the session cookie essential\n    options.Cookie.IsEssential = true;\n});\n\nvar mapperConfiguration = new MapperConfiguration(\n                        mc => mc.AddProfile(new AutoMapperConfiguration()));\n\nIMapper mapper = mapperConfiguration.CreateMapper();\n\nbuilder.Services.AddSingleton(mapper);\n\nbuilder.Services.AddControllers();\n// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle\nbuilder.Services.AddEndpointsApiExplorer();\nbuilder.Services.AddSwaggerGen();\n\nbuilder.Services.AddDbContext<APIDbContext>(options =>\noptions.UseSqlServer(builder.Configuration.GetConnectionString(\"DevConnection\")));\n\nbuilder.Services.AddScoped<IOrderRepository, OrderRepository>();\n\nbuilder.Services.AddScoped<IUserService, UserService>();\nbuilder.Services.AddScoped<IUnitOfWork, UnitOfWork>();\nbuilder.Services.AddScoped<IProductService, ProductService>();\nbuilder.Services.AddScoped<IReviewService, ReviewService>();\nbuilder.Services.AddScoped<ICategoryService, CategoryService>();\nbuilder.Services.AddScoped<ISubCategoryService, SubCategoryService>();\nbuilder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();\nbuilder.Services.AddScoped<IWishlistService, WishlistService>();\nbuilder.Services.AddScoped<IOrderService, OrderService>();\nbuilder.Services.AddScoped<IPaymentService, PaymentService>();\n\n\nbuilder.Services.AddHttpContextAccessor();\n\nbuilder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(options =>\n    {\n        options.TokenValidationParameters = new TokenValidationParameters\n        {\n            ValidateIssuerSigningKey = true,\n            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(\"OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA\")),\n            ValidateIssuer = false,\n            ValidateAudience = false,\n            ClockSkew = TimeSpan.Zero\n        };\n    });\nbuilder.Services.AddSwaggerGen(options =>\n{\n    options.AddSecurityDefinition(\"Bearer\", new OpenApiSecurityScheme\n    {\n        In = ParameterLocation.Header,\n        Description = \"Authentication Token\",\n        Name = \"Authorization\",\n        Type = SecuritySchemeType.Http,\n        BearerFormat = \"JsonWebToken\",\n        Scheme = \"Bearer\"\n    });\n    options.AddSecurityRequirement(new OpenApiSecurityRequirement\n    {\n        {\n            new OpenApiSecurityScheme\n            {\n                Reference = new OpenApiReference\n                {\n                    Type=ReferenceType.SecurityScheme,\n                    Id=\"Bearer\"\n                }\n            },\n            new string[]{}\n        }\n    });\n});\n\nbuilder.Services.AddCors(options =>\n{\n    options.AddPolicy(\"CorsPolicy\", builder =>\n       builder\n           .AllowAnyMethod()\n           .AllowAnyHeader()\n           .AllowCredentials());\n});\n\nvar app = builder.Build();\n\n// Configure the HTTP request pipeline.\nif (app.Environment.IsDevelopment())\n{\n    app.UseSwagger();\n    app.UseSwaggerUI();\n}\n\napp.UseHttpsRedirection();\n\napp.UseAuthentication();\napp.UseAuthorization();\n\napp.UseMiddleware<AuthMiddleware>();\n\napp.UseMiddleware<AuthMiddleware>();\napp.UseSession();\napp.MapControllers();\n\napp.Run();\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Life-Ecommerce/Program.cs b/Life-Ecommerce/Program.cs
+--- a/Life-Ecommerce/Program.cs	(revision a55ab02d069a14a0bbc64628f0d7c688578f4c49)
++++ b/Life-Ecommerce/Program.cs	(date 1722438820943)
+@@ -1,58 +1,89 @@
+-using Application;
+-using Presistence;
+-using AutoMapper;
+-using Microsoft.EntityFrameworkCore;
++using Microsoft.AspNetCore.Builder;
++using Microsoft.Extensions.DependencyInjection;
+ using Microsoft.OpenApi.Models;
+ using Microsoft.AspNetCore.Authentication.JwtBearer;
+ using Microsoft.IdentityModel.Tokens;
+-using System.Text;
++using System;
++using Application;
++using Application.Repositories.OrderRepo;
+ using Application.Services.Category;
++using Application.Services.Order;
++using Application.Services.Payment;
+ using Application.Services.Product;
+ using Application.Services.Review;
++using Application.Services.ShoppingCart;
+ using Application.Services.Subcategory;
+ using Application.Services.UserRepository;
+-using Domain.Entities;
+-using Life_Ecommerce.TokenService;
+-using Domain.Helpers;
+-using Application.Services.ShoppingCart;
+ using Application.Services.Wishlist;
+-using Application.Services.Order;
+-using Application.Repositories.OrderRepo;
+-using Application.Services.Payment;
++using AutoMapper;
++using Domain.Helpers;
++using Life_Ecommerce.TokenService;
++using Microsoft.EntityFrameworkCore;
++using Presistence;
+ 
+ var builder = WebApplication.CreateBuilder(args);
+ 
+ // Add services to the container.
+-builder.Services.AddDistributedMemoryCache(); // Add this line
+-builder.Services.AddDataProtection(); // Add this line
++builder.Services.AddDistributedMemoryCache();
++builder.Services.AddDataProtection();
+ builder.Services.AddSession(options =>
+ {
+-    // Set a reasonable timeout for session
+     options.IdleTimeout = TimeSpan.FromDays(7);
+     options.Cookie.Name = "LifeEcommerce.Session";
+     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+     options.Cookie.HttpOnly = true;
+-    // Make the session cookie essential
+     options.Cookie.IsEssential = true;
+ });
+ 
+ var mapperConfiguration = new MapperConfiguration(
+-                        mc => mc.AddProfile(new AutoMapperConfiguration()));
+-
++                    mc => mc.AddProfile(new AutoMapperConfiguration()));
+ IMapper mapper = mapperConfiguration.CreateMapper();
+-
+ builder.Services.AddSingleton(mapper);
+ 
+ builder.Services.AddControllers();
+-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+ builder.Services.AddEndpointsApiExplorer();
+-builder.Services.AddSwaggerGen();
++builder.Services.AddSwaggerGen(c =>
++{
++    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Life Ecommerce API", Version = "v1" });
++
++    // Add security definitions
++    // c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
++    // {
++    //     Type = SecuritySchemeType.OAuth2,
++    //     Flows = new OpenApiOAuthFlows
++    //     {
++    //         ClientCredentials = new OpenApiOAuthFlow
++    //         {
++    //             TokenUrl = new Uri("https://localhost:5001/connect/token"), // Your IdentityServer URL
++    //             Scopes = new Dictionary<string, string>
++    //             {
++    //                 { "api1", "Access to API 1" }
++    //             }
++    //         }
++    //     }
++    // });
++    //
++    // // Add security requirement
++    // c.AddSecurityRequirement(new OpenApiSecurityRequirement
++    // {
++    //     {
++    //         new OpenApiSecurityScheme
++    //         {
++    //             Reference = new OpenApiReference
++    //             {
++    //                 Type = ReferenceType.SecurityScheme,
++    //                 Id = "oauth2"
++    //             }
++    //         },
++    //         new[] { "api1" }
++    //     }
++    // });
++});
+ 
+ builder.Services.AddDbContext<APIDbContext>(options =>
+ options.UseSqlServer(builder.Configuration.GetConnectionString("DevConnection")));
+ 
+ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+-
+ builder.Services.AddScoped<IUserService, UserService>();
+ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+ builder.Services.AddScoped<IProductService, ProductService>();
+@@ -64,45 +95,31 @@
+ builder.Services.AddScoped<IOrderService, OrderService>();
+ builder.Services.AddScoped<IPaymentService, PaymentService>();
+ 
+-
+ builder.Services.AddHttpContextAccessor();
+ 
+-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+-    .AddJwtBearer(options =>
+-    {
+-        options.TokenValidationParameters = new TokenValidationParameters
+-        {
+-            ValidateIssuerSigningKey = true,
+-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA")),
+-            ValidateIssuer = false,
+-            ValidateAudience = false,
+-            ClockSkew = TimeSpan.Zero
+-        };
+-    });
+-builder.Services.AddSwaggerGen(options =>
++builder.Services.AddIdentityServer()
++    .AddInMemoryIdentityResources(Config.IdentityResources)
++    .AddInMemoryApiScopes(Config.ApiScopes)
++    .AddInMemoryClients(Config.Clients)
++    .AddDeveloperSigningCredential(); // Not for production use
++
++// builder.Services.AddAuthentication("Bearer")
++//     .AddJwtBearer("Bearer", options =>
++//     {
++//         options.Authority = "https://localhost:5001";
++//
++//         options.TokenValidationParameters = new TokenValidationParameters
++//         {
++//             ValidateAudience = false
++//         };
++//     });
++
++builder.Services.AddAuthorization(options =>
+ {
+-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
++    options.AddPolicy("ApiScope", policy =>
+     {
+-        In = ParameterLocation.Header,
+-        Description = "Authentication Token",
+-        Name = "Authorization",
+-        Type = SecuritySchemeType.Http,
+-        BearerFormat = "JsonWebToken",
+-        Scheme = "Bearer"
+-    });
+-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+-    {
+-        {
+-            new OpenApiSecurityScheme
+-            {
+-                Reference = new OpenApiReference
+-                {
+-                    Type=ReferenceType.SecurityScheme,
+-                    Id="Bearer"
+-                }
+-            },
+-            new string[]{}
+-        }
++        policy.RequireAuthenticatedUser();
++        policy.RequireClaim("scope", "api1");
+     });
+ });
+ 
+@@ -121,17 +138,25 @@
+ if (app.Environment.IsDevelopment())
+ {
+     app.UseSwagger();
+-    app.UseSwaggerUI();
++    app.UseSwaggerUI(c =>
++    {
++        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Life Ecommerce API v1");
++
++        // // Add OAuth2 configuration
++        // c.OAuthClientId("client"); // Client ID you defined in IdentityServer
++        // c.OAuthClientSecret("secret"); // Client Secret you defined in IdentityServer
++        // c.OAuthAppName("Life Ecommerce API - Swagger");
++        // c.OAuthUsePkce(); // Use Proof Key for Code Exchange (PKCE)
++    });
+ }
+ 
+ app.UseHttpsRedirection();
+ 
++app.UseIdentityServer();
+ app.UseAuthentication();
+ app.UseAuthorization();
+ 
+-app.UseMiddleware<AuthMiddleware>();
+-
+-app.UseMiddleware<AuthMiddleware>();
++// app.UseMiddleware<AuthMiddleware>();
+ app.UseSession();
+ app.MapControllers();
+ 
+Index: Life-Ecommerce/Service.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><Project Sdk=\"Microsoft.NET.Sdk.Web\">\n\n  <PropertyGroup>\n    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>enable</ImplicitUsings>\n    <RootNamespace>Life_Ecommerce</RootNamespace>\n  </PropertyGroup>\n\n  <ItemGroup>\n    <PackageReference Include=\"AutoMapper\" Version=\"13.0.1\" />\n    <PackageReference Include=\"BCrypt.Net\" Version=\"0.1.0\" />\n    <PackageReference Include=\"Google.Cloud.Translation.V2\" Version=\"3.4.0\" />\n    <PackageReference Include=\"Microsoft.AspNetCore.Authentication.JwtBearer\" Version=\"8.0.7\" />\n    <PackageReference Include=\"Microsoft.EntityFrameworkCore\" Version=\"8.0.6\" />\n    <PackageReference Include=\"Microsoft.EntityFrameworkCore.SqlServer\" Version=\"8.0.6\" />\n    <PackageReference Include=\"Microsoft.EntityFrameworkCore.Tools\" Version=\"8.0.6\">\n      <PrivateAssets>all</PrivateAssets>\n      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>\n    </PackageReference>\n    <PackageReference Include=\"Swashbuckle.AspNetCore\" Version=\"6.4.0\" />\n    <PackageReference Include=\"System.IdentityModel.Tokens.Jwt\" Version=\"7.6.3\" />\n  </ItemGroup>\n\n  <ItemGroup>\n    <ProjectReference Include=\"..\\Application\\Application.csproj\" />\n    <ProjectReference Include=\"..\\Presistence\\Presistence.csproj\" />\n  </ItemGroup>\n\n</Project>\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Life-Ecommerce/Service.csproj b/Life-Ecommerce/Service.csproj
+--- a/Life-Ecommerce/Service.csproj	(revision a55ab02d069a14a0bbc64628f0d7c688578f4c49)
++++ b/Life-Ecommerce/Service.csproj	(date 1722438821064)
+@@ -11,6 +11,8 @@
+     <PackageReference Include="AutoMapper" Version="13.0.1" />
+     <PackageReference Include="BCrypt.Net" Version="0.1.0" />
+     <PackageReference Include="Google.Cloud.Translation.V2" Version="3.4.0" />
++    <PackageReference Include="IdentityServer4" Version="4.1.2" />
++    <PackageReference Include="IdentityServer4.AspNetIdentity" Version="4.1.2" />
+     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
+Index: Life-Ecommerce/Controllers/SecureController.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Life-Ecommerce/Controllers/SecureController.cs b/Life-Ecommerce/Controllers/SecureController.cs
+new file mode 100644
+--- /dev/null	(date 1722438821035)
++++ b/Life-Ecommerce/Controllers/SecureController.cs	(date 1722438821035)
+@@ -0,0 +1,14 @@
++using Microsoft.AspNetCore.Authorization;
++using Microsoft.AspNetCore.Mvc;
++
++[ApiController]
++[Route("api/[controller]")]
++public class SecureController : ControllerBase
++{
++    [HttpGet]
++    [Authorize]
++    public IActionResult Get()
++    {
++        return Ok(new { message = "This is a protected API endpoint." });
++    }
++}
+\ No newline at end of file
+Index: Life-Ecommerce/Client.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Life-Ecommerce/Client.cs b/Life-Ecommerce/Client.cs
+new file mode 100644
+--- /dev/null	(date 1722438821092)
++++ b/Life-Ecommerce/Client.cs	(date 1722438821092)
+@@ -0,0 +1,6 @@
++namespace Life_Ecommerce;
++
++public class Client
++{
++    
++}
+\ No newline at end of file
+Index: Life-Ecommerce/Config.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Life-Ecommerce/Config.cs b/Life-Ecommerce/Config.cs
+new file mode 100644
+--- /dev/null	(date 1722438821082)
++++ b/Life-Ecommerce/Config.cs	(date 1722438821082)
+@@ -0,0 +1,33 @@
++using IdentityServer4.Models;
++using System.Collections.Generic;
++
++public static class Config
++{
++    public static IEnumerable<IdentityResource> IdentityResources =>
++        new IdentityResource[]
++        {
++            new IdentityResources.OpenId(),
++            new IdentityResources.Profile(),
++        };
++
++    public static IEnumerable<ApiScope> ApiScopes =>
++        new ApiScope[]
++        {
++            new ApiScope("api1", "My API")
++        };
++
++    public static IEnumerable<Client> Clients =>
++        new Client[]
++        {
++            new Client
++            {
++                ClientId = "client",
++                AllowedGrantTypes = GrantTypes.ClientCredentials,
++                ClientSecrets =
++                {
++                    new Secret("secret".Sha256())
++                },
++                AllowedScopes = { "api1" }
++            }
++        };
++}
+\ No newline at end of file
+Index: Life-Ecommerce/Controllers/AIdentityController.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Life-Ecommerce/Controllers/AIdentityController.cs b/Life-Ecommerce/Controllers/AIdentityController.cs
+new file mode 100644
+--- /dev/null	(date 1722438821104)
++++ b/Life-Ecommerce/Controllers/AIdentityController.cs	(date 1722438821104)
+@@ -0,0 +1,13 @@
++using Microsoft.AspNetCore.Authorization;
++using Microsoft.AspNetCore.Mvc;
++
++[Route("identity")]
++[Authorize]
++public class AIdentityController : ControllerBase
++{
++    [HttpGet]
++    public IActionResult Get()
++    {
++        return new JsonResult(from c in User.Claims select new { c.Type, c.Value });
++    }
++}
+\ No newline at end of file

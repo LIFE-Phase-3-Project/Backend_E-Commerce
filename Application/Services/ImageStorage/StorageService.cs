@@ -54,13 +54,12 @@ namespace Application.Services.ImageStorage
             }
             catch (Google.GoogleApiException ex) when (ex.Error.Code == 404)
             {
-                // Log the exception (you can use a logging framework)
+  
                 Console.WriteLine($"File not found: {fileName}");
                 return false;
             }
             catch (Exception ex)
             {
-                // Log the exception (you can use a logging framework)
                 Console.WriteLine($"Error deleting file: {ex.Message}");
                 throw new ApplicationException("An error occurred while deleting the file.", ex);
             }

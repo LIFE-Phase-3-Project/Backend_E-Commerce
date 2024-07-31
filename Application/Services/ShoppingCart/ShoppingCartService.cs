@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Domain.DTOs.ShoppingCart;
+using Google.Apis.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services.ShoppingCart
 {
@@ -16,6 +18,7 @@ namespace Application.Services.ShoppingCart
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        // private readonly ILogger<ShoppingCartService> _logger;
         public ShoppingCartService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;

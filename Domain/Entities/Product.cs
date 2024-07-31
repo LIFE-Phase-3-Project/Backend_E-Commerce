@@ -21,8 +21,9 @@ public class Product
     // public Location Location { get; set; }
     public int Stock { get; set; }
     public bool IsDeleted { get; set; }
+
+    public int DiscountId { get; set; }
+    public Discount Discount { get; set; }
     public Category Category { get; set; } // Many to one - shumeProd to OneCat
     public SubCategory SubCategory { get; set; } // Many to one - shumeProd to OneSubcat
-
-
 }

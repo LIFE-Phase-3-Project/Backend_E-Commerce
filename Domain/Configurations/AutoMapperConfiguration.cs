@@ -16,10 +16,12 @@ namespace Domain.Helpers
             CreateMap<Product, CreateProductDto>().ReverseMap();
             CreateMap<Product, ProductDto>().ReverseMap();
             CreateMap<Review, CreateReviewDto>().ReverseMap();
-            CreateMap<ProductDto, ProductIndexDto>().ReverseMap();
-            CreateMap<Product, ProductIndexDto>().ReverseMap();
+            CreateMap<Product, ProductIndexDto>()
+    .ForMember(dest => dest.FirstImage, opt => opt.MapFrom(src => src.Image != null && src.Image.Any() ? src.Image.First() : null)).ReverseMap();
+            ;
             CreateMap<Product, UpdateProductDto>().ReverseMap();
             CreateMap<UpdateProductDto, ProductIndexDto>().ReverseMap();
+            CreateMap<ProductIndexDto, ProductSearchDto>().ReverseMap();
 
 
             CreateMap<Review, ReviewDto>()

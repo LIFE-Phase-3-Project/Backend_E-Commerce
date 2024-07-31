@@ -7,6 +7,8 @@ using System.Linq.Expressions;
 using Nest;
 using Domain.DTOs.Pagination;
 using Application.Services.ImageStorage;
+using Google.Apis.Storage.v1.Data;
+using System.Drawing.Printing;
 
 
 namespace Application.Services.Product;
@@ -40,21 +42,25 @@ public class ProductService : IProductService
             return false;
         }
     }
+    public async Task<IEnumerable<ProductSearchDto>> SearchAsYouTypeAsync(string query)
+    {
+        var searchResults = await _searchService.SearchProductsAsYouType(query);
 
-    public async Task<PaginatedInfo<ProductDto>> GetPaginatedProductsAsync(
+        var productSearchDtos = _mapper.Map<IEnumerable<ProductSearchDto>>(searchResults);
+
+        return productSearchDtos;
+    }
+    public async Task<PaginatedInfo<ProductIndexDto>> GetPaginatedProductsAsync(
     ProductFilterModel filters,
     int page, int pageSize)
     {
-        // Call the search service to get the products based on the search term
+
         var searchResults = await _searchService.SearchProductsAsync(filters, page, pageSize);
 
-        // Map the search results to ProductDto
-        var productDtos = _mapper.Map<IEnumerable<ProductDto>>(searchResults.Items);
 
-        // Return the paginated info
-        return new PaginatedInfo<ProductDto>
+        return new PaginatedInfo<ProductIndexDto>
         {
-            Items = productDtos.ToList(),
+            Items = searchResults.Items.ToList(),
             Page = page,
             PageSize = pageSize,
             TotalCount = searchResults.TotalCount
@@ -83,15 +89,6 @@ public class ProductService : IProductService
             PageSize = pageSize,
             TotalCount = totalCount
         };
-    }
-    public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
-    {
-        var products = await _unitOfWork.Repository<Domain.Entities.Product>().GetAll()
-            .Include(p => p.Reviews)
-            .Include(p => p.Category)
-            .ToListAsync();
-
-        return _mapper.Map<IEnumerable<ProductDto>>(products);
     }
 
     public async Task<ProductDto> GetProductByIdAsync(int id)

@@ -15,6 +15,7 @@ namespace Domain.DTOs.Product
         public int SubCategoryId { get; set; }
         public string Color { get; set; }
 
+        public string FirstImage { get; set; }
         public decimal Price { get; set; }
 
         public int Stock { get; set; }

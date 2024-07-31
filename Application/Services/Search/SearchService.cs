@@ -15,10 +15,28 @@ namespace Application.Services.Search
 
         public async Task<bool> IndexProductAsync(ProductIndexDto product)
         {
-
-            // index product to my default index
             var response = await _elasticsearchClient.IndexDocumentAsync(product);
             return response.IsValid;
+        }
+
+
+        public async Task<IEnumerable<ProductIndexDto>> SearchProductsAsYouType(string query)
+        {
+            var searchResponse = await _elasticsearchClient.SearchAsync<ProductIndexDto>(s => s
+                 .Size(10) 
+                 .Query(q => q
+                     .MatchPhrasePrefix(m => m
+                         .Field(f => f.Title)
+                         .Query(query.ToLower())
+                     ) || q
+                     .MatchPhrasePrefix(m => m
+                         .Field(f => f.Description)
+                         .Query(query.ToLower())
+                     )
+                 )
+            );
+
+            return searchResponse.Documents;
         }
         public async Task<PaginatedInfo<ProductIndexDto>> SearchProductsAsync(ProductFilterModel filters, int page, int pageSize)
         {
@@ -136,9 +154,8 @@ namespace Application.Services.Search
                 Page = page,
                 PageSize = pageSize
             };
-
             return paginatedInfo;
-
         }
+
     }
 }

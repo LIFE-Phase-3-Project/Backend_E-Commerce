@@ -1,5 +1,6 @@
 using Application.Services.ImageStorage;
 using Application.Services.Product;
+using AutoMapper;
 using Domain.DTOs.Product;
 using Domain.Entities;
 using Domain.Helpers;
@@ -36,11 +37,17 @@ public class ProductController : ControllerBase
         var result = await _productService.TestElasticsearchConnectionAsync();
         return Ok(result);
     }
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAllProducts()
+
+    [HttpGet("search-as-you-go")]
+    public async Task<IEnumerable<ProductSearchDto>> SearchAsYouType(string query)
     {
-        var products = await _productService.GetAllProductsAsync();
-        return Ok(products);
+        if (string.IsNullOrEmpty(query))
+        {
+            return [];
+        }
+        var result = await _productService.SearchAsYouTypeAsync(query);
+
+        return result;
     }
 
 

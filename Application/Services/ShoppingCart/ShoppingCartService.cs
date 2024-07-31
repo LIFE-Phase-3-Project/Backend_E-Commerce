@@ -183,6 +183,7 @@ namespace Application.Services.ShoppingCart
                     .GetByCondition(c => c.UserId == userId)
                     .Include(c => c.CartItems)
                     .ThenInclude(ci => ci.Product)
+                    .Include(c => c.Discount)
                     .FirstOrDefaultAsync();
             }
             else if (cardIdentifier != null) {
@@ -190,10 +191,19 @@ namespace Application.Services.ShoppingCart
                     .GetByCondition(c => c.CartIdentifier == cardIdentifier)
                     .Include(c => c.CartItems)
                     .ThenInclude(ci => ci.Product)
+                    .Include(c => c.Discount)
                     .FirstOrDefaultAsync();
             } else
             {
-                return null;
+                return new ShoppingCartDto
+                {
+                    CartIdentifier = string.Empty,
+                    DateCreated = DateTime.MinValue,
+                    DateModified = DateTime.MinValue,
+                    Items = new List<ShoppingCartItemDto>(),
+                    DiscountId = null,
+                    ShoppingDiscount = null
+                };
             }
             if (cart == null) return null;
 
@@ -210,24 +220,39 @@ namespace Application.Services.ShoppingCart
                 CartIdentifier = cart.CartIdentifier,
                 DateCreated = cart.DateCreated,
                 DateModified = cart.DateModified,
-                Items = cartItemsDto
+                Items = cartItemsDto,
+                DiscountId = cart.DiscountId,
+                ShoppingDiscount = cart.Discount
             };
 
             return cartDto;
         }
 
-        public async Task<bool> ApplyDiscount(int userId, string cartIdentifier, string discountCode)
+        public async Task<bool> ApplyDiscount(int? userId, string? cartIdentifier, string discountCode)
         {
-            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                .GetByCondition(c => c.UserId == userId || c.CartIdentifier == cartIdentifier)
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Product)
-                .FirstOrDefaultAsync();
+            Domain.Entities.ShoppingCart? cart = new Domain.Entities.ShoppingCart();
+            if (userId != null)
+            {
+                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                    .GetByCondition(c => c.UserId == userId)
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                    .FirstOrDefaultAsync();
+            }
+            else if (cartIdentifier != null)
+            {
+                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                    .GetByCondition(c => c.CartIdentifier == cartIdentifier)
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                    .FirstOrDefaultAsync();
+            }
+
 
             if (cart == null)
                 return false;
 
-            var discount = _discountService.ValidateDiscount(discountCode);
+            var discount = await _discountService.ValidateDiscount(discountCode);
 
             if (discount == null)
                 return false;
@@ -239,14 +264,30 @@ namespace Application.Services.ShoppingCart
             return true;
         }
 
-        public async Task<bool> RemoveDiscount(int userId, string cartIdentifier, string discountCode)
+        public async Task<bool> RemoveDiscount(int? userId, string? cartIdentifier, string discountCode)
         {
-            var cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                .GetByCondition(c => c.UserId == userId || c.CartIdentifier == cartIdentifier)
-                .FirstOrDefaultAsync();
+            Domain.Entities.ShoppingCart? cart = new Domain.Entities.ShoppingCart();
+            if (userId != null)
+            {
+                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                   .GetByCondition(c => c.UserId == userId)
+                   .Include(c => c.CartItems)
+                   .ThenInclude(ci => ci.Product)
+                   .FirstOrDefaultAsync();
+            }
+            else if (cartIdentifier != null)
+            {
+                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                   .GetByCondition(c => c.CartIdentifier == cartIdentifier)
+                   .Include(c => c.CartItems)
+                   .ThenInclude(ci => ci.Product)
+                   .FirstOrDefaultAsync();
+            }
+
 
             if (cart == null)
                 return false;
+
 
             var discount = cart.DiscountId;
             if (discount == null)

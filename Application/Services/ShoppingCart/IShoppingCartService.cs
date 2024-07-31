@@ -18,5 +18,8 @@ namespace Application.Services.ShoppingCart
         Task ClearCart(int? userId, string cartIdentifier);
         Task MergeGuestCart(string cartIdentifier, int userId);
 
+        Task<bool> ApplyDiscount(int? userId, string? cartIdentifier, string discountCode);
+        Task<bool> RemoveDiscount(int? userId, string? cartIdentifier, string discountCode);
+
     }
 }

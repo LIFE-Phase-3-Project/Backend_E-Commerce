@@ -7,8 +7,7 @@ using System.Linq.Expressions;
 using Nest;
 using Domain.DTOs.Pagination;
 using Application.Services.ImageStorage;
-using Google.Apis.Storage.v1.Data;
-using System.Drawing.Printing;
+
 
 
 namespace Application.Services.Product;
@@ -32,7 +31,7 @@ public class ProductService : IProductService
     public async Task<bool> TestElasticsearchConnectionAsync()
     {
         var response = await _elasticClient.Cluster.HealthAsync();
-        var indexExists = await _elasticClient.Indices.ExistsAsync("products");
+        var indexExists = await _elasticClient.Indices.ExistsAsync("products_v2");
         if (response.IsValid && indexExists.Exists)
         {
             return true;

@@ -4,11 +4,10 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
 
-namespace Domain.Configurations
+namespace Configurations
 {
-    public static class StartupHelper
+    public static class Logging
     {
-
         public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration configuration)
         {
             var elasticSearchUri = configuration["ElasticSearch:Uri"];
@@ -40,5 +39,5 @@ namespace Domain.Configurations
             return services;
         }
     }
-}
 
+}

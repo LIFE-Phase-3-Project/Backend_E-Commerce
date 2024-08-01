@@ -8,7 +8,7 @@ using Domain.DTOs.Review;
 using Domain.DTOs.SubCategory;
 using Domain.DTOs.User;
 using Domain.Entities;
-namespace Domain.Helpers
+namespace Application.Mapping
 {
     public class AutoMapperConfiguration : Profile
     {

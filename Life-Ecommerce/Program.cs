@@ -112,34 +112,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = $"https://{builder.Configuration["Auth0:Domain"]}/",
             ValidAudience = builder.Configuration["Auth0:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Auth0:ClientSecret"])),
-            RoleClaimType = $"{builder.Configuration["Auth0:Namespace"]}roles"
+            // RoleClaimType = $"{builder.Configuration["Auth0:Namespace"]}roles"
         };
-        options.Events = new JwtBearerEvents
-        {
-            OnTokenValidated = async context =>
-            {
-                context.HttpContext.User = context.Principal ?? new ClaimsPrincipal();
-                var auth0UserId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                var roles = context.Principal?.FindFirst("https://ecommerce-life-2.com/roles")?.Value;
-            }
-        };
+        // options.Events = new JwtBearerEvents
+        // {
+        //     OnTokenValidated = async context =>
+        //     {
+        //         context.HttpContext.User = context.Principal ?? new ClaimsPrincipal();
+        //         var auth0UserId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //         var roles = context.Principal?.FindFirst("https://ecommerce-life-2.com/roles")?.Value;
+        //     }
+        // };
     });
 
 // Custom authorization policy that allows both schemes
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("DualSchemePolicy", policy =>
-    {
-        policy.AddAuthenticationSchemes("GjirafaScheme", JwtBearerDefaults.AuthenticationScheme);
-        // policy.RequireAuthenticatedUser();
-    });
-
-    // Existing policy
-    options.AddPolicy("Organizer", policy =>
-    {
-        policy.RequireRole("Organizer");
-    });
-});
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy("DualSchemePolicy", policy =>
+//     {
+//         policy.AddAuthenticationSchemes("GjirafaScheme", JwtBearerDefaults.AuthenticationScheme);
+//         // policy.RequireAuthenticatedUser();
+//         policy.RequireRole("1");
+//     });
+//
+//     // Existing policy
+//     // options.AddPolicy("Organizer", policy =>
+//     // {
+//     //     policy.RequireRole("Organizer");
+//     // });
+// });
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -230,7 +231,7 @@ app.UseCors("CorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseMiddleware<AuthMiddleware>();
+// app.UseMiddleware<AuthMiddleware>();
 
 app.UseSession();
 app.MapControllers();

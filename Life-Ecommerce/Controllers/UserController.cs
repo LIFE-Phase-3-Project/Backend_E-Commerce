@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Application.Services.ShoppingCart;
 using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -40,16 +41,21 @@ namespace Life_Ecommerce.Controllers
 
         [HttpGet]
         [Route("GetUsers")]
+        [Authorize(Roles="SuperAdmin")]
        
         public async Task<IActionResult> Get()
         {
-            var userRole = HttpContext.Items["UserRole"] as string;
-            if (userRole == "SuperAdmin")
-            {
-                var users = await _userService.GetUsers();
-                return Ok(users);
-            }
-            return Unauthorized("You are not authorized to view this content");
+            // var userRole = HttpContext.Items["role"] as string;
+            // if (userRole == "SuperAdmin")
+            // {
+            //     var users = await _userService.GetUsers();
+            //     return Ok(users);
+            // }
+            // return Unauthorized("You are not authorized to view this content");
+            
+            var users = await _userService.GetUsers();
+            return Ok(users);
+
 
         }
 

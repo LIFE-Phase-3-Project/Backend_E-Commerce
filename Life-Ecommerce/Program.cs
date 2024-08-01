@@ -18,15 +18,11 @@ using Application.Services.Order;
 using Application.Repositories.OrderRepo;
 using Application.Services.Payment;
 using Application.Services.User;
-using Stripe;
 using Application.Services.Email;
-
 using Nest;
 using Domain.Helpers;
 using Application.Services.Search;
-
-using Elasticsearch.Net;
-using System;
+using System.Security.Claims;
 using Application.Services.ImageStorage;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +31,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataProtection();
 builder.Services.AddDistributedMemoryCache();
 
-// elastic Search
+// Elastic Search
 var uri = new Uri(builder.Configuration["ElasticSearch:Uri"]);
 var password = builder.Configuration["ElasticSearch:Password"];
 var settings = new ConnectionSettings(uri)
@@ -47,12 +43,10 @@ var elasticClient = new ElasticClient(settings);
 builder.Services.AddSingleton<IElasticClient>(elasticClient);
 builder.Services.AddSession(options =>
 {
-    // Set a reasonable timeout for session
     options.IdleTimeout = TimeSpan.FromDays(7);
     options.Cookie.Name = "LifeEcommerce.Session";
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.HttpOnly = true;
-    // Make the session cookie essential
     options.Cookie.IsEssential = true;
 });
 
@@ -64,7 +58,6 @@ IMapper mapper = mapperConfiguration.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -87,12 +80,11 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 
-
-
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+// GjirafaScheme authentication setup
+builder.Services.AddAuthentication("GjirafaScheme")
+    .AddJwtBearer("GjirafaScheme", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -103,9 +95,77 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
     });
-builder.Services.AddSwaggerGen(options =>
+
+// Auth0Scheme authentication setup
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.Authority = $"https://{builder.Configuration["Auth0:Domain"]}";
+        options.RequireHttpsMetadata = false;
+        options.Audience = builder.Configuration["Auth0:Audience"];
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = $"https://{builder.Configuration["Auth0:Domain"]}/",
+            ValidAudience = builder.Configuration["Auth0:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Auth0:ClientSecret"])),
+            RoleClaimType = $"{builder.Configuration["Auth0:Namespace"]}roles"
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                context.HttpContext.User = context.Principal ?? new ClaimsPrincipal();
+                var auth0UserId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var roles = context.Principal?.FindFirst("https://ecommerce-life-2.com/roles")?.Value;
+            }
+        };
+    });
+
+// Custom authorization policy that allows both schemes
+builder.Services.AddAuthorization(options =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.AddPolicy("DualSchemePolicy", policy =>
+    {
+        policy.AddAuthenticationSchemes("GjirafaScheme", JwtBearerDefaults.AuthenticationScheme);
+        // policy.RequireAuthenticatedUser();
+    });
+
+    // Existing policy
+    options.AddPolicy("Organizer", policy =>
+    {
+        policy.RequireRole("Organizer");
+    });
+});
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "LifeEcommerce", Version = "v1" });
+
+    // OAuth2 Security Definition
+    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        BearerFormat = "JWT",
+        Flows = new OpenApiOAuthFlows
+        {
+            Implicit  = new OpenApiOAuthFlow
+            {
+                TokenUrl = new Uri($"https://{builder.Configuration["Auth0:Domain"]}/oauth/token"),
+                AuthorizationUrl = new Uri($"https://{builder.Configuration["Auth0:Domain"]}/authorize?audience={builder.Configuration["Auth0:Audience"]}"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { "openid", "OpenId" },
+                }
+            }
+        }
+    });
+
+    // Bearer Token Security Definition
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
         Description = "Authentication Token",
@@ -114,7 +174,21 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JsonWebToken",
         Scheme = "Bearer"
     });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+
+    // Security Requirements (OAuth2)
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+            },
+            new[] { "openid" }
+        }
+    });
+
+    // Security Requirements (Bearer)
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
@@ -133,7 +207,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
-    {  
+    {
         builder
            .AllowAnyMethod()
            .AllowAnyHeader()
@@ -144,7 +218,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -159,7 +232,6 @@ app.UseAuthorization();
 
 app.UseMiddleware<AuthMiddleware>();
 
-app.UseMiddleware<AuthMiddleware>();
 app.UseSession();
 app.MapControllers();
 

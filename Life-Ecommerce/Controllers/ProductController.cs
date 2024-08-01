@@ -14,9 +14,11 @@ public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
     private readonly IStorageService _storageService;
-    public ProductController(IProductService productService, IStorageService storageService)
+    private readonly ILogger<ProductController> _logger;
+    public ProductController(IProductService productService, IStorageService storageService, ILogger<ProductController> logger)
     {
         _productService = productService;
+        _logger = logger;
     }
 
     [HttpGet("search")]

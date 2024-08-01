@@ -18,19 +18,22 @@ using Application.Services.Order;
 using Application.Repositories.OrderRepo;
 using Application.Services.Payment;
 using Application.Services.User;
-using Stripe;
 using Application.Services.Email;
-
 using Nest;
 using Domain.Helpers;
 using Application.Services.Search;
-
-using Elasticsearch.Net;
-using System;
 using Application.Services.ImageStorage;
 using Application.Services.Discount;
+using Domain.Configurations;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+// Add Serilog as the logging provider
+builder.Services.AddLogging(builder.Configuration);
+
 
 // Add services to the container.
 builder.Services.AddDataProtection();
@@ -155,13 +158,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseMiddleware<AuthMiddleware>();
 
-app.UseMiddleware<AuthMiddleware>();
 app.UseSession();
 app.MapControllers();
 

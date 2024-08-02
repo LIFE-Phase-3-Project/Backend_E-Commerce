@@ -28,13 +28,16 @@ using Application.Services.Search;
 using Elasticsearch.Net;
 using System;
 using Application.Services.ImageStorage;
+using Life_Ecommerce.Hubs;
+using Application.Repositories.ChatRepo;
+using Application.Services.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDataProtection();
 builder.Services.AddDistributedMemoryCache();
-
+builder.Services.AddSignalR();
 // elastic Search
 var uri = new Uri(builder.Configuration["ElasticSearch:Uri"]);
 var password = builder.Configuration["ElasticSearch:Password"];
@@ -86,7 +89,8 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
-
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 
 builder.Services.AddHttpContextAccessor();
@@ -133,12 +137,12 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
-    {  
+    {
         builder
            .AllowAnyMethod()
            .AllowAnyHeader()
            .AllowCredentials()
-           .WithOrigins("http://localhost:3000");
+            .WithOrigins("http://localhost:8080");
     });
 });
 
@@ -162,5 +166,6 @@ app.UseMiddleware<AuthMiddleware>();
 app.UseMiddleware<AuthMiddleware>();
 app.UseSession();
 app.MapControllers();
+app.MapHub<ChatHub>("/chat");
 
 app.Run();

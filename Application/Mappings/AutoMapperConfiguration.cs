@@ -9,7 +9,7 @@ using Domain.DTOs.SubCategory;
 using Domain.DTOs.User;
 using Domain.DTOs.UserAddress;
 using Domain.Entities;
-namespace Domain.Helpers
+namespace Application.Mapping
 {
     public class AutoMapperConfiguration : Profile
     {

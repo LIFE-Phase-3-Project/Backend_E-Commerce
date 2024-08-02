@@ -9,7 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Configurations
+namespace Configurations
 {
     public class ExceptionHandlingMiddleware
     {

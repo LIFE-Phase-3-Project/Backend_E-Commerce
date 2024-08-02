@@ -15,7 +15,7 @@ public class Product
     public string Color { get; set; }
     public List<string> Image { get; set; }
     public decimal Price { get; set; }
-    public int Ratings { get; set; }
+    public int Ratings { get; set; } = 0;
     public List<Review> Reviews { get; set; }
     public int Stock { get; set; }
     public bool IsDeleted { get; set; }

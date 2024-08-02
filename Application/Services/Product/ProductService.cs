@@ -31,7 +31,7 @@ public class ProductService : IProductService
     public async Task<bool> TestElasticsearchConnectionAsync()
     {
         var response = await _elasticClient.Cluster.HealthAsync();
-        var indexExists = await _elasticClient.Indices.ExistsAsync("products_v2");
+        var indexExists = await _elasticClient.Indices.ExistsAsync("eblin_products");
         if (response.IsValid && indexExists.Exists)
         {
             return true;

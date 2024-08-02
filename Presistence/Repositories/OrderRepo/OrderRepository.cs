@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Repositories.OrderRepo
+namespace Presistence.Repositories.OrderRepo
 {
     public class OrderRepository : IOrderRepository
     {

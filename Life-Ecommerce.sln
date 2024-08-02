@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "Life-Ecommerce\Service.csproj", "{7FFB1BEE-7B6D-41F3-B3B5-6C65D1B5E8D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service", "Life-Ecommerce\Service.csproj", "{7FFB1BEE-7B6D-41F3-B3B5-6C65D1B5E8D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{9896F872-5547-4E79-A991-B0B61FBC8165}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{9896F872-5547-4E79-A991-B0B61FBC8165}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{555ADCBB-E912-4735-94B0-88D6218E2C87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{555ADCBB-E912-4735-94B0-88D6218E2C87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presistence", "Presistence\Presistence.csproj", "{D38B27A8-D153-4257-81AB-1E17D4801123}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presistence", "Presistence\Presistence.csproj", "{D38B27A8-D153-4257-81AB-1E17D4801123}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackgroundJobs", "BackgroundJobs\BackgroundJobs.csproj", "{0AA61713-678B-4121-9054-8119445F9A49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{D38B27A8-D153-4257-81AB-1E17D4801123}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D38B27A8-D153-4257-81AB-1E17D4801123}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D38B27A8-D153-4257-81AB-1E17D4801123}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AA61713-678B-4121-9054-8119445F9A49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AA61713-678B-4121-9054-8119445F9A49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AA61713-678B-4121-9054-8119445F9A49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AA61713-678B-4121-9054-8119445F9A49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -14,8 +14,8 @@ namespace Application.Services.UserRepository
         Task<IEnumerable<Domain.Entities.User>> GetUsers();
         Task<Domain.Entities.User> GetUserById(int id);
         Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roliId);
-        Task<Domain.Entities.User> UpdateUser(Domain.Entities.User objUser);
-        Task<bool> DeleteUser(int id);
+        Task<Domain.Entities.User> UpdateUser(string token, Domain.Entities.User objUser);
+        Task<bool> DeleteUser(string token);
         string GetUserRole(int roleId);
         Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);
         Domain.Entities.User AuthenticateUser(string email, string password);

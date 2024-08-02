@@ -40,7 +40,9 @@ namespace Life_Ecommerce.Controllers
         [Route("UpdateUser")]
         public async Task<IActionResult> Put(User user)
         {
-            await _userService.UpdateUser(user);
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            await _userService.UpdateUser(token, user);
             return Ok("Updated Successfully");
         }
 
@@ -68,9 +70,11 @@ namespace Life_Ecommerce.Controllers
 
         [HttpDelete]
         [Route("DeleteUser")] 
-        public JsonResult Delete(int id)
+        public JsonResult Delete()
         {
-            _userService.DeleteUser(id);
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            _userService.DeleteUser(token);
             return new JsonResult("Deleted Successfully");
         }
 

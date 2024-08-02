@@ -1,4 +1,5 @@
-﻿using Application.Repositories.OrderRepo;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Application.Repositories.OrderRepo;
 using Application.Services.Email;
 using Application.Services.ShoppingCart;
 using AutoMapper;
@@ -30,8 +31,13 @@ namespace Application.Services.Order
         }
 
 
-        public async Task<bool> CreateOrder(int userId, OrderDto orderDto)
+        public async Task<bool> CreateOrder(string token, OrderDto orderDto)
         {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userId =int.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value);
+            
             var cart = await _shoppingCartService.GetCartContents(userId, null);
             if (cart == null || !cart.Items.Any())
                 return false;

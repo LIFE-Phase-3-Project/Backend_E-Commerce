@@ -16,12 +16,11 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateOrder(int userId, OrderDto orderDto)
+        public async Task<IActionResult> CreateOrder(OrderDto orderDto)
         {
-            //if (orderDto == null)
-            //    return BadRequest("Order data is required.");
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
-            var result = await _orderService.CreateOrder(userId, orderDto);
+            var result = await _orderService.CreateOrder(token, orderDto);
 
 
             if (result)

@@ -18,6 +18,19 @@ namespace Application.Services.Search
             var response = await _elasticsearchClient.IndexDocumentAsync(product);
             return response.IsValid;
         }
+        // method to remove a product from the index
+        public async Task<bool> DeleteProductFromIndexAsync(int productId)
+        {
+            var response = await _elasticsearchClient.DeleteByQueryAsync<ProductIndexDto>(q => q
+                .Query(q => q
+                    .Match(m => m
+                        .Field(f => f.Id)
+                        .Query(productId.ToString())
+                    )
+                )
+            );
+            return response.IsValid;
+        }
 
 
         public async Task<IEnumerable<ProductIndexDto>> SearchProductsAsYouType(string query)
@@ -45,15 +58,23 @@ namespace Application.Services.Search
             if (!string.IsNullOrEmpty(filters.SearchTerm))
             {
                 var lowercaseTerm = filters.SearchTerm.ToLower();
-               mustQueries.Add(new QueryContainer(new WildcardQuery
-               {
-                   Field = "title",
-                   Value = $"*{lowercaseTerm}*"
-               }) || new QueryContainer(new WildcardQuery
-               {
-                   Field = "description",
-                   Value = $"*{lowercaseTerm}*"
-               }));
+                mustQueries.Add(new QueryContainer(new MatchQuery
+                {
+                    Field = "title",
+                    Query = lowercaseTerm
+                }) || new QueryContainer(new MatchQuery
+                {
+                    Field = "description",
+                    Query = lowercaseTerm
+                }) || new QueryContainer(new WildcardQuery
+                {
+                    Field = "title",
+                    Value = $"*{lowercaseTerm}*"
+                }) || new QueryContainer(new WildcardQuery
+                {
+                    Field = "description",
+                    Value = $"*{lowercaseTerm}*"
+                }));
 
             }
             if (filters.StockMin.HasValue)
@@ -69,7 +90,7 @@ namespace Application.Services.Search
                 mustQueries.Add(new NumericRangeQuery
                 {
                     Field = "stock",
-                    LessThanOrEqualTo = filters.StockMin
+                    LessThanOrEqualTo =  filters.StockMax
                 });
             }
             if (filters.MinPrice.HasValue)
@@ -85,7 +106,7 @@ namespace Application.Services.Search
                 mustQueries.Add(new NumericRangeQuery
                 {
                     Field = "price",
-                    LessThanOrEqualTo = (double)filters.MaxPrice
+                    LessThanOrEqualTo = (double) filters.MaxPrice
                 });
             }
 

@@ -1,0 +1,18 @@
+﻿using Domain.DTOs.Discount;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Services.Discount
+{
+    public interface IDiscountService
+    {
+        Task<IEnumerable<Domain.Entities.Discount>> GetDiscountsByUserId(int userId);
+
+        Task<Domain.Entities.Discount> ValidateDiscount(string code);
+        Task CreateDiscount(CreateDiscountDto discount);
+        Task UpdateDiscount(CreateDiscountDto discount);
+    }
+}

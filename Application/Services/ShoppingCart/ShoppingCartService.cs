@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Domain.DTOs.ShoppingCart;
+using Google.Apis.Logging;
+using Microsoft.Extensions.Logging;
+using Application.Services.Discount;
 
 namespace Application.Services.ShoppingCart
 {
@@ -16,10 +19,13 @@ namespace Application.Services.ShoppingCart
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public ShoppingCartService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IDiscountService _discountService;
+        // private readonly ILogger<ShoppingCartService> _logger;
+        public ShoppingCartService(IUnitOfWork unitOfWork, IMapper mapper, IDiscountService discountService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _discountService = discountService;
         }
 
         public async Task MergeGuestCart(string cartIdentifier, int userId)
@@ -177,6 +183,7 @@ namespace Application.Services.ShoppingCart
                     .GetByCondition(c => c.UserId == userId)
                     .Include(c => c.CartItems)
                     .ThenInclude(ci => ci.Product)
+                    .Include(c => c.Discount)
                     .FirstOrDefaultAsync();
             }
             else if (cardIdentifier != null) {
@@ -184,6 +191,7 @@ namespace Application.Services.ShoppingCart
                     .GetByCondition(c => c.CartIdentifier == cardIdentifier)
                     .Include(c => c.CartItems)
                     .ThenInclude(ci => ci.Product)
+                    .Include(c => c.Discount)
                     .FirstOrDefaultAsync();
             } else
             {
@@ -196,6 +204,8 @@ namespace Application.Services.ShoppingCart
                 ProductId = ci.ProductId,
                 Title = ci.Product.Title,
                 Price = ci.Product.Price,
+                DiscountPercentage = ci.Product.DiscountPercentage,
+                DiscountExpiryDate = ci.Product.DiscountExpiryDate,
                 Quantity = ci.Quantity
             }).ToList();
 
@@ -204,14 +214,86 @@ namespace Application.Services.ShoppingCart
                 CartIdentifier = cart.CartIdentifier,
                 DateCreated = cart.DateCreated,
                 DateModified = cart.DateModified,
-                Items = cartItemsDto
+                Items = cartItemsDto,
+                DiscountPercentage = cart.Discount?.Percentage,
+                DiscountExpiryDate = cart.Discount?.ExpiryDate
             };
 
             return cartDto;
         }
 
+        public async Task<bool> ApplyDiscount(int? userId, string? cartIdentifier, string discountCode)
+        {
+            Domain.Entities.ShoppingCart? cart = new Domain.Entities.ShoppingCart();
+            if (userId != null)
+            {
+                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                    .GetByCondition(c => c.UserId == userId)
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                    .FirstOrDefaultAsync();
+            }
+            else if (cartIdentifier != null)
+            {
+                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                    .GetByCondition(c => c.CartIdentifier == cartIdentifier)
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                    .FirstOrDefaultAsync();
+            }
 
 
+            if (cart == null)
+                return false;
+
+            var discount = await _discountService.ValidateDiscount(discountCode);
+
+            if (discount == null)
+                return false;
+
+            cart.DiscountId = discount.Id;
+            _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Update(cart);
+            await _unitOfWork.CompleteAsync();
+
+            return true;
+        }
+
+        public async Task<bool> RemoveDiscount(int? userId, string? cartIdentifier, string discountCode)
+        {
+            Domain.Entities.ShoppingCart? cart = new Domain.Entities.ShoppingCart();
+            if (userId != null)
+            {
+                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                   .GetByCondition(c => c.UserId == userId)
+                   .Include(c => c.CartItems)
+                   .ThenInclude(ci => ci.Product)
+                   .FirstOrDefaultAsync();
+            }
+            else if (cartIdentifier != null)
+            {
+                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                   .GetByCondition(c => c.CartIdentifier == cartIdentifier)
+                   .Include(c => c.CartItems)
+                   .ThenInclude(ci => ci.Product)
+                   .FirstOrDefaultAsync();
+            }
+
+
+            if (cart == null)
+                return false;
+
+
+            var discount = cart.DiscountId;
+            if (discount == null)
+                return false;
+
+            cart.DiscountId = null;
+
+            _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Update(cart);
+            await _unitOfWork.CompleteAsync();
+
+            return true;
+        }
         public Task<bool> RemoveItem(int ProductId, int? userId, string cardIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();

@@ -34,6 +34,10 @@ namespace Presistence
 
         public DbSet<Payment> Payments { get; set; }
 
+        public DbSet<Discount> Discounts { get; set; }
+
+        public DbSet<UserAddress> UserAddresses { get; set; }
+
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<ChatSession> ChatSessions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -72,7 +76,7 @@ namespace Presistence
                 entity.HasOne(p => p.SubCategory)
                       .WithMany(c => c.Products)
                       .HasForeignKey(p => p.SubCategoryId)
-                      .OnDelete(DeleteBehavior.Restrict); // Specify delete behavior
+                      .OnDelete(DeleteBehavior.Restrict); 
             });
         }
 

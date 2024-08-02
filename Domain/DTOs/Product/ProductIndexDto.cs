@@ -17,6 +17,11 @@ namespace Domain.DTOs.Product
 
         public string FirstImage { get; set; }
         public decimal Price { get; set; }
+        public decimal? DiscountPercentage { get; set; }
+        public DateTime? DiscountExpiryDate { get; set; }
+        public decimal DiscountedPrice => DiscountPercentage.HasValue && DiscountExpiryDate > DateTime.Now
+            ? Price - (Price * DiscountPercentage.Value / 100)
+            : Price;
 
         public int Stock { get; set; }
     }

@@ -17,12 +17,12 @@ public class Product
     public decimal Price { get; set; }
     public int Ratings { get; set; }
     public List<Review> Reviews { get; set; }
-    // se kam kuptu pse fronti ka kerku location per produkt
-    // public Location Location { get; set; }
     public int Stock { get; set; }
     public bool IsDeleted { get; set; }
+    public decimal? DiscountPercentage { get; set; } 
+    public DateTime? DiscountExpiryDate { get; set; }
+    [NotMapped]
+    public decimal DiscountedPrice => DiscountPercentage.HasValue && DiscountExpiryDate > DateTime.Now ? Price - (Price * DiscountPercentage.Value / 100) : Price;
     public Category Category { get; set; } // Many to one - shumeProd to OneCat
     public SubCategory SubCategory { get; set; } // Many to one - shumeProd to OneSubcat
-
-
 }

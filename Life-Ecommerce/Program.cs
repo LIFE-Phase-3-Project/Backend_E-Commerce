@@ -6,24 +6,25 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Application.Mapping;
 using Application.Services.Category;
 using Application.Services.Product;
 using Application.Services.Review;
 using Application.Services.Subcategory;
 using Application.Services.UserRepository;
-using Life_Ecommerce.TokenService;
 using Application.Services.ShoppingCart;
 using Application.Services.Wishlist;
 using Application.Services.Order;
 using Application.Repositories.OrderRepo;
 using Application.Services.Payment;
 using Application.Services.User;
-using Stripe;
 using Application.Services.Email;
-
 using Nest;
-using Domain.Helpers;
 using Application.Services.Search;
+using Application.Services.ImageStorage;
+using Application.Services.Discount;
+using Application.Services.TokenService;
+using Configurations;
 
 using Elasticsearch.Net;
 using System;
@@ -33,6 +34,12 @@ using Application.Repositories.ChatRepo;
 using Application.Services.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
+// Add Serilog as the logging provider
+builder.Services.AddLogging(builder.Configuration);
+
 
 // Add services to the container.
 builder.Services.AddDataProtection();
@@ -89,6 +96,8 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IDiscountService, Application.Services.Discount.DiscountService>();
+
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
 builder.Services.AddScoped<IChatService, ChatService>();
 
@@ -142,7 +151,7 @@ builder.Services.AddCors(options =>
            .AllowAnyMethod()
            .AllowAnyHeader()
            .AllowCredentials()
-            .WithOrigins("http://localhost:8080");
+           .WithOrigins("http://localhost:3000");
     });
 });
 
@@ -157,13 +166,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseMiddleware<AuthMiddleware>();
 
-app.UseMiddleware<AuthMiddleware>();
 app.UseSession();
 app.MapControllers();
 app.MapHub<ChatHub>("/chat");

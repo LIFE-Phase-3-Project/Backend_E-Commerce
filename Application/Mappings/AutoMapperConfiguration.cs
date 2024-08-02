@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using Domain.DTOs.Category;
+using Domain.DTOs.Discount;
 using Domain.DTOs.Order;
 using Domain.DTOs.Payment;
 using Domain.DTOs.Product;
 using Domain.DTOs.Review;
 using Domain.DTOs.SubCategory;
 using Domain.DTOs.User;
+using Domain.DTOs.UserAddress;
 using Domain.Entities;
-namespace Domain.Helpers
+namespace Application.Mapping
 {
     public class AutoMapperConfiguration : Profile
     {
@@ -23,6 +25,7 @@ namespace Domain.Helpers
             CreateMap<UpdateProductDto, ProductIndexDto>().ReverseMap();
             CreateMap<ProductIndexDto, ProductSearchDto>().ReverseMap();
 
+            CreateMap<Discount, CreateDiscountDto>().ReverseMap();
 
             CreateMap<Review, ReviewDto>()
                 .ForMember(dest => dest.UserOverview, opt => opt.MapFrom(src => src.User));
@@ -30,6 +33,8 @@ namespace Domain.Helpers
             CreateMap<User, UserOverviewDto>().ReverseMap();
             CreateMap<User, UserWithRoleDto>().ReverseMap();
             CreateMap<User, UpdateUserDto>().ReverseMap();
+            CreateMap<UserAddress, CreateUserAddressDto>().ReverseMap();
+
             CreateMap<Category, CreateCategoryDto>().ReverseMap();
             CreateMap<Category, CategoryDto>().ReverseMap()
                 .ForMember(dest => dest.Subcategories, opt => opt.MapFrom(src => src.Subcategories));

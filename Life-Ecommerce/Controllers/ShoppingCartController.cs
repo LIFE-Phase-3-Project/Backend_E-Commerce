@@ -153,5 +153,44 @@ namespace Life_Ecommerce.Controllers
 
         }
 
+        // controller to apply discount
+        [HttpPost("ApplyDiscount/{DiscountCode}")]
+        public async Task<IActionResult> ApplyDiscount(string DiscountCode)
+        {
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            if (userId.HasValue)
+            {
+                var response = await _shoppingCartService.ApplyDiscount(userId, null, DiscountCode);
+                if (response) return Ok("Discount applied successfully.");
+                else return BadRequest("Could not apply discount.");
+            }
+            else
+            {
+                var response = await _shoppingCartService.ApplyDiscount(null, cartIdentifier, DiscountCode);
+                if (response) return Ok("Discount applied successfully.");
+                else return BadRequest("Could not apply discount.");
+            }
+        }
+
+        // controller to remove discount
+        [HttpDelete("RemoveDiscount/{DiscountCode}")]
+        public async Task<IActionResult> RemoveDiscount(string DiscountCode)
+        {
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            if (userId.HasValue)
+            {
+                var response = await _shoppingCartService.RemoveDiscount(userId, null, DiscountCode);
+                if (response) return Ok("Discount removed successfully.");
+                else return BadRequest("Could not remove discount.");
+            }
+            else
+            {
+                var response = await _shoppingCartService.RemoveDiscount(null, cartIdentifier, DiscountCode);
+                if (response) return Ok("Discount removed successfully.");
+                else return BadRequest("Could not remove discount.");
+            }
+        }
+
+
     }
 }

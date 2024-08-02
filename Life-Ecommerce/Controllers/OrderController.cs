@@ -16,17 +16,17 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpPost]
-        public async Task CreateOrder(int? userId, string cartIdentifier, OrderDto orderDto)
+        public async Task<IActionResult> CreateOrder(OrderDto orderDto)
         {
-            //if (orderDto == null)
-            //    return BadRequest("Order data is required.");
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
-            /*var result = */await _orderService.CreateOrder(userId, cartIdentifier, orderDto);
+            var result = await _orderService.CreateOrder(token, orderDto);
 
-            //if (result)
-            //    return Ok("Order created successfully.");
-            //else
-            //    return BadRequest("Failed to create order.");
+
+            if (result)
+                return Ok("Order created successfully.");
+            else
+                return BadRequest("Failed to create order.");
         }
 
         [HttpGet]

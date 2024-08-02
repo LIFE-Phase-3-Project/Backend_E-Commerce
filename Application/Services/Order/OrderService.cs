@@ -1,4 +1,5 @@
-﻿using Application.Repositories.OrderRepo;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Application.Repositories.OrderRepo;
 using Application.Services.Email;
 using Application.Services.ShoppingCart;
 using AutoMapper;
@@ -30,48 +31,46 @@ namespace Application.Services.Order
         }
 
 
-        public async Task<bool> CreateOrder(int? userId, string cartIdentifier, OrderDto orderDto)
+        public async Task<bool> CreateOrder(string token, OrderDto orderDto)
         {
-            Domain.Entities.ShoppingCart cart;
-            if (userId.HasValue)
-            {
-                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                    .GetByCondition(c => c.UserId == userId)
-                    .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.Product)
-                    .FirstOrDefaultAsync();
-            }
-            else
-            {
-                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
-                    .GetByCondition(c => c.CartIdentifier == cartIdentifier)
-                    .Include(c => c.CartItems)
-                    .ThenInclude(ci => ci.Product)
-                    .FirstOrDefaultAsync();
-            }
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
 
-            if (cart == null || !cart.CartItems.Any())
+            var userId =int.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value);
+            
+            var cart = await _shoppingCartService.GetCartContents(userId, null);
+            if (cart == null || !cart.Items.Any())
                 return false;
+
+            decimal orderTotal = cart.TotalPrice;
 
             var order = new Domain.Entities.Order
             {
                 OrderDate = DateTime.Now,
                 ShippingDate = orderDto.ShippingDate,
                 PaymentDate = orderDto.PaymentDate,
-                OrderTotal = cart.TotalPrice,
+                OrderTotal = orderTotal,
                 OrderStatus = "Pending",
-                PhoneNumber = orderDto.PhoneNumber,
-                StreetAddress = orderDto.StreetAddress,
-                City = orderDto.City,
-                Country = orderDto.Country,
-                PostalCode = orderDto.PostalCode,
+                UserAddressId = orderDto.UserAddressId,
                 Name = orderDto.Name
             };
 
             _unitOfWork.Repository<Domain.Entities.Order>().Create(order);
             await _unitOfWork.CompleteAsync();
 
-            foreach (var cartItem in cart.CartItems)
+            if (cart.DiscountPercentage != null)
+            {
+                var discount = await _unitOfWork.Repository<Domain.Entities.Discount>()
+                    .GetByCondition(d => d.UserId == userId && d.Code == "NewUserDiscount")
+                    .FirstOrDefaultAsync();
+
+                if (discount != null)
+                {
+                    _unitOfWork.Repository<Domain.Entities.Discount>().Delete(discount);
+                    await _unitOfWork.CompleteAsync();
+                }
+            }
+            foreach (var cartItem in cart.Items)
             {
                 var product = await _unitOfWork.Repository<Domain.Entities.Product>()
                     .GetByIdAsync(cartItem.ProductId);
@@ -85,9 +84,9 @@ namespace Application.Services.Order
                 {
                     OrderId = order.Id,
                     ProductId = cartItem.ProductId,
-                    UserId = userId ?? 0,
                     Count = cartItem.Quantity,
-                    Price = cartItem.Product.Price
+                    Price = cartItem.TotalPrice,
+                    UserId = userId
                 };
 
                 _unitOfWork.Repository<Domain.Entities.OrderDetail>().Create(orderDetail);
@@ -101,27 +100,17 @@ namespace Application.Services.Order
 
             await _unitOfWork.CompleteAsync();
 
-            await _shoppingCartService.ClearCart(userId, cartIdentifier);
+            await _shoppingCartService.ClearCart(userId, null);
 
-            if (userId.HasValue)
-            {
-                var user = await _unitOfWork.Repository<Domain.Entities.User>()
-                    .GetByIdAsync(userId.Value);
+            var user = await _unitOfWork.Repository<Domain.Entities.User>()
+                    .GetByIdAsync(userId);
+            var subject = "Order Confirmation";
+            var message = $"Dear {user.FirstName},\n\nThank you for your order! Your order ID is {order.Id}. We will notify you when your order status changes.\n\nBest regards,\nLIFE";
 
-                if (user != null)
-                {
-                    var subject = "Order Confirmation";
-                    var message = $"Dear {user.FirstName},\n\nThank you for your order! Your order ID is {order.Id}. We will notify you when your order status changes.\n\nBest regards,\nLIFE";
-
-                    await _emailService.SendEmailAsync(user.Email, subject, message);
-                }
-            }
+            await _emailService.SendEmailAsync(user.Email, subject, message);
 
             return true;
         }
-
-
-
 
         public async Task<IEnumerable<OrderDto>> GetAllOrders()
         {
@@ -198,7 +187,5 @@ namespace Application.Services.Order
 
             return true;
         }
-
-
     }
 }

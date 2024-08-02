@@ -1,9 +1,6 @@
 using Application.Services.ImageStorage;
 using Application.Services.Product;
-using AutoMapper;
 using Domain.DTOs.Product;
-using Domain.Entities;
-using Domain.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Life_Ecommerce.Controllers;
@@ -14,9 +11,11 @@ public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
     private readonly IStorageService _storageService;
-    public ProductController(IProductService productService, IStorageService storageService)
+    private readonly ILogger<ProductController> _logger;
+    public ProductController(IProductService productService, IStorageService storageService, ILogger<ProductController> logger)
     {
         _productService = productService;
+        _logger = logger;
     }
 
     [HttpGet("search")]
@@ -60,7 +59,7 @@ public class ProductController : ControllerBase
         {
             return NotFound();
         }
-
+        _logger.LogInformation($"Product with id {id} retrieved successfully.");
         return Ok(product);
     }
 

@@ -1,9 +1,6 @@
 using Application.Services.ImageStorage;
 using Application.Services.Product;
-using AutoMapper;
 using Domain.DTOs.Product;
-using Domain.Entities;
-using Domain.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Life_Ecommerce.Controllers;
@@ -62,7 +59,7 @@ public class ProductController : ControllerBase
         {
             return NotFound();
         }
-
+        _logger.LogInformation($"Product with id {id} retrieved successfully.");
         return Ok(product);
     }
 

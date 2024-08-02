@@ -12,13 +12,13 @@ namespace Application.Services.UserRepository
     {
         Task AddUser(RegisterUserDto u);
         Task<IEnumerable<Domain.Entities.User>> GetUsers();
-        Task<UserWithRoleDto> GetUserById(int id);
-
+        Task<Domain.Entities.User> GetUserById(int id);
         Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roliId);
         Task<Domain.Entities.User> UpdateUser(Domain.Entities.User objUser);
         Task<bool> DeleteUser(int id);
-
         string GetUserRole(int roleId);
         Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);
+        Domain.Entities.User AuthenticateUser(string email, string password);
+        string GenerateToken(int userId, string roleName, string email);
     }
 }

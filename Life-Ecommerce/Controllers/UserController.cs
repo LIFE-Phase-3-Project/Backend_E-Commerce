@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Presistence;
 using Application.Services.UserRepository;
 using Domain.DTOs.User;
 using Domain.Entities;
-using Microsoft.AspNetCore.DataProtection;
-using Application.Services.ShoppingCart;
-using AutoMapper;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -14,32 +10,21 @@ namespace Life_Ecommerce.Controllers
     public class UserController : ControllerBase
     {
         public readonly IUserService _userService;
-        private readonly IShoppingCartService _shoppingCartService;
-        public readonly APIDbContext _context;
-        private readonly IDataProtectionProvider _dataProtectionProvider;
-        private readonly IMapper _mapper;
 
-        public UserController(IUserService userService, APIDbContext con, IDataProtectionProvider iDataProtectionProvider, IShoppingCartService shoppingCartService, IMapper mapper)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _context = con;
-            _dataProtectionProvider = iDataProtectionProvider;
-            _shoppingCartService = shoppingCartService;
-            _mapper = mapper;
-
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(RegisterUserDto u)
+        public async Task<IActionResult> Post(RegisterUserDto registerUserDto)
         {
-            await _userService.AddUser(u);
-            return Ok(u); 
-
+            await _userService.AddUser(registerUserDto);
+            return Ok(registerUserDto); 
         }
 
         [HttpGet]
         [Route("GetUsers")]
-       
         public async Task<IActionResult> Get()
         {
             var userRole = HttpContext.Items["UserRole"] as string;
@@ -49,55 +34,30 @@ namespace Life_Ecommerce.Controllers
                 return Ok(users);
             }
             return Unauthorized("You are not authorized to view this content");
-
+        }
+        
+        [HttpPut]
+        [Route("UpdateUser")]
+        public async Task<IActionResult> Put(User user)
+        {
+            await _userService.UpdateUser(user);
+            return Ok("Updated Successfully");
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto updateUserDto)
+        [HttpPost("/login")]
+        public IActionResult Login([FromBody] UserLoginDto request)
         {
-            if (id != updateUserDto.Id)
+            var user = _userService.AuthenticateUser(request.Email, request.Password);
+            if (user == null)
             {
-                return BadRequest("User ID mismatch.");
-            }
-
-            try
-            {
-                var user = _mapper.Map<User>(updateUserDto);
-                var updatedUser = await _userService.UpdateUser(user);
-                return Ok(updatedUser);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLogin Request)
-        {
-            var user = _context.Users.FirstOrDefault(user => user.Email == Request.Email);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(Request.Password, user.Password))
-            {
-                return Unauthorized("Mejli ose fjalkalimi eshte gabim");
+                return Unauthorized("Email or password is incorrect");
             }
 
             var roleName = _userService.GetUserRole(user.RoleId);
-            var email = Request.Email;
+            var email = request.Email;
 
-            var token = TokenService.TokenService.GenerateToken(user.Id, roleName, email);
-            string encryptedCartIdentifier;
-            if (HttpContext.Request.Cookies.TryGetValue("CartIdentifier", out encryptedCartIdentifier))
-            {
-                var unprotectedCartIdentifier = _dataProtectionProvider.CreateProtector("CartIdentifierProtector").Unprotect(encryptedCartIdentifier);
-                await _shoppingCartService.MergeGuestCart(unprotectedCartIdentifier, user.Id);
-                HttpContext.Response.Cookies.Delete("CartIdentifier");
-
-            }
+            var token = _userService.GenerateToken(user.Id, roleName, email);
+            
             return Ok(new
             {
                 IsAuthenticated = true,
@@ -106,34 +66,12 @@ namespace Life_Ecommerce.Controllers
             });
         }
 
-        public class UserLogin
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
-
         [HttpDelete]
         [Route("DeleteUser")] 
-        public async Task<IActionResult> Delete(int id)
+        public JsonResult Delete(int id)
         {
-            try
-            {
-                var result = await _userService.DeleteUser(id);
-                if (!result)
-                {
-                    return NotFound("User not found.");
-                }
-
-                return NoContent();
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Forbid(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            _userService.DeleteUser(id);
+            return new JsonResult("Deleted Successfully");
         }
 
 
@@ -141,7 +79,8 @@ namespace Life_Ecommerce.Controllers
         [Route("GetUserByID/{Id}")]
         public async Task<IActionResult> GetUserByID(int Id)
         {
-            return Ok(await _userService.GetUserById(Id));
+            var user = await _userService.GetUserById(Id);
+            return Ok(user);
         }
 
         [HttpGet]
@@ -153,7 +92,7 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpPost("ChangePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)//
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             if (changePasswordDto == null || string.IsNullOrEmpty(changePasswordDto.OldPassword) || string.IsNullOrEmpty(changePasswordDto.NewPassword))
             {
@@ -166,10 +105,7 @@ namespace Life_Ecommerce.Controllers
             {
                 return Ok("Password changed successfully.");
             }
-            else
-            {
-                return BadRequest("Old password does not match or user not found.");
-            }
+            return BadRequest("Old password does not match or user not found.");
         }
 
 

@@ -1,11 +1,9 @@
-﻿using Application.Services.Discount;
-using Application.Services.User;
-using AutoMapper;
-using Domain.DTOs.Discount;
+﻿using AutoMapper;
 using Domain.DTOs.User;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
+using Stripe.Issuing;
 
 namespace Application.Services.UserRepository
 {
@@ -13,25 +11,18 @@ namespace Application.Services.UserRepository
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly APIDbContext _appDBContext;
-        private readonly IUserContext _userContext;
-        private readonly IDiscountService _discountService;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, APIDbContext context, IUserContext userContext, IDiscountService discountService)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _appDBContext = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper;
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
-            _discountService = discountService;
         }
-
-
-
+        
+        
         public async Task AddUser(RegisterUserDto u)
         {
             var userToRegister = _mapper.Map<Domain.Entities.User>(u);
-            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();_unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
             if (user != null)
             {
                 throw new InvalidOperationException("User with this Email already exists");
@@ -41,23 +32,11 @@ namespace Application.Services.UserRepository
 
             userToRegister.Password = hashedPass;
 
-             _unitOfWork.Repository<Domain.Entities.User>().Create(userToRegister);
-            await _unitOfWork.CompleteAsync();
-            var newUser = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
-            //  create a discount entity for the new user
-            var discount = new CreateDiscountDto
-            {
-                UserId = newUser.Id,
-                Code = "NewUserDiscount",
-                Percentage = 10,
-                ExpiryDate = DateTime.Now.AddDays(7),
-            };
-            await _discountService.CreateDiscount(discount);
+            _unitOfWork.Repository<Domain.Entities.User>().Create(userToRegister);
             await _unitOfWork.CompleteAsync();
         }
-
-
-
+        
+        
         public async Task<bool> ChangePassword(int userId, string oldPassword, string newPassword)
         {
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(u => u.Id == userId).FirstOrDefaultAsync();
@@ -76,49 +55,25 @@ namespace Application.Services.UserRepository
             return true;
         }
 
+
         public async Task<bool> DeleteUser(int id)
         {
-            var currentUserId = _userContext.GetCurrentUserId();
-            if (currentUserId != id)
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
+            if (user != null)
             {
-                throw new UnauthorizedAccessException("You can only delete your own account.");
+                _unitOfWork.Repository<Domain.Entities.User>().Delete(user);
+                var deleted = _unitOfWork.Complete();
+                return deleted;
             }
-
-            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(u => u.Id == id).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User not found");
-            }
-
-            _unitOfWork.Repository<Domain.Entities.User>().Delete(user);
-            await _unitOfWork.CompleteAsync();
-
-            return true;
+            return false;
         }
 
-        public async Task<UserWithRoleDto> GetUserById(int id)
+
+        public async Task<Domain.Entities.User> GetUserById(int id)
         {
-            var userWithRole = await _unitOfWork.Repository<Domain.Entities.User>()
-                .GetByCondition(user => user.Id == id)
-                .Join(_unitOfWork.Repository<Role>().GetAll(),
-                      user => user.RoleId,
-                      role => role.Id,
-                      (user, role) => new UserWithRoleDto
-                      {
-                          Id = user.Id,
-                          FirstName = user.FirstName,
-                          LastName = user.LastName,
-                          Email = user.Email,
-                          PhoneNumber = user.PhoneNumber,
-                          Address = user.Address,
-                          Password = user.Password,
-                          RoleName = role.RoleName
-                      })
-                .FirstOrDefaultAsync();
-
-            return userWithRole;
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
+            return user;
         }
-
 
         public string GetUserRole(int roleId)
         {
@@ -146,28 +101,41 @@ namespace Application.Services.UserRepository
 
         public async Task<Domain.Entities.User> UpdateUser(Domain.Entities.User objUser)
         {
-            var currentUserId = _userContext.GetCurrentUserId();
-            if (currentUserId != objUser.Id)
+            var existingUser = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == objUser.Id).FirstOrDefaultAsync();
+            if (existingUser == null)
             {
-                throw new UnauthorizedAccessException("You can only update your own account.");
+                throw new InvalidOperationException("User not found");
+            }
+            
+            if (objUser.Password != existingUser.Password)
+            {
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(objUser.Password);
+                existingUser.Password = hashedPassword;
             }
 
-            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(u => u.Id == objUser.Id).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                throw new KeyNotFoundException("User not found");
-            }
+            _mapper.Map(objUser, existingUser);
 
-            user.FirstName = objUser.FirstName;
-            user.LastName = objUser.LastName;
-            user.Email = objUser.Email;
-            user.PhoneNumber = objUser.PhoneNumber;
-            user.Address = objUser.Address;
-
-            _unitOfWork.Repository<Domain.Entities.User>().Update(user);
+            _unitOfWork.Repository<Domain.Entities.User>().Update(existingUser);
             await _unitOfWork.CompleteAsync();
 
+            return existingUser;
+        }
+        
+        public Domain.Entities.User AuthenticateUser(string email, string password)
+        {
+            var user = _unitOfWork.Repository<Domain.Entities.User>().GetByCondition(x => x.Email == email).FirstOrDefault();
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
+            {
+                return null;
+            }
             return user;
         }
+
+        public string GenerateToken(int userId, string roleName, string email)
+        {
+            return Life_Ecommerce.TokenService.TokenService.GenerateToken(userId, roleName, email);
+            // return TokenService.GenerateToken(userId, roleName, email);
+        }
+
     }
 }

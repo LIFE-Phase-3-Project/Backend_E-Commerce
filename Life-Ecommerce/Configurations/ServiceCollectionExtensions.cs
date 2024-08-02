@@ -23,6 +23,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Nest;
 using System.Text;
+using Application.Services.UserAddress;
 
 
 namespace Configurations
@@ -54,6 +55,7 @@ namespace Configurations
                services.AddScoped<IPaymentService, PaymentService>();
                services.AddScoped<IStorageService, StorageService>();
                services.AddScoped<IDiscountService, DiscountService>();
+               services.AddScoped<IUserAddressService, UserAddressService>();
      
             return services;
         }

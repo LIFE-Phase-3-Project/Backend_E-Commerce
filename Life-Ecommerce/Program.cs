@@ -6,12 +6,12 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Application.Mapping;
 using Application.Services.Category;
 using Application.Services.Product;
 using Application.Services.Review;
 using Application.Services.Subcategory;
 using Application.Services.UserRepository;
-using Life_Ecommerce.TokenService;
 using Application.Services.ShoppingCart;
 using Application.Services.Wishlist;
 using Application.Services.Order;
@@ -20,12 +20,11 @@ using Application.Services.Payment;
 using Application.Services.User;
 using Application.Services.Email;
 using Nest;
-using Domain.Helpers;
 using Application.Services.Search;
 using Application.Services.ImageStorage;
 using Application.Services.Discount;
 using Application.Services.TokenService;
-using Domain.Configurations;
+using Configurations;
 
 
 var builder = WebApplication.CreateBuilder(args);

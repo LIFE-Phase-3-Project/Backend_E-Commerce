@@ -25,6 +25,7 @@ using Application.Services.Search;
 using Application.Services.ImageStorage;
 using Application.Services.Discount;
 using Domain.Configurations;
+using Application.Services.UserAddress;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -80,8 +81,8 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserContext, UserContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IProductService, Application.Services.Product.ProductService>();
-builder.Services.AddScoped<IReviewService, Application.Services.Review.ReviewService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
@@ -90,7 +91,8 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
-builder.Services.AddScoped<IDiscountService, Application.Services.Discount.DiscountService>();
+builder.Services.AddScoped<IDiscountService, DiscountService>();
+builder.Services.AddScoped<IUserAddressService, UserAddressService>();
 
 
 

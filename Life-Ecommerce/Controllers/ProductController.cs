@@ -62,7 +62,7 @@ public class ProductController : ControllerBase
         {
             return NotFound();
         }
-
+        _logger.LogInformation($"Product with id {id} retrieved successfully.");
         return Ok(product);
     }
 

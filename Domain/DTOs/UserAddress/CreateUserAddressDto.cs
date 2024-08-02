@@ -5,12 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Entities
+namespace Domain.DTOs.UserAddress
 {
-    public class UserAddress
+    public class CreateUserAddressDto
     {
-        public int Id { get; set; }
-
         [Required]
         public int UserId { get; set; }
 
@@ -33,9 +31,5 @@ namespace Domain.Entities
         [Required]
         [Range(10000, 99999, ErrorMessage = "Postal code must be a 5-digit number.")]
         public short PostalCode { get; set; }
-
-        public bool IsPrimary { get; set; } = false;
-        public bool IsActive { get; set; } = true;
     }
-
 }

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Life_Ecommerce.TokenService
+namespace Application.Services.TokenService
 {
     public class AuthMiddleware
     {

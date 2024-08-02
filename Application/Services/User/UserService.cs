@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.IdentityModel.Tokens.Jwt;
+using AutoMapper;
 using Domain.DTOs.User;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -56,9 +57,14 @@ namespace Application.Services.UserRepository
         }
 
 
-        public async Task<bool> DeleteUser(int id)
+        public async Task<bool> DeleteUser(string token)
         {
-            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userId =int.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value);
+
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
             if (user != null)
             {
                 _unitOfWork.Repository<Domain.Entities.User>().Delete(user);
@@ -99,26 +105,31 @@ namespace Application.Services.UserRepository
                 .ToListAsync();
         }
 
-        public async Task<Domain.Entities.User> UpdateUser(Domain.Entities.User objUser)
+        public async Task<Domain.Entities.User> UpdateUser(string token, Domain.Entities.User objUser)
         {
-            var existingUser = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == objUser.Id).FirstOrDefaultAsync();
-            if (existingUser == null)
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userId =int.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value);
+
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
+            if (user == null)
             {
-                throw new InvalidOperationException("User not found");
+                throw new InvalidOperationException("You don't have access to delete this account");
             }
             
-            if (objUser.Password != existingUser.Password)
+            if (objUser.Password != user.Password)
             {
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(objUser.Password);
-                existingUser.Password = hashedPassword;
+                user.Password = hashedPassword;
             }
 
-            _mapper.Map(objUser, existingUser);
+            _mapper.Map(objUser, user);
 
-            _unitOfWork.Repository<Domain.Entities.User>().Update(existingUser);
+            _unitOfWork.Repository<Domain.Entities.User>().Update(user);
             await _unitOfWork.CompleteAsync();
 
-            return existingUser;
+            return user;
         }
         
         public Domain.Entities.User AuthenticateUser(string email, string password)

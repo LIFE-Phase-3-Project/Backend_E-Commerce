@@ -1,11 +1,6 @@
 ﻿using Application.Repositories.ChatRepo;
 using Domain.Entities;
-using Nest;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Services.Chat
 {
@@ -40,15 +35,28 @@ namespace Application.Services.Chat
             return session;
         }
 
-        public async Task EndSessionAsync(int sessionId)
+        public async Task<bool> EndSessionAsync(int sessionId)
         {
             var session = await _chatRepository.GetSessionByIdAsync(sessionId);
-            if (session != null)
+
+            if (session == null)
             {
-                session.EndedAt = DateTime.UtcNow;
-                await _unitOfWork.CompleteAsync();
+                return false;
             }
+
+            if (session.EndedAt.HasValue)
+            {
+                return false;
+            }
+
+            session.EndedAt = DateTime.UtcNow;
+            await _unitOfWork.CompleteAsync();
+
+            return true;
         }
+
+
+
 
         public async Task<List<ChatMessage>> GetMessagesAsync(int sessionId)
         {
@@ -70,7 +78,7 @@ namespace Application.Services.Chat
             return await _chatRepository.GetSessionsByStatusAsync();
         }
 
-        //MessagesBySessionId
+        
 
     }
 }

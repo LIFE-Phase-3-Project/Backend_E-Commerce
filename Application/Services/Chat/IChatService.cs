@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Application.Services.Chat
 {
@@ -8,7 +9,7 @@ namespace Application.Services.Chat
     {
         Task SaveMessageAsync(ChatMessage message);
         Task<ChatSession> StartSessionAsync(string customerEmail, string adminEmail);
-        Task EndSessionAsync(int sessionId);
+        Task<bool> EndSessionAsync(int sessionId);
         Task<List<ChatMessage>> GetMessagesAsync(int sessionId);
 
         Task UpdateSessionStatusAsync(int sessionId);

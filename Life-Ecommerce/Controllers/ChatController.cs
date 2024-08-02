@@ -1,4 +1,5 @@
 ﻿using Application.Services.Chat;
+using Domain.DTOs.Chat;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,7 +46,6 @@ namespace Life_Ecommerce.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (not shown here)
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -57,12 +57,34 @@ namespace Life_Ecommerce.Controllers
             return Ok(sessions);
         }
 
-
-
-        public class StartSessionRequest
+        [HttpPost("end-session")]
+        public async Task<IActionResult> EndSessionAsync([FromQuery] int sessionId)
         {
-            public string CustomerEmail { get; set; }
-            public string AdminEmail { get; set; }
+            if (sessionId <= 0)
+            {
+                return BadRequest("Invalid session ID.");
+            }
+
+            try
+            {
+                var result = await _chatService.EndSessionAsync(sessionId);
+                if (result == null)
+                {
+                    return NotFound("Session does not exist.");
+                }
+                else if (!result)
+                {
+                    return BadRequest("Session has already ended.");
+                }
+                return Ok("Session ended successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+
+
+
     }
 }

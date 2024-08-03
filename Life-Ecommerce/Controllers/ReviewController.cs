@@ -38,10 +38,10 @@ public class ReviewController : ControllerBase
     // }
     
     [HttpGet("product/{productId}")]
-    public async Task<IActionResult> GetReviewsByProductId(int productId)
+    public async Task<IActionResult> GetReviewsByProductId(int productId, [FromQuery] int page = 1, [FromQuery] int pageSize=10)
     {
-        var reviews = await _reviewService.GetReviewsByProductIdAsync(productId);
-        if (reviews == null || !reviews.Any())
+        var reviews = await _reviewService.GetReviewsByProductIdAsync(productId, page, pageSize);
+        if (reviews == null)
         {
             return NotFound();
         }
@@ -63,4 +63,43 @@ public class ReviewController : ControllerBase
             return BadRequest(new { Message = ex.Message });
         }
     }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdateReview(int reviewId, [FromBody] UpdateReviewDto reviewDto)
+    {
+        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+        try
+        {
+            var result = await _reviewService.UpdateReviewAsync(reviewId, reviewDto, token);
+            return Ok(new { Message = "Review updated successfully", Success = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetReviewByUserId(int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var reviews = await _reviewService.GetReviewsByUserIdAsync(userId, page, pageSize);
+        if (reviews == null)
+        {
+            return NotFound();
+        }
+        return Ok(reviews);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllReviews([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var reviews = await _reviewService.GetAllReviews(page, pageSize);
+        if (reviews == null)
+        {
+            return NotFound();
+        }
+        return Ok(reviews);
+    }
+
 }

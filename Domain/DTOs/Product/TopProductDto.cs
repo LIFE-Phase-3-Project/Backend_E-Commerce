@@ -12,7 +12,7 @@ namespace Domain.DTOs.Product
         public string Title { get; set; }
         public string FirstImage { get; set; }
         public decimal DiscountedPrice { get; set; }
-        public int Ratings { get; set; }
+        public double Ratings { get; set; }
 
     }
 }

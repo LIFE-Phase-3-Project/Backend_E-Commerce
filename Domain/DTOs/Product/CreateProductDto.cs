@@ -16,6 +16,6 @@ public class CreateProductDto
     [FileTypeAndSize(new string[] { ".jpg", ".jpeg", ".png", ".gif" }, 20 * 1024 * 1024)]
     public List<IFormFile> Image { get; set; }
     public decimal Price { get; set; }
-    public int Ratings { get; set; }
+    public double Ratings { get; set; }
     public int Stock { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿using Application.Repositories.ChatRepo;
+﻿using Presistence.Repositories.ChatRepo;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 

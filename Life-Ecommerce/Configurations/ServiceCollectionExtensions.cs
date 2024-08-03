@@ -31,6 +31,9 @@ using Application.Services.ProductAnalytics;
 using Hangfire;
 using Hangfire.SqlServer;
 using BackgroundJobs;
+using Life_Ecommerce.Hubs;
+using Presistence.Repositories.ChatRepo;
+using Application.Services.Chat;
 
 
 namespace Configurations
@@ -44,6 +47,8 @@ namespace Configurations
                         mc => mc.AddProfile(new AutoMapperConfiguration()));
 
                IMapper mapper = mapperConfiguration.CreateMapper();
+
+                services.AddSignalR();
 
                services.AddSingleton(mapper);
                services.AddScoped<IEmailService, EmailService>();
@@ -62,11 +67,15 @@ namespace Configurations
                services.AddScoped<IPaymentService, PaymentService>();
                services.AddScoped<IStorageService, StorageService>();
                services.AddScoped<IDiscountService, DiscountService>();
-            services.AddScoped<IUserAddressService, UserAddressService>();
+                services.AddScoped<IUserAddressService, UserAddressService>();
 
-            services.AddScoped<IProductAnalyticsService, ProductAnalyticsService>();
-            services.AddScoped<IProductAnalyticsRepo, ProductAnalyticsRepo>();
-            services.AddScoped<ProductAnalyticsJobs>();
+
+                services.AddScoped<IProductAnalyticsService, ProductAnalyticsService>();
+                services.AddScoped<IProductAnalyticsRepo, ProductAnalyticsRepo>();
+                services.AddScoped<ProductAnalyticsJobs>();
+                services.AddScoped<IChatRepository, ChatRepository>();
+                services.AddScoped<IChatService, ChatService>();
+
 
 
             return services;

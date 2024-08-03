@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Repositories.ChatRepo
+namespace Presistence.Repositories.ChatRepo
 {
     public class ChatRepository : IChatRepository
     {

@@ -1,6 +1,6 @@
 ﻿using Domain.Entities;
 
-namespace Application.Repositories.ChatRepo
+namespace Presistence.Repositories.ChatRepo
 {
     public interface IChatRepository
     {

@@ -2,14 +2,8 @@ using Application.Services.TokenService;
 using BackgroundJobs;
 using Configurations;
 using Hangfire;
-using Hangfire.SqlServer;
-
-using Elasticsearch.Net;
-using System;
-using Application.Services.ImageStorage;
 using Life_Ecommerce.Hubs;
-using Application.Repositories.ChatRepo;
-using Application.Services.Chat;
+
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -63,7 +63,7 @@ namespace Application.Services.UserRepository
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
 
-            var userId = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
+            var userId = jwtToken.Claims.First(claim => claim.Type == "sub").Value;
 
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
             if (user != null)
@@ -109,7 +109,7 @@ namespace Application.Services.UserRepository
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
 
-            var userId = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
+            var userId = jwtToken.Claims.First(claim => claim.Type == "sub").Value;
 
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
             if (user == null)

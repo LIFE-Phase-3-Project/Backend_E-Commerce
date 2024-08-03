@@ -29,7 +29,7 @@ public class ReviewService : IReviewService
             throw new SecurityTokenException("Invalid token");
         }
 
-        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "nameid");
+        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
         if (userIdClaim == null)
         {
             throw new SecurityTokenException("UserId not found in token");
@@ -58,7 +58,7 @@ public class ReviewService : IReviewService
             throw new SecurityTokenException("Invalid token");
         }
 
-        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "nameid");
+        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
         if (userIdClaim == null)
         {
             throw new SecurityTokenException("UserId not found in token");
@@ -162,7 +162,7 @@ public class ReviewService : IReviewService
             throw new SecurityTokenException("Invalid token");
         }
 
-        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "nameid");
+        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
         if (userIdClaim == null)
         {
             throw new SecurityTokenException("UserId not found in token");

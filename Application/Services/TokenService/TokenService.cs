@@ -17,7 +17,7 @@ namespace Life_Ecommerce.TokenService
                 {
                     Subject = new ClaimsIdentity(new[]
                     {
-                        new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                        new Claim(JwtRegisteredClaimNames.Sub, id),
                         new Claim(ClaimTypes.Role, role),
                         new Claim(ClaimTypes.Email, email)
                 }),

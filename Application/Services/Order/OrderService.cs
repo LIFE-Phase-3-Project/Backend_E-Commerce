@@ -36,7 +36,7 @@ namespace Application.Services.Order
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
 
-            var userId = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
+            var userId = jwtToken.Claims.First(claim => claim.Type == "sub").Value;
             
             var cart = await _shoppingCartService.GetCartContents(userId, null);
             if (cart == null || !cart.Items.Any())

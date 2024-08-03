@@ -24,6 +24,8 @@ using Domain.Helpers;
 using Application.Services.Search;
 using System.Security.Claims;
 using Application.Services.ImageStorage;
+using Domain.DTOs.User;
+using Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +81,7 @@ builder.Services.AddScoped<IWishlistService, WishlistService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddHttpClient();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -114,15 +117,56 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Auth0:ClientSecret"])),
             // RoleClaimType = $"{builder.Configuration["Auth0:Namespace"]}roles"
         };
-        // options.Events = new JwtBearerEvents
-        // {
-        //     OnTokenValidated = async context =>
-        //     {
-        //         context.HttpContext.User = context.Principal ?? new ClaimsPrincipal();
-        //         var auth0UserId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //         var roles = context.Principal?.FindFirst("https://ecommerce-life-2.com/roles")?.Value;
-        //     }
-        // };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                
+                context.HttpContext.User = context.Principal ?? new ClaimsPrincipal();
+                var auth0UserId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var roles = context.Principal?.FindFirst("https://ecommerce-life-2.com/roles")?.Value;
+                
+                
+                var _unitOfWork = context.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
+
+                var existingUser = _unitOfWork.Repository<User>().GetByCondition(x => x.Auth0UserId == auth0UserId).FirstOrDefault();
+
+                if (existingUser == null)
+                {
+                    var user = new User()
+                    {
+                        FirstName = context.Principal?.FindFirst("https://ecommerce-life-2.com/given_name")?.Value,
+                        LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
+                        Address = "context.HttpContext.User.FindFirst(ClaimTypes.StreetAddress)?.Value",
+                        Auth0UserId = auth0UserId,
+                        Email = context.Principal?.FindFirst("https://ecommerce-life-2.com/email")?.Value,
+                        Password = "test",
+                        PhoneNumber = context.Principal?.FindFirst("https://ecommerce-life-2.com/userId")?.Value,
+                        RoleId = 3,
+                    };
+                        
+                    _unitOfWork.Repository<User>().Create(user);
+                    _unitOfWork.Complete();
+                    
+                    //// Generate your own JWT token
+                    //var token = TokenService.GenerateToken(user.Id, user.UserRole.RoleName, user.Email);
+                
+                    //// Return the token to the user
+                    //context.HttpContext.Response.ContentType = "application/json";
+                    //await context.HttpContext.Response.WriteAsync($"{{\"token\":\"{token}\"}}");
+                }
+                else
+                {
+                    //// Generate your own JWT token
+                    //var token = TokenService.GenerateToken(existingUser.Id, existingUser.UserRole.RoleName, existingUser.Email);
+                
+                    //// Return the token to the user
+                    //context.HttpContext.Response.ContentType = "application/json";
+                    //await context.HttpContext.Response.WriteAsync($"{{\"token\":\"{token}\"}}");
+                }
+
+            }
+        };
     });
 
 // Custom authorization policy that allows both schemes
@@ -230,8 +274,6 @@ app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-// app.UseMiddleware<AuthMiddleware>();
 
 app.UseSession();
 app.MapControllers();

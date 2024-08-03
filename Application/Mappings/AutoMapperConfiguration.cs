@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.DTOs.Category;
+using Domain.DTOs.Chat;
 using Domain.DTOs.Discount;
 using Domain.DTOs.Order;
 using Domain.DTOs.Payment;
@@ -57,6 +58,8 @@ namespace Application.Mapping
             CreateMap<MonthlyPaymentDto, Payment>();
             CreateMap<CreatePaymentDto, Payment>();
             CreateMap<CreateCashPaymentDto, Payment>();
+
+            CreateMap<StartSessionRequest, ChatSession>();
         }
         
     }

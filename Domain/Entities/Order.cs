@@ -14,7 +14,7 @@ namespace Domain.Entities
         [Required]
         public DateTime OrderDate { get; set; }
         public DateTime ShippingDate { get; set; }
-        public DateTime PaymentDate { get; set; }
+        public DateTime PaymentDate { get; set; } 
         public decimal OrderTotal { get; set; }
         public string OrderStatus { get; set; }
         public string Name  { get; set; }

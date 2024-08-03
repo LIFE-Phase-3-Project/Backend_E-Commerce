@@ -4,6 +4,12 @@ using Configurations;
 using Hangfire;
 using Hangfire.SqlServer;
 
+using Elasticsearch.Net;
+using System;
+using Application.Services.ImageStorage;
+using Life_Ecommerce.Hubs;
+using Application.Repositories.ChatRepo;
+using Application.Services.Chat;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,5 +45,6 @@ RecurringJob.AddOrUpdate<ProductAnalyticsJobs>(job => job.RecalculateTopSoldProd
 
 app.UseSession();
 app.MapControllers();
+app.MapHub<ChatHub>("/chat");
 
 app.Run();

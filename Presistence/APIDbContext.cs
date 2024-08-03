@@ -37,6 +37,9 @@ namespace Presistence
         public DbSet<Discount> Discounts { get; set; }
 
         public DbSet<UserAddress> UserAddresses { get; set; }
+
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<ChatSession> ChatSessions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureUser(modelBuilder);
@@ -46,6 +49,7 @@ namespace Presistence
             ConfigureWishlistEntry(modelBuilder);
             ConfigureOrderDetail(modelBuilder);
             ConfigurePayment(modelBuilder);
+            ConfigureChatSession(modelBuilder);
         }
 
         private void ConfigureWishlistEntry(ModelBuilder modelBuilder)
@@ -128,6 +132,32 @@ namespace Presistence
                 entity.HasOne(p => p.Order)
                       .WithOne(o => o.Payment)
                       .HasForeignKey<Payment>(p => p.OrderId);
+            });
+        }
+
+        private void ConfigureChatSession(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ChatSession>(entity =>
+            {
+                entity.HasKey(cs => cs.Id);
+                entity.Property(cs => cs.Status).HasMaxLength(20);
+
+                // No navigation property on ChatSession
+            });
+
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.HasKey(cm => cm.Id);
+                entity.Property(cm => cm.Sender).IsRequired().HasMaxLength(100);
+                entity.Property(cm => cm.Recipient).IsRequired().HasMaxLength(100);
+                entity.Property(cm => cm.Message).IsRequired();
+                entity.Property(cm => cm.Timestamp).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                // Configuring the foreign key relationship
+                entity.HasOne(cm => cm.ChatSession)
+                      .WithMany() // No navigation property on ChatSession
+                      .HasForeignKey(cm => cm.SessionId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

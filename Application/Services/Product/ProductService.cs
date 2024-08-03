@@ -7,6 +7,8 @@ using System.Linq.Expressions;
 using Nest;
 using Domain.DTOs.Pagination;
 using Application.Services.ImageStorage;
+using Google.Apis.Logging;
+using Microsoft.Extensions.Logging;
 
 
 
@@ -19,6 +21,7 @@ public class ProductService : IProductService
     private readonly ISearchService _searchService;
     private readonly IElasticClient _elasticClient;
     private readonly IStorageService _storageService;
+
     public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IElasticClient elasticClient, ISearchService searchService, IStorageService storageService)
     {
         _unitOfWork = unitOfWork;
@@ -102,6 +105,15 @@ public class ProductService : IProductService
             return null;
         }
         var productDto = _mapper.Map<ProductDto>(product);
+       /* await _elasticClient.IndexAsync(new ProductLog
+        {
+            ProductId = id,
+            CategoryId = product.CategoryId,
+            SubCategoryId = product.SubCategoryId,
+            RetrievedAt = DateTime.UtcNow
+        }, idx => idx.Index("product_retrievals")); */
+        var productToIndex = _mapper.Map<ProductIndexDto>(product);
+        await _searchService.IndexProductAsync(productToIndex);
         return productDto;
     }
 
@@ -206,6 +218,6 @@ public class ProductService : IProductService
             _unitOfWork.Complete();
         }
         // remove product from elastic search
-     await _searchService.DeleteProductFromIndexAsync(productId);
+         await _searchService.DeleteProductFromIndexAsync(productId);
     }
 }

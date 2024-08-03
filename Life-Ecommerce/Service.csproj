@@ -29,10 +29,13 @@
     <PackageReference Include="NEST" Version="7.17.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.3" />
+	  <PackageReference Include="Hangfire" Version="1.7.28" />
+	  <PackageReference Include="Hangfire.AspNetCore" Version="1.7.28" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\BackgroundJobs\BackgroundJobs.csproj" />
     <ProjectReference Include="..\Presistence\Presistence.csproj" />
   </ItemGroup>
 

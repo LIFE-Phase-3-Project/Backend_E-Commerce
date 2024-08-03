@@ -31,6 +31,7 @@ public class CategoryController : ControllerBase
         if (category == null)
         {
             return NotFound();
+
         }
 
         return Ok(category);

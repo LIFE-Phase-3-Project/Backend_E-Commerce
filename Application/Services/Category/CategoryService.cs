@@ -1,6 +1,9 @@
 using AutoMapper;
 using Domain.DTOs.Category;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using Newtonsoft;
+using Newtonsoft.Json;
 
 namespace Application.Services.Category;
 
@@ -8,18 +11,30 @@ public class CategoryService : ICategoryService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    // add redis connection here
+    private readonly IConnectionMultiplexer _redis;
+    private readonly IDatabase _db;
 
-    public CategoryService(IUnitOfWork unitOfWork, IMapper mapper)
+    public CategoryService(IUnitOfWork unitOfWork, IMapper mapper,  IConnectionMultiplexer connectionMultiplexer)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _redis = connectionMultiplexer;
+        _db = _redis.GetDatabase();
+
     }
 
     public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
     {
+        if (await _db.KeyExistsAsync("AllCategories"))
+        {
+            var categories = await _db.StringGetAsync("AllCategories");
+            return JsonConvert.DeserializeObject<IEnumerable<CategoryDto>>(categories);
+        }
         var category = await _unitOfWork.Repository<Domain.Entities.Category>().GetAll()
                 .Include(sc => sc.Subcategories)
                 .ToListAsync();
+        await _db.StringSetAsync("AllCategories", JsonConvert.SerializeObject(_mapper.Map<IEnumerable<CategoryDto>>(category)), TimeSpan.FromMinutes(1));
         
         return _mapper.Map<IEnumerable<CategoryDto>>(category);
     }

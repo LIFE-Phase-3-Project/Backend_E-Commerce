@@ -1,7 +1,9 @@
 using Application.Services.ImageStorage;
 using Application.Services.Product;
+using Application.Services.ProductAnalytics;
 using Domain.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
+using Presistence.Repositories.ProductAnalytics;
 
 namespace Life_Ecommerce.Controllers;
 
@@ -12,10 +14,15 @@ public class ProductController : ControllerBase
     private readonly IProductService _productService;
     private readonly IStorageService _storageService;
     private readonly ILogger<ProductController> _logger;
-    public ProductController(IProductService productService, IStorageService storageService, ILogger<ProductController> logger)
+    private readonly IProductAnalyticsService _productAnalyticsService;
+
+    public ProductController(IProductService productService, IStorageService storageService, ILogger<ProductController> logger, IProductAnalyticsService productAnalyticsService)
     {
         _productService = productService;
         _logger = logger;
+        _storageService = storageService;
+        _productAnalyticsService = productAnalyticsService;
+
     }
 
     [HttpGet("search")]
@@ -59,7 +66,7 @@ public class ProductController : ControllerBase
         {
             return NotFound();
         }
-        _logger.LogInformation($"Product with id {id} retrieved successfully.");
+        _logger.LogInformation($"ProductId: {id}, CategoryId: {product.CategoryId}, SubcategoryId: {product.SubCategoryId} retrieved successfully.");
         return Ok(product);
     }
 
@@ -134,6 +141,31 @@ public class ProductController : ControllerBase
     {
         await _productService.SoftDeleteProduct(productId);
         return NoContent();
+    }
+
+    [HttpGet("top-rated-from-subCategory")]
+    public async Task<ActionResult> GetTopRatedProductsBySubCategory(int subCategoryId)
+    {
+       var products = await _productAnalyticsService.GetTopRatedProductsBySubCategoryAsync(subCategoryId);
+        return Ok(products);
+    }
+    [HttpGet("top-rated-from-Category")]
+    public async Task<ActionResult> GetTopRatedProductsByCategory(int categoryId)
+    {
+        var products = await _productAnalyticsService.GetTopRatedProductsByCategoryAsync(categoryId);
+        return Ok(products);
+    }
+    [HttpGet("top-sold-from-subCategory")]
+    public async Task<ActionResult> GetTopSoldProductsBySubCategory(int subCategoryId)
+    {
+        var products = await _productAnalyticsService.GetTopSoldProductsBySubCategoryAsync(subCategoryId);
+        return Ok(products);
+    }
+    [HttpGet("top-sold-from-Category")]
+    public async Task<ActionResult> GetTopSoldProductsByCategory(int categoryId)
+    {
+        var products = await _productAnalyticsService.GetTopSoldProductsByCategoryAsync(categoryId);
+        return Ok(products);
     }
 }
 

@@ -24,6 +24,13 @@ using Microsoft.OpenApi.Models;
 using Nest;
 using System.Text;
 using Application.Services.UserAddress;
+using Presistence.Repositories.ProductAnalytics;
+using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
+using Application.Services.ProductAnalytics;
+using Hangfire;
+using Hangfire.SqlServer;
+using BackgroundJobs;
 
 
 namespace Configurations
@@ -55,8 +62,13 @@ namespace Configurations
                services.AddScoped<IPaymentService, PaymentService>();
                services.AddScoped<IStorageService, StorageService>();
                services.AddScoped<IDiscountService, DiscountService>();
-               services.AddScoped<IUserAddressService, UserAddressService>();
-     
+            services.AddScoped<IUserAddressService, UserAddressService>();
+
+            services.AddScoped<IProductAnalyticsService, ProductAnalyticsService>();
+            services.AddScoped<IProductAnalyticsRepo, ProductAnalyticsRepo>();
+            services.AddScoped<ProductAnalyticsJobs>();
+
+
             return services;
         }
 
@@ -76,9 +88,35 @@ namespace Configurations
 
             var elasticClient = new ElasticClient(settings);
             services.AddSingleton<IElasticClient>(elasticClient);
+
+
+            // Redis configuration
+            var redisConnectionString = configuration["Redis:ConnectionString"];
+            var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+            services.AddSingleton<IConnectionMultiplexer>(redis);
+
             return services;
         }
 
+        public static IServiceCollection AddHangfireConfig(this IServiceCollection services, IConfiguration configuration)
+        {
+            var connectionString = configuration.GetConnectionString("DevConnection");
+           services.AddHangfire(configuration => configuration
+                   .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                   .UseSimpleAssemblyNameTypeSerializer()
+                   .UseRecommendedSerializerSettings()
+                   .UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+                   {
+                       CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                       SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                       QueuePollInterval = TimeSpan.Zero,
+                       UseRecommendedIsolationLevel = true,
+                       DisableGlobalLocks = true
+                   }));
+
+            services.AddHangfireServer();
+            return services;
+        }
         public static IServiceCollection AddWebServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddLogging(configuration);
@@ -155,5 +193,7 @@ namespace Configurations
             return services;
 
         }
+
+
     }
 }

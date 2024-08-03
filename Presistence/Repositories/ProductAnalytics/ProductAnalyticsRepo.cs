@@ -1,5 +1,7 @@
 ﻿using Domain.DTOs.Product;
+using Elastic.CommonSchema;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +14,12 @@ namespace Presistence.Repositories.ProductAnalytics
     public class ProductAnalyticsRepo : IProductAnalyticsRepo
     {
         private readonly APIDbContext _context;
+        private readonly IElasticClient _elasticClient;
 
-        public ProductAnalyticsRepo(APIDbContext context)
+        public ProductAnalyticsRepo(APIDbContext context, IElasticClient elasticClient)
         {
             _context = context;
+            _elasticClient = elasticClient;
         }
 
 
@@ -27,9 +31,11 @@ namespace Presistence.Repositories.ProductAnalytics
                 .Take(3)
                 .Select(p => new TopProductDto
                 {
+                    Id = p.Id,
                     Title = p.Title,
-                    FirstImage = p.Image.FirstOrDefault(),
-                    DiscountedPrice = p.DiscountedPrice
+                    FirstImage = p.Image[0],
+                    DiscountedPrice = p.DiscountedPrice,
+                    Ratings = p.Ratings
                 })
                 .ToListAsync();
         }
@@ -42,9 +48,11 @@ namespace Presistence.Repositories.ProductAnalytics
                 .Take(3)
                 .Select(p => new TopProductDto
                 {
+                    Id = p.Id,
                     Title = p.Title,
-                    FirstImage = p.Image.FirstOrDefault(),
-                    DiscountedPrice = p.DiscountedPrice
+                    FirstImage = p.Image[0],
+                    DiscountedPrice = p.DiscountedPrice,
+                    Ratings = p.Ratings
                 })
                 .ToListAsync();
         }
@@ -58,9 +66,11 @@ namespace Presistence.Repositories.ProductAnalytics
                 .Take(3)
                 .Select(g => new TopProductDto
                 {
+                    Id = g.Key.Id,
                     Title = g.Key.Title,
-                    FirstImage = g.Key.Image.FirstOrDefault(),
-                    DiscountedPrice = g.Key.DiscountedPrice
+                    FirstImage = g.Key.Image[0],
+                    DiscountedPrice = g.Key.DiscountedPrice,
+                    Ratings = g.Key.Ratings
                 })
                 .ToListAsync();
         }
@@ -74,14 +84,16 @@ namespace Presistence.Repositories.ProductAnalytics
                 .Take(3)
                 .Select(g => new TopProductDto
                 {
+                    Id = g.Key.Id,
                     Title = g.Key.Title,
-                    FirstImage = g.Key.Image.FirstOrDefault(),
-                    DiscountedPrice = g.Key.DiscountedPrice
+                    FirstImage = g.Key.Image[0],
+                    DiscountedPrice = g.Key.DiscountedPrice,
+                    Ratings = g.Key.Ratings
                 })
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<TopProductDto>> CalculateTopViewedProductsbyCategory(int categoryId)
+        public async Task CalculateTopViewedProductsbyCategory(int categoryId)
         {
             throw new NotImplementedException();
         }

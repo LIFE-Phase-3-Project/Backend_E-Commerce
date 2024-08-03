@@ -82,18 +82,6 @@ namespace Application.Services.UserRepository
             return user;
         }
 
-        public string GetUserRole(int roleId)
-        {
-            var roleName = _unitOfWork.Repository<Role>().GetByCondition(x => x.Id == roleId).Select(r => r.RoleName).FirstOrDefault();
-
-            if (roleName == null)
-            {
-                throw new KeyNotFoundException("Role not found");
-            }
-
-            return roleName;
-        }
-
         public async Task<PaginatedInfo<Domain.Entities.User>> GetUsers(int page, int pageSize)
         {
             var query = _unitOfWork.Repository<Domain.Entities.User>().GetAll();
@@ -109,10 +97,10 @@ namespace Application.Services.UserRepository
             return paginatedInfo;
         }
 
-        public async Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roleId)
+        public async Task<IEnumerable<Domain.Entities.User>> GetUsersByRole(string role)
         {
             return await _unitOfWork.Repository<Domain.Entities.User>()
-                .GetByCondition(user => user.RoleId == roleId)
+                .GetByCondition(user => user.Role == role)
                 .ToListAsync();
         }
 

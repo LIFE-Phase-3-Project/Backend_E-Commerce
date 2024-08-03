@@ -59,10 +59,10 @@ namespace Presistence
         }
         private void ConfigureUser(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.UserRole)
-                .WithMany()
-                .HasForeignKey(u => u.RoleId);
+            //modelBuilder.Entity<User>()
+                //.HasOne(u => u.UserAddress)
+                //.WithMany()
+                //.HasForeignKey(u => u.UserAddressId);
         }
 
         private void ConfigureProduct(ModelBuilder modelBuilder)

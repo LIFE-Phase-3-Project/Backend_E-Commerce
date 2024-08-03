@@ -33,7 +33,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseMiddleware<AuthMiddleware>();
+//app.UseMiddleware<AuthMiddleware>();
 RecurringJob.AddOrUpdate<ProductAnalyticsJobs>(job => job.RecalculateTopRatedProductsAsync(), Cron.Daily);
 RecurringJob.AddOrUpdate<ProductAnalyticsJobs>(job => job.RecalculateTopSoldProductsAsync(), Cron.Daily);
 

@@ -19,7 +19,5 @@ namespace Domain.DTOs.User
         [Phone]
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
-
-        public int RoleId { get; set; } = 3;
     }
 }

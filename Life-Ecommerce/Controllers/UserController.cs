@@ -54,16 +54,13 @@ namespace Life_Ecommerce.Controllers
             {
                 return Unauthorized("Email or password is incorrect");
             }
-
-            var roleName = _userService.GetUserRole(user.RoleId);
-            var email = request.Email;
-
-            var token = _userService.GenerateToken(user.Id, roleName, email);
+            
+            var token = _userService.GenerateToken(user.Id, user.Role, user.Email);
             
             return Ok(new
             {
                 IsAuthenticated = true,
-                Role = roleName,
+                Role = user.Role,
                 Token = token
             });
         }
@@ -88,10 +85,10 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpGet]
-        [Route("GetUsersByRoleId")]
-        public async Task<IActionResult> GetUsersByRoleId(int roleId)
+        [Route("GetUsersByRole")]
+        public async Task<IActionResult> GetUsersByRole(string role)
         {
-            var users = await _userService.GetUsersByRoleId(roleId);
+            var users = await _userService.GetUsersByRole(role);
             return Ok(users);
         }
 

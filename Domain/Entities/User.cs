@@ -12,7 +12,7 @@ namespace Domain.Entities
     public class User
     {
         [Key]
-        public int Id { get; set; }
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string FirstName {  get; set; } 
 
         public string LastName { get; set; }
@@ -21,6 +21,5 @@ namespace Domain.Entities
         public string Address { get; set; }
         public string Password { get; set; }
         public string Role { get; set; } = "Costumer";
-        public string? Auth0UserId { get; set; }
     }
 }

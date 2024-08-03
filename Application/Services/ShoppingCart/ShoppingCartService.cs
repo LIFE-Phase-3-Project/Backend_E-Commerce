@@ -28,7 +28,7 @@ namespace Application.Services.ShoppingCart
             _discountService = discountService;
         }
 
-        public async Task MergeGuestCart(string cartIdentifier, int userId)
+        public async Task MergeGuestCart(string cartIdentifier, string userId)
         {
             var guestCart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
                 .GetByCondition(c => c.CartIdentifier == cartIdentifier)
@@ -85,10 +85,10 @@ namespace Application.Services.ShoppingCart
 
             return cartIdentifier;
         }
-        public async Task<bool> AddItem(int productId, int? userId, string cartIdentifier)
+        public async Task<bool> AddItem(int productId, string? userId, string cartIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();
-            if (userId.HasValue)
+            if (userId != null)
             {
                  cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
                           .GetByCondition(c => c.UserId == userId)
@@ -149,10 +149,10 @@ namespace Application.Services.ShoppingCart
             return false; 
         }
 
-        public Task ClearCart(int? userId, string cartIdentifier)
+        public Task ClearCart(string? userId, string cartIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();
-            if (userId.HasValue)
+            if (userId != null)
             {
                 cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
                 if (cart == null) return Task.CompletedTask;
@@ -174,7 +174,7 @@ namespace Application.Services.ShoppingCart
             return Task.CompletedTask;
                 
         }
-        public async Task<ShoppingCartDto> GetCartContents(int? userId, string cardIdentifier)
+        public async Task<ShoppingCartDto> GetCartContents(string? userId, string cardIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();
             if (userId != null)
@@ -222,7 +222,7 @@ namespace Application.Services.ShoppingCart
             return cartDto;
         }
 
-        public async Task<bool> ApplyDiscount(int? userId, string? cartIdentifier, string discountCode)
+        public async Task<bool> ApplyDiscount(string? userId, string? cartIdentifier, string discountCode)
         {
             Domain.Entities.ShoppingCart? cart = new Domain.Entities.ShoppingCart();
             if (userId != null)
@@ -258,7 +258,7 @@ namespace Application.Services.ShoppingCart
             return true;
         }
 
-        public async Task<bool> RemoveDiscount(int? userId, string? cartIdentifier, string discountCode)
+        public async Task<bool> RemoveDiscount(string? userId, string? cartIdentifier, string discountCode)
         {
             Domain.Entities.ShoppingCart? cart = new Domain.Entities.ShoppingCart();
             if (userId != null)
@@ -294,7 +294,7 @@ namespace Application.Services.ShoppingCart
 
             return true;
         }
-        public Task<bool> RemoveItem(int ProductId, int? userId, string cardIdentifier)
+        public Task<bool> RemoveItem(int ProductId, string? userId, string cardIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();
             if (userId != null)
@@ -319,7 +319,7 @@ namespace Application.Services.ShoppingCart
             return Task.FromResult(false);
         }
 
-        public Task<bool> UpdateItemQuantity(int ProductId, int Quantity, int? userId, string cardIdentifier)
+        public Task<bool> UpdateItemQuantity(int ProductId, int Quantity, string? userId, string cardIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();
             if (userId != null)

@@ -13,7 +13,7 @@ namespace Domain.Entities
         public string CartIdentifier { get; set; } // for guest users, empty for registered ones
 
         [ForeignKey("UserId")]
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
         public List<CartItem> CartItems { get; set; }

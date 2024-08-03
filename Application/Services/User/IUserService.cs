@@ -7,12 +7,12 @@ namespace Application.Services.UserRepository
     {
         Task AddUser(RegisterUserDto u);
         Task<PaginatedInfo<Domain.Entities.User>> GetUsers(int page, int pageSize);
-        Task<Domain.Entities.User> GetUserById(int id);
+        Task<Domain.Entities.User> GetUserById(string id);
         Task<IEnumerable<Domain.Entities.User>> GetUsersByRole(string role);
         Task<Domain.Entities.User> UpdateUser(string token, Domain.Entities.User objUser);
         Task<bool> DeleteUser(string token);
-        Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);
+        Task<bool> ChangePassword(string userId, string oldPassword, string newPassword);
         Domain.Entities.User AuthenticateUser(string email, string password);
-        string GenerateToken(int userId, string roleName, string email);
+        string GenerateToken(string userId, string roleName, string email);
     }
 }

@@ -35,7 +35,7 @@ public class ReviewService : IReviewService
             throw new SecurityTokenException("UserId not found in token");
         }
 
-        reviewDto.UserId = int.Parse(userIdClaim.Value);
+        reviewDto.UserId = userIdClaim.Value;
 
         var review = _mapper.Map<Domain.Entities.Review>(reviewDto);
 
@@ -64,7 +64,7 @@ public class ReviewService : IReviewService
             throw new SecurityTokenException("UserId not found in token");
         }
 
-        var userId = int.Parse(userIdClaim.Value);
+        var userId = userIdClaim.Value;
 
         var review = await _unitOfWork.Repository<Domain.Entities.Review>()
             .GetByCondition(r => r.Id == reviewId)
@@ -111,7 +111,7 @@ public class ReviewService : IReviewService
         };
     }
 
-    public async Task<PaginatedInfo<ReviewDto>> GetReviewsByUserIdAsync(int userId, int page, int pageSize)
+    public async Task<PaginatedInfo<ReviewDto>> GetReviewsByUserIdAsync(string userId, int page, int pageSize)
     {
         var query =  _unitOfWork.Repository<Domain.Entities.Review>()
             .GetByCondition(r => r.UserId == userId)
@@ -168,7 +168,7 @@ public class ReviewService : IReviewService
             throw new SecurityTokenException("UserId not found in token");
         }
 
-        var userId = int.Parse(userIdClaim.Value);
+        var userId = userIdClaim.Value;
 
         var review = await _unitOfWork.Repository<Domain.Entities.Review>()
             .GetByCondition(r => r.Id == reviewId)

@@ -7,7 +7,7 @@ public interface IReviewService
     Task<CreateReviewDto> CreateReviewAsync(CreateReviewDto reviewDto, string token);
     // Task<CreateReviewDto> GetReviewByIdAsync(int id);
     Task<PaginatedInfo<ReviewDto>> GetReviewsByProductIdAsync(int productId, int page, int pageSize);
-    Task<PaginatedInfo<ReviewDto>> GetReviewsByUserIdAsync(int userId, int page, int pageSize);
+    Task<PaginatedInfo<ReviewDto>> GetReviewsByUserIdAsync(string userId, int page, int pageSize);
 
     Task<PaginatedInfo<ReviewDto>> GetAllReviews(int page, int pageSize);
 

@@ -10,8 +10,8 @@ namespace Application.Services.Wishlist
 {
     public interface IWishlistService
     {
-        Task<bool> AddWishlistEntry(int userId, int productId);
-        Task RemoveWishlistEntry(int userId, int productId);
-        Task<List<WishlistEntryDto>> GetWishlistEntries(int userId);
+        Task<bool> AddWishlistEntry(string userId, int productId);
+        Task RemoveWishlistEntry(string userId, int productId);
+        Task<List<WishlistEntryDto>> GetWishlistEntries(string userId);
     }
 }

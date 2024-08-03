@@ -39,7 +39,7 @@ namespace Application.Services.UserRepository
         }
         
         
-        public async Task<bool> ChangePassword(int userId, string oldPassword, string newPassword)
+        public async Task<bool> ChangePassword(string userId, string oldPassword, string newPassword)
         {
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(u => u.Id == userId).FirstOrDefaultAsync();
 
@@ -63,7 +63,7 @@ namespace Application.Services.UserRepository
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
 
-            var userId =int.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value);
+            var userId = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
 
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
             if (user != null)
@@ -76,7 +76,7 @@ namespace Application.Services.UserRepository
         }
 
 
-        public async Task<Domain.Entities.User> GetUserById(int id)
+        public async Task<Domain.Entities.User> GetUserById(string id)
         {
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
             return user;
@@ -109,7 +109,7 @@ namespace Application.Services.UserRepository
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
 
-            var userId =int.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value);
+            var userId = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
 
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
             if (user == null)
@@ -141,7 +141,7 @@ namespace Application.Services.UserRepository
             return user;
         }
 
-        public string GenerateToken(int userId, string roleName, string email)
+        public string GenerateToken(string userId, string roleName, string email)
         {
             return Life_Ecommerce.TokenService.TokenService.GenerateToken(userId, roleName, email);
             // return TokenService.GenerateToken(userId, roleName, email);

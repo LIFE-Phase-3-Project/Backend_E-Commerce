@@ -16,7 +16,7 @@ namespace Application.Services.Wishlist
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<bool> AddWishlistEntry(int userId, int productId)
+        public async Task<bool> AddWishlistEntry(string userId, int productId)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace Application.Services.Wishlist
             }
         }
 
-        public async Task <List<WishlistEntryDto>> GetWishlistEntries(int userId)
+        public async Task <List<WishlistEntryDto>> GetWishlistEntries(string userId)
         {
             var wishlistEntries =  _unitOfWork.Repository<WishlistEntry>().GetByCondition(we => we.UserId == userId);
 
@@ -52,7 +52,7 @@ namespace Application.Services.Wishlist
             return wishlistEntryDtos;
         }
 
-        public Task RemoveWishlistEntry(int userId, int productId)
+        public Task RemoveWishlistEntry(string userId, int productId)
         {
             var entry = new WishlistEntry
             {

@@ -16,7 +16,7 @@ namespace Domain.DTOs.Order
         public string Name { get; set; }
         public int UserAddressId { get; set; }
         public int ProductId { get; set; }
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public int Count { get; set; }
     }
 }

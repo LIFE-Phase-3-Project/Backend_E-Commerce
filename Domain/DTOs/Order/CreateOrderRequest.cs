@@ -8,7 +8,7 @@ namespace Domain.DTOs.Order
 {
     public class CreateOrderRequest
     {
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public string CartIdentifier { get; set; }
     }
 }

@@ -78,7 +78,7 @@ namespace Life_Ecommerce.Controllers
 
         [HttpGet]
         [Route("GetUserByID/{Id}")]
-        public async Task<IActionResult> GetUserByID(int Id)
+        public async Task<IActionResult> GetUserByID(string Id)
         {
             var user = await _userService.GetUserById(Id);
             return Ok(user);

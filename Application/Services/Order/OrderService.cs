@@ -36,7 +36,7 @@ namespace Application.Services.Order
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
 
-            var userId =int.Parse(jwtToken.Claims.First(claim => claim.Type == "nameid").Value);
+            var userId = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
             
             var cart = await _shoppingCartService.GetCartContents(userId, null);
             if (cart == null || !cart.Items.Any())
@@ -103,7 +103,7 @@ namespace Application.Services.Order
             await _shoppingCartService.ClearCart(userId, null);
 
             var user = await _unitOfWork.Repository<Domain.Entities.User>()
-                    .GetByIdAsync(userId);
+                    .GetByCondition(x => x.Id == userId).FirstOrDefaultAsync();
             var subject = "Order Confirmation";
             var message = $"Dear {user.FirstName},\n\nThank you for your order! Your order ID is {order.Id}. We will notify you when your order status changes.\n\nBest regards,\nLIFE";
 
@@ -132,7 +132,7 @@ namespace Application.Services.Order
             return _mapper.Map<OrderDto>(order);
         }
 
-        public async Task<IEnumerable<OrderDto>> GetOrdersByUserId(int userId)
+        public async Task<IEnumerable<OrderDto>> GetOrdersByUserId(string userId)
         {
             var orders = await _orderRepository.GetOrdersByUserIdAsync(userId);
 
@@ -174,7 +174,7 @@ namespace Application.Services.Order
             if (orderDetail != null)
             {
                 var user = await _unitOfWork.Repository<Domain.Entities.User>()
-                    .GetByIdAsync(orderDetail.UserId);
+                    .GetByCondition(x => x.Id == orderDetail.UserId).FirstOrDefaultAsync();
 
                 if (user != null)
                 {

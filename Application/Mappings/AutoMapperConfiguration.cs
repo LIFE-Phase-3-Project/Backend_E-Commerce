@@ -34,7 +34,6 @@ namespace Application.Mapping
                 .ForMember(dest => dest.UserOverview, opt => opt.MapFrom(src => src.User));
         
             CreateMap<User, UserOverviewDto>().ReverseMap();
-            CreateMap<User, UserWithRoleDto>().ReverseMap();
             CreateMap<User, UpdateUserDto>().ReverseMap();
             CreateMap<UserAddress, CreateUserAddressDto>().ReverseMap();
 

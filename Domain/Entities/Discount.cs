@@ -10,7 +10,7 @@ namespace Domain.Entities
     public class Discount
     {
         public int Id { get; set; }
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public string Code { get; set; }
         public decimal Percentage { get; set; }
         public DateTime CreatedAt   { get; set; } = DateTime.Now;

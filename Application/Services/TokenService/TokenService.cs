@@ -9,7 +9,7 @@ namespace Life_Ecommerce.TokenService
    
         public class TokenService
         {
-            public static string GenerateToken(int id, string role, string email)
+            public static string GenerateToken(string id, string role, string email)
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes("OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA");

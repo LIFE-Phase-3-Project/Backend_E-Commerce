@@ -9,7 +9,7 @@ namespace Application.Services.Discount
 {
     public interface IDiscountService
     {
-        Task<IEnumerable<Domain.Entities.Discount>> GetDiscountsByUserId(int userId);
+        Task<IEnumerable<Domain.Entities.Discount>> GetDiscountsByUserId(string userId);
 
         Task<Domain.Entities.Discount> ValidateDiscount(string code);
         Task CreateDiscount(CreateDiscountDto discount);

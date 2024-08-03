@@ -280,16 +280,16 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 
                 var _unitOfWork = context.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
 
-                var existingUser = _unitOfWork.Repository<User>().GetByCondition(x => x.Auth0UserId == auth0UserId).FirstOrDefault();
+                var existingUser = _unitOfWork.Repository<User>().GetByCondition(x => x.Id == auth0UserId).FirstOrDefault();
 
                 if (existingUser == null)
                 {
                     var user = new User()
                     {
+                        Id = auth0UserId,
                         FirstName = context.Principal?.FindFirst("https://ecommerce-life-2.com/given_name")?.Value,
                         LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
                         Address = "context.HttpContext.User.FindFirst(ClaimTypes.StreetAddress)?.Value",
-                        Auth0UserId = auth0UserId,
                         Email = context.Principal?.FindFirst("https://ecommerce-life-2.com/email")?.Value,
                         Password = "test",
                         PhoneNumber = context.Principal?.FindFirst("https://ecommerce-life-2.com/userId")?.Value,

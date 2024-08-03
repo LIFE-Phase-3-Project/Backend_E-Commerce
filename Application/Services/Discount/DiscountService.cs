@@ -32,7 +32,7 @@ namespace Application.Services.Discount
             return discount;
         }
 
-        public async Task<IEnumerable<Domain.Entities.Discount>> GetDiscountsByUserId(int userId)
+        public async Task<IEnumerable<Domain.Entities.Discount>> GetDiscountsByUserId(string userId)
         {
             var discounts = await _unitOfWork.Repository<Domain.Entities.Discount>().GetAll().Where(x => x.UserId == userId && x.ExpiryDate > DateTime.Now).ToListAsync();
             return discounts;

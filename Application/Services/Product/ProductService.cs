@@ -190,8 +190,8 @@ public class ProductService : IProductService
         {
             return false;
         }
-
-        _unitOfWork.Repository<Domain.Entities.Product>().Delete(product);
+        product.IsDeleted = true;
+        _unitOfWork.Repository<Domain.Entities.Product>().Update(product);
         await _unitOfWork.CompleteAsync();
         await _searchService.DeleteProductFromIndexAsync(product.Id);
 

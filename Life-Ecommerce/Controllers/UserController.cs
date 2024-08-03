@@ -25,12 +25,12 @@ namespace Life_Ecommerce.Controllers
 
         [HttpGet]
         [Route("GetUsers")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(int page = 1, int pageSize = 10)
         {
             var userRole = HttpContext.Items["UserRole"] as string;
             if (userRole == "SuperAdmin")
             {
-                var users = await _userService.GetUsers();
+                var users = await _userService.GetUsers(page, pageSize);
                 return Ok(users);
             }
             return Unauthorized("You are not authorized to view this content");

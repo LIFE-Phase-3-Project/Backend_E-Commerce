@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
+using Domain.DTOs.Pagination;
 using Domain.DTOs.User;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -93,9 +94,19 @@ namespace Application.Services.UserRepository
             return roleName;
         }
 
-        public async Task<IEnumerable<Domain.Entities.User>> GetUsers()
+        public async Task<PaginatedInfo<Domain.Entities.User>> GetUsers(int page, int pageSize)
         {
-            return await _unitOfWork.Repository<Domain.Entities.User>().GetAll().ToListAsync();
+            var query = _unitOfWork.Repository<Domain.Entities.User>().GetAll();
+            var totalCount = await query.CountAsync();
+            var products = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(); ;
+            var paginatedInfo = new PaginatedInfo<Domain.Entities.User>
+            {
+               Items = products,
+               Page = page,
+               PageSize = pageSize,
+               TotalCount = totalCount
+            };
+            return paginatedInfo;
         }
 
         public async Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roleId)

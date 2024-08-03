@@ -1,17 +1,12 @@
-﻿using Domain.DTOs.User;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.DTOs.Pagination;
+using Domain.DTOs.User;
 
 namespace Application.Services.UserRepository
 {
     public interface IUserService
     {
         Task AddUser(RegisterUserDto u);
-        Task<IEnumerable<Domain.Entities.User>> GetUsers();
+        Task<PaginatedInfo<Domain.Entities.User>> GetUsers(int page, int pageSize);
         Task<Domain.Entities.User> GetUserById(int id);
         Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roliId);
         Task<Domain.Entities.User> UpdateUser(string token, Domain.Entities.User objUser);

@@ -382,7 +382,6 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 // Set a reasonable timeout for session
                 options.IdleTimeout = TimeSpan.FromDays(7);
                 options.Cookie.Name = "LifeEcommerce.Session";
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });

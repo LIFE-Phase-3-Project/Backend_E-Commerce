@@ -67,7 +67,7 @@ namespace Life_Ecommerce.Controllers
                         Expires = DateTime.Now.AddDays(7), // Expires after 7 days
                         HttpOnly = true, // Enhance security by making the cookie accessible only through the HTTP protocol
                         IsEssential = true,
-                        Secure = true, // Ensures the cookie is sent only over HTTPS
+                        Secure = false, // Ensures the cookie is sent only over HTTPS
                     };
 
                     var protectedCartIdentifier = _dataProtectionProvider.CreateProtector("CartIdentifierProtector").Protect(cartIdentifier);

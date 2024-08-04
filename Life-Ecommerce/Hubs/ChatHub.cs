@@ -52,13 +52,11 @@ namespace Life_Ecommerce.Hubs
                     Recipient = recipientEmail,
                     Message = messageText,
                     Timestamp = DateTime.UtcNow,
-                    SessionId = sessionId // Use the provided sessionId
+                    SessionId = sessionId 
                 };
 
-                // Save the message to the database
                 await _chatService.SaveMessageAsync(chatMessage);
 
-                // Send the message to the recipient
                 await Clients.Client(connectionId).SendAsync("broadcastMessage", senderEmail, messageText);
                 await Clients.Client(connectionId).SendAsync("newMessageNotification", senderEmail);
             }

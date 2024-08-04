@@ -167,5 +167,13 @@ public class ProductController : ControllerBase
         var products = await _productAnalyticsService.GetTopSoldProductsByCategoryAsync(categoryId);
         return Ok(products);
     }
+
+    // add method to modify product discount
+    [HttpPost("discount/{productId}")]
+    public async Task<ActionResult> AddDiscountToProduct(int productId, decimal discount, DateTime ExpiryDate)
+    {
+        await _productService.AddDiscountToProduct(productId, discount, ExpiryDate);
+        return Ok("Discount added successfully.");
+    }
 }
 

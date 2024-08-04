@@ -24,13 +24,16 @@ namespace Life_Ecommerce.Controllers
         private (string userId, string cartIdentifier) GetUserOrCartIdentifier()
         {
             var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
 
-            var userId = jwtToken.Claims.First(claim => claim.Type == "sub").Value; string encryptedCartIdentifier;
+            string encryptedCartIdentifier;
 
-            if (!string.IsNullOrEmpty(userId))
+
+            if (!(token == ""))
             {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+
+                var userId = jwtToken.Claims.First(claim => claim.Type == "sub").Value; 
                 return (userId, null); // Registered user
             }
             else if (HttpContext.Request.Cookies.TryGetValue("CartIdentifier", out encryptedCartIdentifier))

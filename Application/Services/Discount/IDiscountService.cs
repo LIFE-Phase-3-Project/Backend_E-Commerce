@@ -11,7 +11,7 @@ namespace Application.Services.Discount
     {
         Task<IEnumerable<Domain.Entities.Discount>> GetDiscountsByUserId(string userId);
 
-        Task<Domain.Entities.Discount> ValidateDiscount(string code);
+        Task<Domain.Entities.Discount> ValidateDiscount(string code, string userId = "0");
         Task CreateDiscount(CreateDiscountDto discount);
         Task UpdateDiscount(CreateDiscountDto discount);
     }

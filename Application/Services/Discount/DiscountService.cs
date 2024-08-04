@@ -22,14 +22,26 @@ namespace Application.Services.Discount
             _mapper = mapper;
         }
 
-        public async Task<Domain.Entities.Discount> ValidateDiscount(string code)
+        public async Task<Domain.Entities.Discount> ValidateDiscount(string code, string userId = "0")
         {
-            var discount = await _unitOfWork.Repository<Domain.Entities.Discount>().GetByCondition(x => x.Code == code && x.ExpiryDate > DateTime.Now).FirstOrDefaultAsync();
-            if (discount == null)
+            if (userId != "0")
             {
-                return null;
+                var discount = await _unitOfWork.Repository<Domain.Entities.Discount>().GetByCondition(x => x.Code == code && x.UserId == userId && x.ExpiryDate > DateTime.Now).FirstOrDefaultAsync();
+                if (discount == null)
+                {
+                    return null;
+                }
+                return discount;
+            } else
+            {
+                var discount = await _unitOfWork.Repository<Domain.Entities.Discount>().GetByCondition(x => x.Code == code && x.ExpiryDate > DateTime.Now).FirstOrDefaultAsync();
+                if (discount == null)
+                {
+                    return null;
+                }
+                return discount;
             }
-            return discount;
+
         }
 
         public async Task<IEnumerable<Domain.Entities.Discount>> GetDiscountsByUserId(string userId)

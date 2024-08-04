@@ -250,7 +250,8 @@ namespace Application.Services.ShoppingCart
 
             if (discount == null)
                 return false;
-
+            if (discount.UserId != null && discount.UserId != userId)
+                return false;
             cart.DiscountId = discount.Id;
             _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Update(cart);
             await _unitOfWork.CompleteAsync();

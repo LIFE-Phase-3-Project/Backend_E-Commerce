@@ -1,6 +1,7 @@
 using Application.Services.Category;
 using Domain.DTOs.Category;
 using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,6 +19,7 @@ public class CategoryController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = "Costumer")]
     public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
     {
         var categories = await _categoryService.GetAllCategoriesAsync();

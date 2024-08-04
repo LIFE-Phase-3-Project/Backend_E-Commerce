@@ -16,6 +16,7 @@ namespace Application.Mapping
     {
         public AutoMapperConfiguration() { 
             CreateMap<User, RegisterUserDto>().ReverseMap();
+            CreateMap<User, UserDto>().ReverseMap();
             CreateMap<Product, CreateProductDto>().ReverseMap();
             CreateMap<Product, ProductDto>().ReverseMap();
             CreateMap<Review, CreateReviewDto>().ReverseMap();

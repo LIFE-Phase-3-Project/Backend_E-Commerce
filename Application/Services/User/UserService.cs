@@ -4,6 +4,7 @@ using Domain.DTOs.Pagination;
 using Domain.DTOs.User;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Presistence;
 using Stripe.Issuing;
 
@@ -39,8 +40,24 @@ namespace Application.Services.UserRepository
         }
         
         
-        public async Task<bool> ChangePassword(string userId, string oldPassword, string newPassword)
+        public async Task<bool> ChangePassword(string token, string oldPassword, string newPassword)
         {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            if (jwtToken == null)
+            {
+                throw new SecurityTokenException("Invalid token");
+            }
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
+            if (userIdClaim == null)
+            {
+                throw new SecurityTokenException("UserId not found in token");
+            }
+
+            var userId = userIdClaim.Value;
+            
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(u => u.Id == userId).FirstOrDefaultAsync();
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(oldPassword, user.Password))
@@ -76,20 +93,25 @@ namespace Application.Services.UserRepository
         }
 
 
-        public async Task<Domain.Entities.User> GetUserById(string id)
+        public async Task<UserDto> GetUserById(string id)
         {
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == id).FirstOrDefaultAsync();
-            return user;
+            var userDto = _mapper.Map<UserDto>(user);
+            
+            return userDto;
         }
 
-        public async Task<PaginatedInfo<Domain.Entities.User>> GetUsers(int page, int pageSize)
+        public async Task<PaginatedInfo<UserDto>> GetUsers(int page, int pageSize)
         {
             var query = _unitOfWork.Repository<Domain.Entities.User>().GetAll();
             var totalCount = await query.CountAsync();
-            var products = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(); ;
-            var paginatedInfo = new PaginatedInfo<Domain.Entities.User>
+            
+            var users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            var userDtos = _mapper.Map<IEnumerable<UserDto>>(users).ToList();
+
+            var paginatedInfo = new PaginatedInfo<UserDto>
             {
-               Items = products,
+               Items = userDtos,
                Page = page,
                PageSize = pageSize,
                TotalCount = totalCount
@@ -97,14 +119,19 @@ namespace Application.Services.UserRepository
             return paginatedInfo;
         }
 
-        public async Task<IEnumerable<Domain.Entities.User>> GetUsersByRole(string role)
+        public async Task<IEnumerable<UserDto>> GetUsersByRole(string role)
         {
-            return await _unitOfWork.Repository<Domain.Entities.User>()
-                .GetByCondition(user => user.Role == role)
+            var roleName = "https://ecommerce-life-2.com/"+role;
+            
+            var users = await _unitOfWork.Repository<Domain.Entities.User>()
+                .GetByCondition(user => user.Role == roleName)
                 .ToListAsync();
+            
+            var userResponse = _mapper.Map<IEnumerable<UserDto>>(users);
+            return userResponse;
         }
 
-        public async Task<Domain.Entities.User> UpdateUser(string token, Domain.Entities.User objUser)
+        public async Task<UserDto> UpdateUser(string token, UpdateUserDto objUser)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
@@ -114,13 +141,7 @@ namespace Application.Services.UserRepository
             var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
             if (user == null)
             {
-                throw new InvalidOperationException("You don't have access to delete this account");
-            }
-            
-            if (objUser.Password != user.Password)
-            {
-                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(objUser.Password);
-                user.Password = hashedPassword;
+                throw new InvalidOperationException("You don't have access to edit this account");
             }
 
             _mapper.Map(objUser, user);
@@ -128,7 +149,9 @@ namespace Application.Services.UserRepository
             _unitOfWork.Repository<Domain.Entities.User>().Update(user);
             await _unitOfWork.CompleteAsync();
 
-            return user;
+            var userDto = _mapper.Map<UserDto>(user);
+            
+            return userDto;
         }
         
         public Domain.Entities.User AuthenticateUser(string email, string password)

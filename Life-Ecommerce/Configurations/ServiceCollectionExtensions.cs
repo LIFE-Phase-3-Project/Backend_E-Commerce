@@ -275,13 +275,13 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 
                 context.HttpContext.User = context.Principal ?? new ClaimsPrincipal();
                 var auth0UserId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                var roles = context.Principal?.FindFirst("https://ecommerce-life-2.com/roles")?.Value;
+                var role = context.Principal?.FindFirst("https://ecommerce-life-2.com/role")?.Value;
                 
                 
                 var _unitOfWork = context.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
 
                 var existingUser = _unitOfWork.Repository<User>().GetByCondition(x => x.Id == auth0UserId).FirstOrDefault();
-
+                
                 if (existingUser == null)
                 {
                     var user = new User()
@@ -289,31 +289,21 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         Id = auth0UserId,
                         FirstName = context.Principal?.FindFirst("https://ecommerce-life-2.com/given_name")?.Value,
                         LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
-                        Address = "context.HttpContext.User.FindFirst(ClaimTypes.StreetAddress)?.Value",
+                        Address = "default",
                         Email = context.Principal?.FindFirst("https://ecommerce-life-2.com/email")?.Value,
                         Password = "test",
                         PhoneNumber = context.Principal?.FindFirst("https://ecommerce-life-2.com/userId")?.Value,
-                        Role = "Costumer"
+                        Role = role ?? "Costumer"
                     };
                         
                     _unitOfWork.Repository<User>().Create(user);
                     _unitOfWork.Complete();
-                    
-                    //// Generate your own JWT token
-                    //var token = TokenService.GenerateToken(user.Id, user.UserRole.RoleName, user.Email);
-                
-                    //// Return the token to the user
-                    //context.HttpContext.Response.ContentType = "application/json";
-                    //await context.HttpContext.Response.WriteAsync($"{{\"token\":\"{token}\"}}");
                 }
                 else
                 {
-                    //// Generate your own JWT token
-                    //var token = TokenService.GenerateToken(existingUser.Id, existingUser.UserRole.RoleName, existingUser.Email);
-                
-                    //// Return the token to the user
-                    //context.HttpContext.Response.ContentType = "application/json";
-                    //await context.HttpContext.Response.WriteAsync($"{{\"token\":\"{token}\"}}");
+                    existingUser.Role = role ?? "Costumer";
+                    _unitOfWork.Repository<User>().Update(existingUser);
+                    _unitOfWork.Complete();
                 }
 
             }
@@ -340,6 +330,19 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             #endregion
 
 
+            #region AuthorizationPolicy
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Costumer", policy =>
+                {
+                    policy.RequireClaim("https://ecommerce-life-2.com/role", "Costumer");
+                });
+
+                
+            });
+
+            #endregion
 
             services.AddCors(options =>
             {

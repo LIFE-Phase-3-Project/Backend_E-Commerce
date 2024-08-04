@@ -18,7 +18,6 @@ public class ReviewController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto reviewDto)
     {
-        // Extract the token from the request header
         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
         var createdReview = await _reviewService.CreateReviewAsync(reviewDto, token);

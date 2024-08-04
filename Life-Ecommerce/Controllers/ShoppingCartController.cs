@@ -22,7 +22,7 @@ namespace Life_Ecommerce.Controllers
 
         private (string userId, string cartIdentifier) GetUserOrCartIdentifier()
         {
-            var userId = HttpContext.Items["UserId"] as string;
+            var userId = HttpContext.Items["sub"] as string;
             string encryptedCartIdentifier;
 
             if (!string.IsNullOrEmpty(userId))

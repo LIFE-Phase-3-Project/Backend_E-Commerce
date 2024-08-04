@@ -14,7 +14,7 @@ namespace Life_Ecommerce.Controllers
         [HttpPost("AddWishlistEntry/{ProductId}")]
         public async Task<ActionResult> AddWishlistEntry(int ProductId)
         {
-            var userId = HttpContext.Items["UserId"] as string;
+            var userId = HttpContext.Items["sub"] as string;
             if (userId == null)
             {
                 return Unauthorized("You must be logged in to add items to your wishlist.");
@@ -26,7 +26,7 @@ namespace Life_Ecommerce.Controllers
         [HttpDelete("RemoveWishlistEntry/{ProductId}")]
         public async Task<ActionResult> RemoveWishlistEntry(int ProductId)
         {
-            var userId = HttpContext.Items["UserId"] as string;
+            var userId = HttpContext.Items["sub"] as string;
             if (userId == null)
             {
                 return Unauthorized("You must be logged in to remove items from your wishlist.");
@@ -37,7 +37,7 @@ namespace Life_Ecommerce.Controllers
         [HttpGet("GetWishlistEntries")]
         public async Task<ActionResult> GetWishlistEntries()
         {
-            var userId = HttpContext.Items["UserId"] as string;
+            var userId = HttpContext.Items["sub"] as string;
             if (userId == null)
             {
                 return Unauthorized("You must be logged in to view your wishlist.");

@@ -1,10 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using Application.Services.Email;
 using AutoMapper;
 using Domain.DTOs.Pagination;
 using Domain.DTOs.User;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Nest;
 using Presistence;
 using Stripe.Issuing;
 
@@ -14,11 +16,13 @@ namespace Application.Services.UserRepository
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _emailService = emailService;
         }
         
         
@@ -37,6 +41,25 @@ namespace Application.Services.UserRepository
 
             _unitOfWork.Repository<Domain.Entities.User>().Create(userToRegister);
             await _unitOfWork.CompleteAsync();
+            
+            var subject = "Welcome to Life Ecommerce!";
+            var message = $@"
+            Hi {user.FirstName},
+
+            Welcome to the Life Ecommerce family!
+
+            We are thrilled to have you with us. At Life Ecommerce, we strive to provide you with the best shopping experience possible. If you have any questions, need assistance, or just want to say hello, don't hesitate to reach out to our support team.
+
+            Happy shopping!
+
+            Best regards,
+            The Life Ecommerce Team
+
+            -- 
+            Life Ecommerce
+            Your go-to place for all your needs";
+
+            await _emailService.SendEmailAsync(user.Email, subject, message);
         }
         
         

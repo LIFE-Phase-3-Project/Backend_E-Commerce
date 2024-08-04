@@ -23,16 +23,25 @@ namespace Application.Services.Chat
 
         public async Task<ChatSession> StartSessionAsync(string customerEmail, string adminEmail)
         {
-            var session = new ChatSession
+            var conversation = await _chatRepository.GetSession(customerEmail, adminEmail);
+
+            if (conversation == null)
             {
-                CustomerEmail = customerEmail,
-                AdminEmail = adminEmail,
-                StartedAt = DateTime.UtcNow,
-                //Messages = new List<ChatMessage>()
-            };
-            await _chatRepository.AddSessionAsync(session);
-            await _unitOfWork.CompleteAsync();
-            return session;
+                var session = new ChatSession
+                {
+                    CustomerEmail = customerEmail,
+                    AdminEmail = adminEmail,
+                    StartedAt = DateTime.UtcNow,
+                    //Messages = new List<ChatMessage>()
+                };
+                await _chatRepository.AddSessionAsync(session);
+                await _unitOfWork.CompleteAsync();
+                return session;
+            }
+
+           return conversation;
+
+
         }
 
         public async Task<bool> EndSessionAsync(int sessionId)

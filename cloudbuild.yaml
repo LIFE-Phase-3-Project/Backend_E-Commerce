@@ -11,6 +11,17 @@ steps:
       - push 
       - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
 
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'set'
+      - 'image'
+      - 'deployment/backend-deployment'
+      - 'backend=$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=$_COMPUTE_REGION'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CONTAINER_CLUSTER'
+      - 'CLOUDSDK_CORE_PROJECT=$_PROJECT_ID'
+
 images:
   - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
 

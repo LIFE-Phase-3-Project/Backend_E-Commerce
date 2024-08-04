@@ -12,5 +12,9 @@ namespace Presistence.Repositories.ChatRepo
         Task UpdateSessionAsync(ChatSession session);
 
         Task<List<ChatSession>> GetSessionsByStatusAsync();
+
+        Task<ChatSession> GetSession(string User1, string User2);
+
+
     }
 }

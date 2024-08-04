@@ -65,7 +65,7 @@ namespace Life_Ecommerce.Controllers
             });
         }
 
-        [HttpDelete]
+        /*[HttpDelete]
         [Route("DeleteUser")] 
         public JsonResult Delete()
         {
@@ -73,7 +73,7 @@ namespace Life_Ecommerce.Controllers
 
             _userService.DeleteUser(token);
             return new JsonResult("Deleted Successfully");
-        }
+        }*/
 
 
         [HttpGet]
@@ -92,7 +92,7 @@ namespace Life_Ecommerce.Controllers
             return Ok(users);
         }
 
-        [HttpPost("ChangePassword")]
+        /*[HttpPost("ChangePassword")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             if (changePasswordDto == null || string.IsNullOrEmpty(changePasswordDto.OldPassword) || string.IsNullOrEmpty(changePasswordDto.NewPassword))
@@ -109,7 +109,7 @@ namespace Life_Ecommerce.Controllers
                 return Ok("Password changed successfully.");
             }
             return BadRequest("Old password does not match or user not found.");
-        }
+        }*/
 
 
     }

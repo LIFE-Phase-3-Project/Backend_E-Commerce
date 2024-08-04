@@ -222,4 +222,17 @@ public class ProductService : IProductService
         // remove product from elastic search
          await _searchService.DeleteProductFromIndexAsync(productId);
     }
+
+    //add method to add discount to product
+    public async Task AddDiscountToProduct(int productId, decimal discount, DateTime ExpiryDate)
+    {
+        var product = await _unitOfWork.Repository<Domain.Entities.Product>().GetById(x => x.Id == productId).FirstOrDefaultAsync();
+        if (product != null)
+        {
+            product.DiscountPercentage = discount;
+            product.DiscountExpiryDate = ExpiryDate; 
+            _unitOfWork.Complete();
+        }
+
+    }
 }

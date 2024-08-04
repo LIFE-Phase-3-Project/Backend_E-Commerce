@@ -13,6 +13,8 @@ public interface IProductService
     Task<IEnumerable<ProductSearchDto>> SearchAsYouTypeAsync(string query);
     Task<PaginatedInfo<ProductDto>> GetProductsByCategoryIdAsync(int categoryId, int page, int pageSize);
     Task<PaginatedInfo<ProductDto>> GetProductsBySubCategoryIdAsync(int subCategoryId, int page, int pageSize);
+
+    Task AddDiscountToProduct(int productId, decimal discount, DateTime ExpiryDate);
     Task SoftDeleteProduct(int productId);
     Task<bool> TestElasticsearchConnectionAsync();
 }

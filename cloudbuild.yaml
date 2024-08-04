@@ -3,14 +3,14 @@ steps:
     args:
       - build
       - '-t'
-      - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:$SHORT_SHA'
+      - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
       - '.'
     id: Build
 
   - name: 'gcr.io/cloud-builders/docker'
     args: 
       - push 
-      - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:$SHORT_SHA'
+      - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
     id: Push
     waitFor: ['Build']
 
@@ -19,7 +19,7 @@ steps:
       - 'set'
       - 'image'
       - 'deployment/backend-deployment'
-      - 'backend=$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:$SHORT_SHA'
+      - 'backend=$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
       - '--namespace=e-commerce'
     env:
       - 'CLOUDSDK_COMPUTE_REGION=europe-west3'
@@ -28,7 +28,7 @@ steps:
     waitFor: ['Push']
 
 images:
-  - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:$SHORT_SHA'
+  - '$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using AutoMapper.Internal.Mappers;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
 using System;
@@ -51,6 +52,15 @@ namespace Presistence.Repositories.ChatRepo
             return await _context.ChatSessions
                 .Where(cs => cs.Status == "pending")
                 .ToListAsync();
+        }
+
+        public async Task<ChatSession> GetSession(string User1, string User2)
+        {
+            var convo = await _context.ChatSessions
+                .FirstOrDefaultAsync(c => (c.AdminEmail == User1 && c.CustomerEmail == User2) ||
+                                          (c.AdminEmail == User2 && c.CustomerEmail == User1));
+
+            return convo;
         }
     }
 }

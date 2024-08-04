@@ -17,6 +17,16 @@ namespace Life_Ecommerce.Controllers
             _chatService = chatService;
         }
 
+        //[HttpPost("start-session")]
+        //public async Task<IActionResult> StartSession([FromBody] StartSessionRequest request)
+        //{
+        //    if (string.IsNullOrEmpty(request.CustomerEmail) || string.IsNullOrEmpty(request.AdminEmail))
+        //        return BadRequest("Invalid request data.");
+
+        //    var session = await _chatService.StartSessionAsync(request.CustomerEmail, request.AdminEmail);
+        //    return Ok(new { sessionId = session.Id });
+        //}
+
         [HttpPost("start-session")]
         public async Task<IActionResult> StartSession([FromBody] StartSessionRequest request)
         {

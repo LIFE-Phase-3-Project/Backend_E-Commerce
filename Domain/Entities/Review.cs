@@ -10,7 +10,7 @@ public class Review
     public string Comment { get; set; }
     public int Rating { get; set; }
     public int ProductId { get; set; }
-    public int UserId { get; set; }
+    public string UserId { get; set; }
     
     [JsonIgnore]
     public Product Product { get; set; }

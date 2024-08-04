@@ -48,13 +48,13 @@ namespace Application.Services.UserAddress
 
         }
 
-        public async Task<IEnumerable<Domain.Entities.UserAddress>> GetUserAddresses(int userId)
+        public async Task<IEnumerable<Domain.Entities.UserAddress>> GetUserAddresses(string userId)
         {
             var addresses =  await _unitOfWork.Repository<Domain.Entities.UserAddress>().GetAll().Where(x => x.UserId == userId && x.IsActive).ToListAsync();
             return addresses;
         }
 
-        public async Task<Domain.Entities.UserAddress> GetUserPrimaryAddress(int userId)
+        public async Task<Domain.Entities.UserAddress> GetUserPrimaryAddress(string userId)
         {
             var address = await _unitOfWork.Repository<Domain.Entities.UserAddress>().GetByCondition(x => x.IsPrimary && x.UserId == userId).FirstOrDefaultAsync();
             return address;

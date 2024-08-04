@@ -9,7 +9,9 @@ namespace Life_Ecommerce.TokenService
    
         public class TokenService
         {
-            public static string GenerateToken(int id, string role, string email)
+            private static readonly string @namespace = "https://ecommerce-life-2.com/";
+
+            public static string GenerateToken(string id, string role, string email)
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = Encoding.ASCII.GetBytes("OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA");
@@ -17,8 +19,8 @@ namespace Life_Ecommerce.TokenService
                 {
                     Subject = new ClaimsIdentity(new[]
                     {
-                        new Claim(ClaimTypes.NameIdentifier, id.ToString()),
-                        new Claim(ClaimTypes.Role, role),
+                        new Claim(JwtRegisteredClaimNames.Sub, id),
+                        new Claim($"{@namespace}role", role),
                         new Claim(ClaimTypes.Email, email)
                 }),
                     Expires = DateTime.UtcNow.AddDays(1),

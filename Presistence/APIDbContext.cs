@@ -16,7 +16,6 @@ namespace Presistence
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
         public DbSet<Category> Categories { get; set; }
 
         public DbSet<SubCategory> SubCategories { get; set; }
@@ -59,10 +58,10 @@ namespace Presistence
         }
         private void ConfigureUser(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.UserRole)
-                .WithMany()
-                .HasForeignKey(u => u.RoleId);
+            //modelBuilder.Entity<User>()
+                //.HasOne(u => u.UserAddress)
+                //.WithMany()
+                //.HasForeignKey(u => u.UserAddressId);
         }
 
         private void ConfigureProduct(ModelBuilder modelBuilder)

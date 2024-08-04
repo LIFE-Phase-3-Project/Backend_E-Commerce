@@ -16,6 +16,7 @@ namespace Application.Mapping
     {
         public AutoMapperConfiguration() { 
             CreateMap<User, RegisterUserDto>().ReverseMap();
+            CreateMap<User, UserDto>().ReverseMap();
             CreateMap<Product, CreateProductDto>().ReverseMap();
             CreateMap<Product, ProductDto>().ReverseMap();
             CreateMap<Review, CreateReviewDto>().ReverseMap();
@@ -34,7 +35,6 @@ namespace Application.Mapping
                 .ForMember(dest => dest.UserOverview, opt => opt.MapFrom(src => src.User));
         
             CreateMap<User, UserOverviewDto>().ReverseMap();
-            CreateMap<User, UserWithRoleDto>().ReverseMap();
             CreateMap<User, UpdateUserDto>().ReverseMap();
             CreateMap<UserAddress, CreateUserAddressDto>().ReverseMap();
 

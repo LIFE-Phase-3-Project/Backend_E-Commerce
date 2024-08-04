@@ -29,12 +29,13 @@ public class CategoryService : ICategoryService
         if (await _db.KeyExistsAsync("AllCategories"))
         {
             var categories = await _db.StringGetAsync("AllCategories");
+            await _db.KeyExpireAsync("AllCategories", TimeSpan.FromMinutes(20));
             return JsonConvert.DeserializeObject<IEnumerable<CategoryDto>>(categories);
         }
         var category = await _unitOfWork.Repository<Domain.Entities.Category>().GetAll()
                 .Include(sc => sc.Subcategories)
                 .ToListAsync();
-        await _db.StringSetAsync("AllCategories", JsonConvert.SerializeObject(_mapper.Map<IEnumerable<CategoryDto>>(category)), TimeSpan.FromMinutes(1));
+        await _db.StringSetAsync("AllCategories", JsonConvert.SerializeObject(_mapper.Map<IEnumerable<CategoryDto>>(category)), TimeSpan.FromMinutes(20));
         
         return _mapper.Map<IEnumerable<CategoryDto>>(category);
     }

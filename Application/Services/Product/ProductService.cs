@@ -120,12 +120,11 @@ public class ProductService : IProductService
     public async Task AddProductAsync(CreateProductDto createProductDto)
     {
         var images = new List<string>();
-        foreach (var item in createProductDto.Image)
+       foreach (var item in createProductDto.Image)
         {
             var st = await _storageService.UploadFileAsync(item);
             images.Add(st);
         }
-        
         var product = _mapper.Map<Domain.Entities.Product>(createProductDto);
         product.Image = images;
         //get subcategory to autoAssign category
@@ -190,8 +189,8 @@ public class ProductService : IProductService
         {
             return false;
         }
-
-        _unitOfWork.Repository<Domain.Entities.Product>().Delete(product);
+        product.IsDeleted = true;
+        _unitOfWork.Repository<Domain.Entities.Product>().Update(product);
         await _unitOfWork.CompleteAsync();
         await _searchService.DeleteProductFromIndexAsync(product.Id);
 

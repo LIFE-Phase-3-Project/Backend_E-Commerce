@@ -10,16 +10,16 @@ namespace Application.Services.ShoppingCart
 {
     public interface IShoppingCartService
     {
-        Task<ShoppingCartDto> GetCartContents(int? userId, string cardIdentifier);
-        Task<bool> AddItem(int productId, int? userId, string cartIdentifier);
+        Task<ShoppingCartDto> GetCartContents(string? userId, string cardIdentifier);
+        Task<bool> AddItem(int productId, string? userId, string cartIdentifier);
         Task<string> CreateCartForGuests();
-        Task<bool> RemoveItem(int ProductId, int? userId, string cartIdentifier);
-        Task<bool> UpdateItemQuantity(int ProductId, int Quantity, int? userId, string cartIdentifier);
-        Task ClearCart(int? userId, string cartIdentifier);
-        Task MergeGuestCart(string cartIdentifier, int userId);
+        Task<bool> RemoveItem(int ProductId, string? userId, string cartIdentifier);
+        Task<bool> UpdateItemQuantity(int ProductId, int Quantity, string? userId, string cartIdentifier);
+        Task ClearCart(string? userId, string cartIdentifier);
+        Task MergeGuestCart(string cartIdentifier, string userId);
 
-        Task<bool> ApplyDiscount(int? userId, string? cartIdentifier, string discountCode);
-        Task<bool> RemoveDiscount(int? userId, string? cartIdentifier, string discountCode);
+        Task<bool> ApplyDiscount(string? userId, string? cartIdentifier, string discountCode);
+        Task<bool> RemoveDiscount(string? userId, string? cartIdentifier, string discountCode);
 
     }
 }

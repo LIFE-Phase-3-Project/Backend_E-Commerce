@@ -3,7 +3,6 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Application.Services.TokenService
@@ -40,7 +39,7 @@ namespace Application.Services.TokenService
                     var role = jwtToken.Claims.First(claim => claim.Type == "role").Value;
 
                     context.Items["UserRole"] = role;
-                    context.Items["UserId"] = jwtToken.Claims.First(claim => claim.Type == "nameid").Value;
+                    context.Items["sub"] = jwtToken.Claims.First(claim => claim.Type == "sub").Value;
                 }
                 catch (Exception ex)
                 {

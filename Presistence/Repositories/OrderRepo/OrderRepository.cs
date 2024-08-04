@@ -18,7 +18,7 @@ namespace Presistence.Repositories.OrderRepo
             _context = context;
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByUserIdAsync(int userId)
+        public async Task<IEnumerable<Order>> GetOrdersByUserIdAsync(string userId)
         {
             // Query orders based on the userId via OrderDetail
             var orders = await _context.OrderDetails

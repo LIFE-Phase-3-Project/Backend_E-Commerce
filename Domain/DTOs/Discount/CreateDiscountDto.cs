@@ -8,7 +8,7 @@ namespace Domain.DTOs.Discount
 {
     public class CreateDiscountDto
     {
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public string Code { get; set; }
         public decimal Percentage { get; set; }
 

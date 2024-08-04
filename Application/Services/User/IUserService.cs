@@ -1,24 +1,18 @@
-﻿using Domain.DTOs.User;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.DTOs.Pagination;
+using Domain.DTOs.User;
 
 namespace Application.Services.UserRepository
 {
     public interface IUserService
     {
         Task AddUser(RegisterUserDto u);
-        Task<IEnumerable<Domain.Entities.User>> GetUsers();
-        Task<Domain.Entities.User> GetUserById(int id);
-        Task<IEnumerable<Domain.Entities.User>> GetUsersByRoleId(int roliId);
-        Task<Domain.Entities.User> UpdateUser(string token, Domain.Entities.User objUser);
+        Task<PaginatedInfo<UserDto>> GetUsers(int page, int pageSize);
+        Task<UserDto> GetUserById(string id);
+        Task<IEnumerable<UserDto>> GetUsersByRole(string role);
+        Task<UserDto> UpdateUser(string token, UpdateUserDto objUser);
         Task<bool> DeleteUser(string token);
-        string GetUserRole(int roleId);
-        Task<bool> ChangePassword(int userId, string oldPassword, string newPassword);
+        Task<bool> ChangePassword(string token, string oldPassword, string newPassword);
         Domain.Entities.User AuthenticateUser(string email, string password);
-        string GenerateToken(int userId, string roleName, string email);
+        string GenerateToken(string userId, string roleName, string email);
     }
 }

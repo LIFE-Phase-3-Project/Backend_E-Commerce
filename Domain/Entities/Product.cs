@@ -23,6 +23,7 @@ public class Product
     public DateTime? DiscountExpiryDate { get; set; }
     [NotMapped]
     public decimal DiscountedPrice => DiscountPercentage.HasValue && DiscountExpiryDate > DateTime.Now ? Price - (Price * DiscountPercentage.Value / 100) : Price;
+    
     public Category Category { get; set; } // Many to one - shumeProd to OneCat
     public SubCategory SubCategory { get; set; } // Many to one - shumeProd to OneSubcat
 }

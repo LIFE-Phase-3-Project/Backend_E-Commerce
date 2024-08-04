@@ -13,8 +13,6 @@ namespace Domain.DTOs.ShoppingCart
 
         public string CartIdentifier { get; set; }
 
-
-        
         public DateTime DateCreated { get; set; }
         public DateTime DateModified { get; set; }
         public List<ShoppingCartItemDto> Items { get; set; }

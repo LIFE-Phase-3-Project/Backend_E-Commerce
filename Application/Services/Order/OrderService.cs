@@ -31,7 +31,7 @@ namespace Application.Services.Order
         }
 
 
-        public async Task<bool> CreateOrder(string token, OrderDto orderDto)
+        public async Task<bool> CreateOrder(string token, OrderCreateDto orderDto)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
@@ -48,11 +48,11 @@ namespace Application.Services.Order
             {
                 OrderDate = DateTime.Now,
                 ShippingDate = orderDto.ShippingDate,
-                PaymentDate = orderDto.PaymentDate,
+                PaymentDate = null,
+                PaymentId = null,
                 OrderTotal = orderTotal,
                 OrderStatus = "Pending",
                 UserAddressId = orderDto.UserAddressId,
-                Name = orderDto.Name
             };
 
             _unitOfWork.Repository<Domain.Entities.Order>().Create(order);

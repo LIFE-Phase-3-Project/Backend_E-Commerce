@@ -21,14 +21,16 @@ public class ProductService : IProductService
     private readonly ISearchService _searchService;
     private readonly IElasticClient _elasticClient;
     private readonly IStorageService _storageService;
+    private readonly ILogger<ProductService> _logger;
 
-    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IElasticClient elasticClient, ISearchService searchService, IStorageService storageService)
+    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IElasticClient elasticClient, ISearchService searchService, IStorageService storageService, ILogger<ProductService> logger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _searchService = searchService;
         _elasticClient = elasticClient;
         _storageService = storageService;
+        _logger = logger;
     }
 
     public async Task<bool> TestElasticsearchConnectionAsync()
@@ -113,6 +115,7 @@ public class ProductService : IProductService
             RetrievedAt = DateTime.UtcNow
         }, idx => idx.Index("product_retrievals")); */
         var productToIndex = _mapper.Map<ProductIndexDto>(product);
+        _logger.LogInformation($"Retrieving product with ID {id}, categoryId: {product.CategoryId} and subcategoryId: {product.SubCategoryId}" );
         await _searchService.IndexProductAsync(productToIndex);
         return productDto;
     }

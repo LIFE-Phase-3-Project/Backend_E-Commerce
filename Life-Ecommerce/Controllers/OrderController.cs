@@ -16,7 +16,7 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateOrder(OrderDto orderDto)
+        public async Task<IActionResult> CreateOrder(OrderCreateDto orderDto)
         {
             var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 

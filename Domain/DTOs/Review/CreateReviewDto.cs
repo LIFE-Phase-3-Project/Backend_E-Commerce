@@ -9,7 +9,7 @@ public class CreateReviewDto
     public int Rating { get; set; }
     public int ProductId { get; set; }
     [JsonIgnore]
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
     // [JsonIgnore]
     // public UserOverviewDto UserOverview { get; set; }
     

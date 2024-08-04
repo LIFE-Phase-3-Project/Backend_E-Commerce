@@ -14,13 +14,14 @@ namespace Domain.Entities
         [Required]
         public DateTime OrderDate { get; set; }
         public DateTime ShippingDate { get; set; }
-        public DateTime PaymentDate { get; set; } 
+        public DateTime? PaymentDate { get; set; } 
         public decimal OrderTotal { get; set; }
         public string OrderStatus { get; set; }
-        public string Name  { get; set; }
         [ForeignKey("UserAddressId")]
         public int UserAddressId { get; set; }
         public UserAddress UserAddress { get; set; }
+        [ForeignKey("PaymentId")]
+        public int? PaymentId { get; set; }
 
         public Payment Payment { get; set; }
     }

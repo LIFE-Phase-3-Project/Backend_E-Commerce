@@ -288,11 +288,11 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     {
                         Id = auth0UserId,
                         FirstName = context.Principal?.FindFirst("https://ecommerce-life-2.com/given_name")?.Value,
-                        LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
                         Address = "default",
+                        LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
                         Email = context.Principal?.FindFirst("https://ecommerce-life-2.com/email")?.Value,
-                        Password = "test",
                         PhoneNumber = context.Principal?.FindFirst("https://ecommerce-life-2.com/userId")?.Value,
+                        Password = "test",
                         Role = role ?? "Costumer"
                     };
                         
@@ -338,6 +338,7 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 {
                     policy.RequireClaim("https://ecommerce-life-2.com/role", "Admin");
                 });
+                
 
                 
             });

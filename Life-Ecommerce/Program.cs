@@ -3,6 +3,7 @@ using BackgroundJobs;
 using Configurations;
 using Hangfire;
 using Life_Ecommerce.Hubs;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,9 @@ builder.Services.AddWebServices(builder.Configuration);
 
 builder.Services.AddHangfireConfig(builder.Configuration);
 
-
+// Added health checks
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy());
 
 var app = builder.Build();
 
@@ -40,5 +43,15 @@ RecurringJob.AddOrUpdate<ProductAnalyticsJobs>(job => job.RecalculateTopSoldProd
 app.UseSession();
 app.MapControllers();
 app.MapHub<ChatHub>("/chat");
+
+// Map health check endpoints
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false // Show the readiness status
+});
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => true // Show the liveness status
+});
 
 app.Run();

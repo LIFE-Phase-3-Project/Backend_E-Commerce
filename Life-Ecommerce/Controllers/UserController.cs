@@ -27,8 +27,8 @@ namespace Life_Ecommerce.Controllers
         [Route("GetUsers")]
         public async Task<IActionResult> Get(int page = 1, int pageSize = 10)
         {
-            var userRole = HttpContext.Items["https://ecommerce-life-2.com/role"] as string;
-            if (userRole == "SuperAdmin")
+           // var userRole = HttpContext.Items["https://ecommerce-life-2.com/role"] as string;
+            if (true)
             {
                 var users = await _userService.GetUsers(page, pageSize);
                 return Ok(users);

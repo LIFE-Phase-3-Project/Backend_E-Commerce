@@ -15,9 +15,17 @@ namespace Application.Services.Payment
             _mapper = mapper;
         }
 
-        public void Create(Domain.Entities.Payment payment)
+        public async void Create(Domain.Entities.Payment payment)
         {
             _unitOfWork.Repository<Domain.Entities.Payment>().Create(payment);
+            await _unitOfWork.SaveChangesAsync();
+            var order = await _unitOfWork.Repository<Domain.Entities.Order>().GetByIdAsync(payment.OrderId);
+            order.PaymentId = payment.PaymentId;
+            order.PaymentDate = payment.PaymentDate;
+            _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
+            await _unitOfWork.SaveChangesAsync();
+
+
         }
 
         public async Task<Domain.Entities.Payment> GetPaymentById(int id)
@@ -81,6 +89,10 @@ namespace Application.Services.Payment
             };
 
             _unitOfWork.Repository<Domain.Entities.Payment>().Create(payment);
+            await _unitOfWork.SaveChangesAsync();
+            order.PaymentDate = payment.PaymentDate;
+            order.PaymentId = payment.PaymentId;    
+            _unitOfWork.Repository<Domain.Entities.Order>().Update(order);
             await _unitOfWork.SaveChangesAsync();
 
             return payment;

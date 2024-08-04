@@ -1,5 +1,6 @@
 using Application.Services.Subcategory;
 using Domain.DTOs.SubCategory;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Life_Ecommerce.Controllers;
@@ -16,6 +17,7 @@ public class SubCategoryController : ControllerBase
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<SubCategoryDto>>> GetSubCategories()
         {
             var subCategories = await _subCategoryService.GetAllSubCategoriesAsync();

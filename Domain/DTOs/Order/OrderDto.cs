@@ -11,9 +11,7 @@ namespace Domain.DTOs.Order
     {
         public DateTime ShippingDate { get; set; }
         public DateTime PaymentDate { get; set; }
-
         public decimal OrderTotal { get; set; }
         public int UserAddressId { get; set; }
-        public string Name { get; set; }
     }
 }

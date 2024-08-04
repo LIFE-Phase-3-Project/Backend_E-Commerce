@@ -3,6 +3,7 @@ using Domain.DTOs.Product;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -22,8 +23,11 @@ namespace Life_Ecommerce.Controllers
 
         private (string userId, string cartIdentifier) GetUserOrCartIdentifier()
         {
-            var userId = HttpContext.Items["sub"] as string;
-            string encryptedCartIdentifier;
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userId = jwtToken.Claims.First(claim => claim.Type == "sub").Value; string encryptedCartIdentifier;
 
             if (!string.IsNullOrEmpty(userId))
             {

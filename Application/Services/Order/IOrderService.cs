@@ -5,7 +5,7 @@ namespace Application.Services.Order
     public interface IOrderService
     {
 
-         Task<bool> CreateOrder(string token, OrderDto orderDto);
+         Task<bool> CreateOrder(string token, OrderCreateDto orderDto);
 
         Task<IEnumerable<OrderDto>> GetAllOrders(); 
 

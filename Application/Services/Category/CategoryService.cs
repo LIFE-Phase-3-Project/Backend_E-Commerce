@@ -53,6 +53,7 @@ public class CategoryService : ICategoryService
     {
         var category = _mapper.Map<Domain.Entities.Category>(categoryDto);
         _unitOfWork.Repository<Domain.Entities.Category>().Create(category);
+        await _db.KeyExpireAsync("AllCategories", TimeSpan.FromMinutes(0)); // expire the cache
         await _unitOfWork.CompleteAsync();
     }
 

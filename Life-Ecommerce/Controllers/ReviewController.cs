@@ -19,7 +19,8 @@ public class ReviewController : ControllerBase
     public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto reviewDto)
     {
         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
+        var userId = HttpContext.Items["sub"] as string;
+        reviewDto.UserId = userId;
         var createdReview = await _reviewService.CreateReviewAsync(reviewDto, token);
         return Ok(createdReview);
         

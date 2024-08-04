@@ -11,7 +11,7 @@ namespace Application.Services.Order
 
         Task<OrderDto> GetOrderById(int orderId); 
 
-        Task<IEnumerable<OrderDto>> GetOrdersByUserId(int userId); 
+        Task<IEnumerable<OrderDto>> GetOrdersByUserId(string userId); 
 
         Task<bool> UpdateOrderStatus(int orderId, string newStatus);
 

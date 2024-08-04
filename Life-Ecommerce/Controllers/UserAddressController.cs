@@ -16,14 +16,14 @@ namespace Life_Ecommerce.Controllers
             _userAddressService = userAddressService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetUserAddresses(int userId)
+        public async Task<IActionResult> GetUserAddresses(string userId)
         {
             var userAddresses = await _userAddressService.GetUserAddresses(userId);
             return Ok(userAddresses);
         }
 
         [HttpGet("primary")]
-        public async Task<IActionResult> GetUserPrimaryAddress(int userId)
+        public async Task<IActionResult> GetUserPrimaryAddress(string userId)
         {
             var userPrimaryAddress = await _userAddressService.GetUserPrimaryAddress(userId);
             return Ok(userPrimaryAddress);

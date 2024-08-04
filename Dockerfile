@@ -9,6 +9,7 @@ WORKDIR /src
 COPY ["Life-Ecommerce/Service.csproj", "Life-Ecommerce/"]
 COPY ["Application/Application.csproj", "Application/"]
 COPY ["Presistence/Presistence.csproj", "Presistence/"]
+COPY ["BackgroundJobs/BackgroundJobs.csproj", "BackgroundJobs/"]
 COPY ["Domain/Domain.csproj", "Domain/"]
 RUN dotnet restore "Life-Ecommerce/Service.csproj"
 COPY . .

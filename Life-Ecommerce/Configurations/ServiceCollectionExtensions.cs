@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Presistence.Repositories.OrderRepo;
 using Application.Services.Category;
 using Application.Services.Discount;
@@ -34,6 +35,7 @@ using BackgroundJobs;
 using Life_Ecommerce.Hubs;
 using Presistence.Repositories.ChatRepo;
 using Application.Services.Chat;
+using Domain.Entities;
 
 
 namespace Configurations
@@ -131,7 +133,76 @@ namespace Configurations
             services.AddLogging(configuration);
             services.AddControllers();
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(options =>
+
+            #region SwaggerGen
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "LifeEcommerce", Version = "v1" });
+
+                // OAuth2 Security Definition
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.OAuth2,
+                    BearerFormat = "JWT",
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Implicit  = new OpenApiOAuthFlow
+                        {
+                            TokenUrl = new Uri($"https://{configuration["Auth0:Domain"]}/oauth/token"),
+                            AuthorizationUrl = new Uri($"https://{configuration["Auth0:Domain"]}/authorize?audience={configuration["Auth0:Audience"]}"),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "openid", "OpenId" },
+                            }
+                        }
+                    }
+                });
+
+                // Bearer Token Security Definition
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Authentication Token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JsonWebToken",
+                    Scheme = "Bearer"
+                });
+
+                // Security Requirements (OAuth2)
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "oauth2" }
+                        },
+                        new[] { "openid" }
+                    }
+                });
+
+                // Security Requirements (Bearer)
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type=ReferenceType.SecurityScheme,
+                                Id="Bearer"
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
+            });
+
+
+            #endregion
+            
+            /*services.AddSwaggerGen(options =>
             {
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -156,24 +227,122 @@ namespace Configurations
                         new string[] {}
                     }
                 });
-            });
+            });*/
 
             services.AddDataProtection();
             services.AddDistributedMemoryCache();
             services.AddHttpContextAccessor();
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+            
+            #region auth0andJWTauthentication
+
+                        // GjirafaScheme authentication setup
+services.AddAuthentication("GjirafaScheme")
+    .AddJwtBearer("GjirafaScheme", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA")),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+// Auth0Scheme authentication setup
+services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.Authority = $"https://{configuration["Auth0:Domain"]}";
+        options.RequireHttpsMetadata = false;
+        options.Audience = configuration["Auth0:Audience"];
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = $"https://{configuration["Auth0:Domain"]}/",
+            ValidAudience = configuration["Auth0:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Auth0:ClientSecret"])),
+            // RoleClaimType = $"{builder.Configuration["Auth0:Namespace"]}roles"
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                
+                context.HttpContext.User = context.Principal ?? new ClaimsPrincipal();
+                var auth0UserId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var role = context.Principal?.FindFirst("https://ecommerce-life-2.com/role")?.Value;
+                
+                
+                var _unitOfWork = context.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
+
+                var existingUser = _unitOfWork.Repository<User>().GetByCondition(x => x.Id == auth0UserId).FirstOrDefault();
+                
+                if (existingUser == null)
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    var user = new User()
                     {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("OUR_SECRET_KEY_FROM_LIFE_FROM_GJIRAFA")),
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
-                        ClockSkew = TimeSpan.Zero
+                        Id = auth0UserId,
+                        FirstName = context.Principal?.FindFirst("https://ecommerce-life-2.com/given_name")?.Value,
+                        LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
+                        Address = "default",
+                        Email = context.Principal?.FindFirst("https://ecommerce-life-2.com/email")?.Value,
+                        Password = "test",
+                        PhoneNumber = context.Principal?.FindFirst("https://ecommerce-life-2.com/userId")?.Value,
+                        Role = role ?? "Costumer"
                     };
+                        
+                    _unitOfWork.Repository<User>().Create(user);
+                    _unitOfWork.Complete();
+                }
+                else
+                {
+                    existingUser.Role = role ?? "Costumer";
+                    _unitOfWork.Repository<User>().Update(existingUser);
+                    _unitOfWork.Complete();
+                }
+
+            }
+        };
+    });
+
+// Custom authorization policy that allows both schemes
+// builder.Services.AddAuthorization(options =>
+// {
+//     options.AddPolicy("DualSchemePolicy", policy =>
+//     {
+//         policy.AddAuthenticationSchemes("GjirafaScheme", JwtBearerDefaults.AuthenticationScheme);
+//         // policy.RequireAuthenticatedUser();
+//         policy.RequireRole("1");
+//     });
+//
+//     // Existing policy
+//     // options.AddPolicy("Organizer", policy =>
+//     // {
+//     //     policy.RequireRole("Organizer");
+//     // });
+// });
+
+            #endregion
+
+
+            #region AuthorizationPolicy
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOny", policy =>
+                {
+                    policy.RequireClaim("https://ecommerce-life-2.com/role", "Admin");
                 });
+
+                
+            });
+
+            #endregion
 
             services.AddCors(options =>
             {

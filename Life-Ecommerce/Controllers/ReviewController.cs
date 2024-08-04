@@ -18,7 +18,6 @@ public class ReviewController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto reviewDto)
     {
-        // Extract the token from the request header
         var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
         var createdReview = await _reviewService.CreateReviewAsync(reviewDto, token);
@@ -81,7 +80,7 @@ public class ReviewController : ControllerBase
     }
 
     [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetReviewByUserId(int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetReviewByUserId(string userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         var reviews = await _reviewService.GetReviewsByUserIdAsync(userId, page, pageSize);
         if (reviews == null)

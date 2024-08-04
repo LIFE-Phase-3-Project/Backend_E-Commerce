@@ -15,7 +15,7 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetDiscountsByUserId(int userId)
+        public async Task<IActionResult> GetDiscountsByUserId(string userId)
         {
             var discounts = await _discountService.GetDiscountsByUserId(userId);
             return Ok(discounts);

@@ -27,7 +27,7 @@ namespace Life_Ecommerce.Controllers
         [Route("GetUsers")]
         public async Task<IActionResult> Get(int page = 1, int pageSize = 10)
         {
-            var userRole = HttpContext.Items["UserRole"] as string;
+            var userRole = HttpContext.Items["https://ecommerce-life-2.com/role"] as string;
             if (userRole == "SuperAdmin")
             {
                 var users = await _userService.GetUsers(page, pageSize);
@@ -38,7 +38,7 @@ namespace Life_Ecommerce.Controllers
         
         [HttpPut]
         [Route("UpdateUser")]
-        public async Task<IActionResult> Put(User user)
+        public async Task<IActionResult> Put(UpdateUserDto user)
         {
             var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
@@ -54,16 +54,13 @@ namespace Life_Ecommerce.Controllers
             {
                 return Unauthorized("Email or password is incorrect");
             }
-
-            var roleName = _userService.GetUserRole(user.RoleId);
-            var email = request.Email;
-
-            var token = _userService.GenerateToken(user.Id, roleName, email);
+            
+            var token = _userService.GenerateToken(user.Id, user.Role, user.Email);
             
             return Ok(new
             {
                 IsAuthenticated = true,
-                Role = roleName,
+                Role = user.Role,
                 Token = token
             });
         }
@@ -81,17 +78,17 @@ namespace Life_Ecommerce.Controllers
 
         [HttpGet]
         [Route("GetUserByID/{Id}")]
-        public async Task<IActionResult> GetUserByID(int Id)
+        public async Task<IActionResult> GetUserByID(string Id)
         {
             var user = await _userService.GetUserById(Id);
             return Ok(user);
         }
 
         [HttpGet]
-        [Route("GetUsersByRoleId")]
-        public async Task<IActionResult> GetUsersByRoleId(int roleId)
+        [Route("GetUsersByRole")]
+        public async Task<IActionResult> GetUsersByRole(string role)
         {
-            var users = await _userService.GetUsersByRoleId(roleId);
+            var users = await _userService.GetUsersByRole(role);
             return Ok(users);
         }
 
@@ -102,8 +99,10 @@ namespace Life_Ecommerce.Controllers
             {
                 return BadRequest("Invalid password change request.");
             }
+            
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
-            var result = await _userService.ChangePassword(changePasswordDto.UserId, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
+            var result = await _userService.ChangePassword(token, changePasswordDto.OldPassword, changePasswordDto.NewPassword);
 
             if (result)
             {

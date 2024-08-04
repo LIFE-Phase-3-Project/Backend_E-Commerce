@@ -10,7 +10,7 @@ namespace Domain.DTOs.UserAddress
     public class CreateUserAddressDto
     {
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
 
         [Required]
         [Phone]

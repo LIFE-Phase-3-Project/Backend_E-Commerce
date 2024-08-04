@@ -48,7 +48,7 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetOrdersByUserId(int userId)
+        public async Task<IActionResult> GetOrdersByUserId(string userId)
         {
             var orders = await _orderService.GetOrdersByUserId(userId);
             return Ok(orders);

@@ -1,119 +1,130 @@
-﻿using Presistence.Repositories.ChatRepo;
+﻿using StackExchange.Redis;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
-using StackExchange.Redis;
+using Presistence.Repositories.ChatRepo;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Application.Services.Chat
 {
     public class ChatService : IChatService
     {
-        private readonly IConnectionMultiplexer _redis;
-        private readonly IDatabase _database;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IChatRepository _chatRepository;
+        private readonly IDistributedCache _cache; // Inject the cache
 
-        public ChatService(IConnectionMultiplexer redis)
+        public ChatService(IUnitOfWork unitOfWork, IChatRepository chatRepository, IDistributedCache cache)
         {
-            _redis = redis;
-            _database = _redis.GetDatabase();
+            _unitOfWork = unitOfWork;
+            _chatRepository = chatRepository;
+            _cache = cache;
         }
 
         public async Task SaveMessageAsync(ChatMessage message)
         {
-            var messageKey = $"chat:messages:{message.SessionId}";
-            var serializedMessage = Newtonsoft.Json.JsonConvert.SerializeObject(message);
+            if (message == null)
+                throw new ArgumentNullException(nameof(message));
 
-            await _database.ListRightPushAsync(messageKey, serializedMessage);
+            await _chatRepository.AddMessageAsync(message);
+            await _unitOfWork.CompleteAsync();
+
+            // Optional: Cache the message if needed
+            var cacheKey = $"chat:{message.SessionId}:messages";
+            await _cache.RemoveAsync(cacheKey);
         }
 
         public async Task<ChatSession> StartSessionAsync(string customerEmail, string adminEmail)
         {
-            var sessionKey = $"chat:sessions:{customerEmail}:{adminEmail}";
-            var serializedSession = await _database.StringGetAsync(sessionKey);
+            if (string.IsNullOrEmpty(customerEmail))
+                throw new ArgumentException("Customer email cannot be null or empty", nameof(customerEmail));
 
-            if (serializedSession.IsNullOrEmpty)
+            if (string.IsNullOrEmpty(adminEmail))
+                throw new ArgumentException("Admin email cannot be null or empty", nameof(adminEmail));
+
+            var cacheKey = $"chat:session:{customerEmail}:{adminEmail}";
+            var cachedSession = await _cache.GetStringAsync(cacheKey);
+
+            if (cachedSession != null)
             {
-                var session = new ChatSession
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<ChatSession>(cachedSession);
+            }
+
+            var session = await _chatRepository.GetSession(customerEmail, adminEmail);
+
+            if (session == null)
+            {
+                session = new ChatSession
                 {
                     CustomerEmail = customerEmail,
                     AdminEmail = adminEmail,
                     StartedAt = DateTime.UtcNow,
-                    Status = "pending"
+                    //Messages = new List<ChatMessage>()
                 };
-
-                serializedSession = Newtonsoft.Json.JsonConvert.SerializeObject(session);
-                await _database.StringSetAsync(sessionKey, serializedSession);
-
-                return session;
+                await _chatRepository.AddSessionAsync(session);
+                await _unitOfWork.CompleteAsync();
             }
 
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<ChatSession>(serializedSession);
+            // Cache the session
+            await _cache.SetStringAsync(cacheKey, Newtonsoft.Json.JsonConvert.SerializeObject(session));
+
+            return session;
         }
 
         public async Task<bool> EndSessionAsync(int sessionId)
         {
-            var sessionKey = $"chat:sessions:{sessionId}";
-            var serializedSession = await _database.StringGetAsync(sessionKey);
+            var session = await _chatRepository.GetSessionByIdAsync(sessionId);
 
-            if (serializedSession.IsNullOrEmpty)
-                return false;
-
-            var session = Newtonsoft.Json.JsonConvert.DeserializeObject<ChatSession>(serializedSession);
-            if (session.EndedAt.HasValue)
+            if (session == null || session.EndedAt.HasValue)
                 return false;
 
             session.EndedAt = DateTime.UtcNow;
-            serializedSession = Newtonsoft.Json.JsonConvert.SerializeObject(session);
-            await _database.StringSetAsync(sessionKey, serializedSession);
+            await _unitOfWork.CompleteAsync();
+
+            // Invalidate the cache
+            var cacheKey = $"chat:session:{session.CustomerEmail}:{session.AdminEmail}";
+            await _cache.RemoveAsync(cacheKey);
 
             return true;
         }
 
         public async Task<List<ChatMessage>> GetMessagesAsync(int sessionId)
         {
-            var messageKey = $"chat:messages:{sessionId}";
-            var messages = await _database.ListRangeAsync(messageKey);
+            var cacheKey = $"chat:{sessionId}:messages";
+            var cachedMessages = await _cache.GetStringAsync(cacheKey);
 
-            var chatMessages = new List<ChatMessage>();
-            foreach (var message in messages)
+            if (cachedMessages != null)
             {
-                chatMessages.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<ChatMessage>(message));
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<List<ChatMessage>>(cachedMessages);
             }
 
-            return chatMessages;
+            var messages = await _chatRepository.GetMessagesBySessionIdAsync(sessionId);
+
+            // Cache the messages
+            await _cache.SetStringAsync(cacheKey, Newtonsoft.Json.JsonConvert.SerializeObject(messages));
+
+            return messages;
         }
 
         public async Task UpdateSessionStatusAsync(int sessionId)
         {
-            var sessionKey = $"chat:sessions:{sessionId}";
-            var serializedSession = await _database.StringGetAsync(sessionKey);
+            var session = await _chatRepository.GetSessionByIdAsync(sessionId);
 
-            if (!serializedSession.IsNullOrEmpty)
+            if (session != null)
             {
-                var session = Newtonsoft.Json.JsonConvert.DeserializeObject<ChatSession>(serializedSession);
                 session.Status = "processed";
+                await _chatRepository.UpdateSessionAsync(session);
+                await _unitOfWork.CompleteAsync();
 
-                serializedSession = Newtonsoft.Json.JsonConvert.SerializeObject(session);
-                await _database.StringSetAsync(sessionKey, serializedSession);
+                // Invalidate the cache
+                var cacheKey = $"chat:session:{session.CustomerEmail}:{session.AdminEmail}";
+                await _cache.RemoveAsync(cacheKey);
             }
         }
 
         public async Task<List<ChatSession>> GetPendingSessions()
         {
-            var endpoints = _redis.GetEndPoints();
-            var server = _redis.GetServer(endpoints.First());
-
-            var pendingSessions = new List<ChatSession>();
-            foreach (var key in server.Keys(pattern: "chat:sessions:*"))
-            {
-                var serializedSession = await _database.StringGetAsync(key);
-                var session = Newtonsoft.Json.JsonConvert.DeserializeObject<ChatSession>(serializedSession);
-
-                if (session.Status == "pending")
-                {
-                    pendingSessions.Add(session);
-                }
-            }
-
-            return pendingSessions;
+            return await _chatRepository.GetSessionsByStatusAsync();
         }
     }
 }

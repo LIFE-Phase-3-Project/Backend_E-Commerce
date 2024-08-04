@@ -288,10 +288,8 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     {
                         Id = auth0UserId,
                         FirstName = context.Principal?.FindFirst("https://ecommerce-life-2.com/given_name")?.Value,
-                        Address = "default",
                         LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
                         Email = context.Principal?.FindFirst("https://ecommerce-life-2.com/email")?.Value,
-                        PhoneNumber = context.Principal?.FindFirst("https://ecommerce-life-2.com/userId")?.Value,
                         Password = "test",
                         Role = role ?? "Costumer"
                     };

@@ -24,7 +24,7 @@ namespace Life_Ecommerce.Controllers
         }
 
         [HttpGet]
-        [Route("GetUsers")]
+        [Route("GetAllUsers")]
         public async Task<IActionResult> Get(int page = 1, int pageSize = 10)
         {
            // var userRole = HttpContext.Items["https://ecommerce-life-2.com/role"] as string;

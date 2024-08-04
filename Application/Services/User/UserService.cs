@@ -144,7 +144,7 @@ namespace Application.Services.UserRepository
 
         public async Task<IEnumerable<UserDto>> GetUsersByRole(string role)
         {
-            var roleName = "https://ecommerce-life-2.com/"+role;
+            var roleName = role;
             
             var users = await _unitOfWork.Repository<Domain.Entities.User>()
                 .GetByCondition(user => user.Role == roleName)

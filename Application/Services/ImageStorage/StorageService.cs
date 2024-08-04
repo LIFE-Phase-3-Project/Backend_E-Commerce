@@ -18,7 +18,7 @@ namespace Application.Services.ImageStorage
 
         public StorageService(IConfiguration configuration)
         {
-            var credentialPath = configuration["GoogleCloud:CredentialPath"];
+            /*var credentialPath = configuration["GoogleCloud:CredentialPath"];
             if (string.IsNullOrEmpty(credentialPath))
             {
                 throw new InvalidOperationException("Google Cloud credentials not found. Ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set.");
@@ -28,9 +28,19 @@ namespace Application.Services.ImageStorage
             using (var stream = new FileStream(credentialPath, FileMode.Open, FileAccess.Read))
             {
                 googleCredential = GoogleCredential.FromStream(stream);
+            }*/
+
+            string googleCredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+            Console.WriteLine($"GOOGLE_APPLICATION_CREDENTIALS path: {googleCredentialsPath}");
+
+            if (string.IsNullOrEmpty(googleCredentialsPath))
+            {
+                throw new InvalidOperationException("Google Cloud credentials not found. Ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set.");
             }
 
-            _storageClient = StorageClient.Create(googleCredential);
+            GoogleCredential credential = GoogleCredential.FromFile(googleCredentialsPath);
+
+            _storageClient = StorageClient.Create(credential);
         }
 
         public async Task<string> UploadFileAsync(IFormFile file)

@@ -279,7 +279,8 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 
                 
                 var _unitOfWork = context.HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
-
+                var _emailService = context.HttpContext.RequestServices.GetRequiredService<IEmailService>();
+                
                 var existingUser = _unitOfWork.Repository<User>().GetByCondition(x => x.Id == auth0UserId).FirstOrDefault();
                 
                 if (existingUser == null)
@@ -291,15 +292,34 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         LastName = context.Principal?.FindFirst("https://ecommerce-life-2.com/family_name")?.Value,
                         Email = context.Principal?.FindFirst("https://ecommerce-life-2.com/email")?.Value,
                         Password = "test",
-                        Role = role ?? "Costumer"
+                        Role = role ?? "Customer"
                     };
                         
                     _unitOfWork.Repository<User>().Create(user);
                     _unitOfWork.Complete();
+                    
+                    var subject = "Welcome to Life Ecommerce!";
+                    var message = $@"
+                    Hi {user.FirstName},
+
+                    Welcome to the Life Ecommerce family!
+
+                    We are thrilled to have you with us. At Life Ecommerce, we strive to provide you with the best shopping experience possible. If you have any questions, need assistance, or just want to say hello, don't hesitate to reach out to our support team.
+
+                    Happy shopping!
+
+                    Best regards,
+                    The Life Ecommerce Team
+
+                    -- 
+                    Life Ecommerce
+                    Your go-to place for all your needs";
+
+                    await _emailService.SendEmailAsync(user.Email, subject, message);
                 }
                 else
                 {
-                    existingUser.Role = role ?? "Costumer";
+                    existingUser.Role = role ?? "Customer";
                     _unitOfWork.Repository<User>().Update(existingUser);
                     _unitOfWork.Complete();
                 }

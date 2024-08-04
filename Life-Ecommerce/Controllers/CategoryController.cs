@@ -19,7 +19,6 @@ public class CategoryController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "AdminOny")]
     public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
     {
         var categories = await _categoryService.GetAllCategoriesAsync();

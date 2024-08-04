@@ -334,9 +334,9 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Costumer", policy =>
+                options.AddPolicy("AdminOny", policy =>
                 {
-                    policy.RequireClaim("https://ecommerce-life-2.com/role", "Costumer");
+                    policy.RequireClaim("https://ecommerce-life-2.com/role", "Admin");
                 });
 
                 

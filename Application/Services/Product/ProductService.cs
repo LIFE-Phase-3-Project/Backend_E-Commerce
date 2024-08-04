@@ -120,12 +120,11 @@ public class ProductService : IProductService
     public async Task AddProductAsync(CreateProductDto createProductDto)
     {
         var images = new List<string>();
-        foreach (var item in createProductDto.Image)
+       foreach (var item in createProductDto.Image)
         {
             var st = await _storageService.UploadFileAsync(item);
             images.Add(st);
         }
-        
         var product = _mapper.Map<Domain.Entities.Product>(createProductDto);
         product.Image = images;
         //get subcategory to autoAssign category

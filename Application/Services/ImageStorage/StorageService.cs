@@ -14,7 +14,7 @@ namespace Application.Services.ImageStorage
     public class StorageService : IStorageService
     {
         private readonly StorageClient _storageClient;
-        private readonly string _bucketName = "e-commerce-image-bucket"; 
+        private readonly string _bucketName = "e-commerce-life-images"; 
 
         public StorageService(IConfiguration configuration)
         {

@@ -31,6 +31,8 @@ namespace Application.Services.ImageStorage
             }*/
 
             string googleCredentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+            Console.WriteLine($"GOOGLE_APPLICATION_CREDENTIALS path: {googleCredentialsPath}");
+
             if (string.IsNullOrEmpty(googleCredentialsPath))
             {
                 throw new InvalidOperationException("Google Cloud credentials not found. Ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set.");

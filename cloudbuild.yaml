@@ -18,8 +18,8 @@ steps:
       - 'deployment/backend-deployment'
       - 'backend=$_HOSTNAME/$_PROJECT_ID/$_REPO_NAME/$_IMAGE:latest'
     env:
-      - 'CLOUDSDK_COMPUTE_ZONE=$_COMPUTE_ZONE'
-      - 'CLOUDSDK_CONTAINER_CLUSTER=$_CONTAINER_CLUSTER'
+      - 'CLOUDSDK_COMPUTE_REGION=europe-west3'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=e-commerce-cluster'
       - 'CLOUDSDK_CORE_PROJECT=$_PROJECT_ID'
 
 images:

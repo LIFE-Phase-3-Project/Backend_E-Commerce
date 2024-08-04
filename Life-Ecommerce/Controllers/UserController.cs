@@ -23,7 +23,7 @@ namespace Life_Ecommerce.Controllers
             return Ok(registerUserDto); 
         }
 
-        /*[HttpGet]
+        [HttpGet]
         [Route("GetAllUsers")]
         public async Task<IActionResult> Get(int page = 1, int pageSize = 10)
         {
@@ -34,7 +34,7 @@ namespace Life_Ecommerce.Controllers
                 return Ok(users);
             }
             return Unauthorized("You are not authorized to view this content");
-        }*/
+        }
         
         [HttpPut]
         [Route("UpdateUser")]

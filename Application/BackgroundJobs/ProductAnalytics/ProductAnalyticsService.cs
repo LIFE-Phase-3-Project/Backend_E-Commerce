@@ -1,9 +1,8 @@
 ﻿using Application.Services.Category;
 using Application.Services.Subcategory;
 using Domain.DTOs.Product;
-using Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Nest;
+using Newtonsoft.Json;
 using Presistence;
 using Presistence.Repositories.ProductAnalytics;
 using StackExchange.Redis;
@@ -93,14 +92,35 @@ namespace Application.BackgroundJobs.ProductAnalytics
             }
         }
 
-        public Task<IEnumerable<TopProductDto>> GetTopViewedProductsByCategoryAsync(int categoryId)
+        public async Task<IEnumerable<TopProductDto>> GetTopViewedProductsByCategoryAsync(int categoryId)
         {
-            throw new NotImplementedException();
+            if(await _db.KeyExistsAsync($"top_viewed_products_category_{categoryId}"))
+            {
+                var topViewedProducts = await _db.StringGetAsync($"top_viewed_products_category_{categoryId}");
+                return JsonConvert.DeserializeObject<IEnumerable<TopProductDto>>(topViewedProducts);
+            }
+            else
+            {
+                var topViewedProducts = await _productAnalyticsRepo.CalculateTopViewedProductsbyCategory(categoryId);
+                await _db.StringSetAsync($"top_viewed_products_category_{categoryId}", JsonConvert.SerializeObject(topViewedProducts));
+                return topViewedProducts;
+            }
+
         }
 
-        public Task<IEnumerable<TopProductDto>> GetTopViewedProductsBySubCategoryAsync(int subCategoryId)
+        public async Task<IEnumerable<TopProductDto>> GetTopViewedProductsBySubCategoryAsync(int subCategoryId)
         {
-            throw new NotImplementedException();
+            if(await _db.KeyExistsAsync($"top_viewed_products_subcategory_{subCategoryId}"))
+            {
+                var topViewedProducts = await _db.StringGetAsync($"top_viewed_products_subcategory_{subCategoryId}");
+                return JsonConvert.DeserializeObject<IEnumerable<TopProductDto>>(topViewedProducts);
+            }
+            else
+            {
+                var topViewedProducts = await _productAnalyticsRepo.CalculateTopViewedProductsbySubCategory(subCategoryId);
+                await _db.StringSetAsync($"top_viewed_products_subcategory_{subCategoryId}", JsonConvert.SerializeObject(topViewedProducts));
+                return topViewedProducts;
+            }
         }
 
         public async Task RecalculateTopRatedProductsAsync()
@@ -147,17 +167,25 @@ namespace Application.BackgroundJobs.ProductAnalytics
         public async Task RecalculateTopViewedProductsAsync()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
+            var subCategories = await _subCategoryService.GetAllSubCategoriesAsync();
+
             foreach (var category in categories)
             {
-                // var topRatedProducts = await _productAnalyticsRepo.CalculateTopViewedProductsbyCategory(category.CategoryId);
-                // save top rated products to db
+                var topProducts = await GetTopViewedProductsByCategoryAsync(category.CategoryId);
+                var cacheKey = $"top_viewed_products_category_{category.CategoryId}";
+                await _db.StringSetAsync(cacheKey, JsonConvert.SerializeObject(topProducts), TimeSpan.FromHours(25));
             }
-            var subCategories = await _subCategoryService.GetAllSubCategoriesAsync();
+
             foreach (var subCategory in subCategories)
             {
-                var topRatedProducts = await _productAnalyticsRepo.CalculateTopViewedProductsbySubCategory(subCategory.SubCategoryId);
-                // save top rated products to db
+                var topProducts = await GetTopViewedProductsBySubCategoryAsync(subCategory.SubCategoryId);
+                var cacheKey = $"top_viewed_products_subcategory_{subCategory.SubCategoryId}";
+                await _db.StringSetAsync(cacheKey, JsonConvert.SerializeObject(topProducts), TimeSpan.FromHours(25));
             }
         }
+
+
+
+
     }
 }

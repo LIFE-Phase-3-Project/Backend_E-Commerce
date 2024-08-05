@@ -79,8 +79,10 @@ namespace Configurations
                services.AddScoped<IChatRepository, ChatRepository>();
                services.AddScoped<IChatService, ChatService>();
                services.AddScoped<IGuestShoppingCartService, GuestShoppingCartService>();
-            services.AddScoped<ProductAnalyticsJobs>();
-            services.AddScoped<S>();
+               services.AddScoped<ProductAnalyticsJobs>();
+               services.AddScoped<CleanUpGuestShoppingCarts>();
+               services.AddScoped<IGuestShoppingCartService, GuestShoppingCartService>();
+               services.AddScoped<IBackgroundJobClient, BackgroundJobClient>();
 
 
 

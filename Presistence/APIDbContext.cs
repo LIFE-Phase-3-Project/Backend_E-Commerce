@@ -49,8 +49,16 @@ namespace Presistence
             ConfigureOrderDetail(modelBuilder);
             ConfigurePayment(modelBuilder);
             ConfigureChatSession(modelBuilder);
+            ConfigureReview(modelBuilder);
         }
 
+
+        private void ConfigureReview(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => new { r.UserId, r.ProductId })
+                .IsUnique();
+        }
         private void ConfigureWishlistEntry(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<WishlistEntry>().HasKey(w => new { w.UserId, w.ProductId });

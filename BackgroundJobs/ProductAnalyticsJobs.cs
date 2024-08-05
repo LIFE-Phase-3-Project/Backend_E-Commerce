@@ -20,5 +20,10 @@ namespace BackgroundJobs
         {
             await _productAnalyticsService.RecalculateTopSoldProductsAsync();
         }
+
+        public async Task RecalculateTopViewedProducts()
+        {
+            await _productAnalyticsService.RecalculateTopViewedProductsAsync();
+        }
     }
 }

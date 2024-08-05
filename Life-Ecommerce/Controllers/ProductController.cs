@@ -37,12 +37,6 @@ public class ProductController : ControllerBase
 
         return Ok(paginatedProducts);
     }
-    [HttpGet("testElastic")]
-    public async Task<IActionResult> TestElasticsearchConnection()
-    {
-        var result = await _productService.TestElasticsearchConnectionAsync();
-        return Ok(result);
-    }
 
     [HttpGet("search-as-you-go")]
     public async Task<IEnumerable<ProductSearchDto>> SearchAsYouType(string query)
@@ -141,31 +135,6 @@ public class ProductController : ControllerBase
     {
         await _productService.SoftDeleteProduct(productId);
         return NoContent();
-    }
-
-    [HttpGet("top-rated-from-subCategory")]
-    public async Task<ActionResult> GetTopRatedProductsBySubCategory(int subCategoryId)
-    {
-       var products = await _productAnalyticsService.GetTopRatedProductsBySubCategoryAsync(subCategoryId);
-        return Ok(products);
-    }
-    [HttpGet("top-rated-from-Category")]
-    public async Task<ActionResult> GetTopRatedProductsByCategory(int categoryId)
-    {
-        var products = await _productAnalyticsService.GetTopRatedProductsByCategoryAsync(categoryId);
-        return Ok(products);
-    }
-    [HttpGet("top-sold-from-subCategory")]
-    public async Task<ActionResult> GetTopSoldProductsBySubCategory(int subCategoryId)
-    {
-        var products = await _productAnalyticsService.GetTopSoldProductsBySubCategoryAsync(subCategoryId);
-        return Ok(products);
-    }
-    [HttpGet("top-sold-from-Category")]
-    public async Task<ActionResult> GetTopSoldProductsByCategory(int categoryId)
-    {
-        var products = await _productAnalyticsService.GetTopSoldProductsByCategoryAsync(categoryId);
-        return Ok(products);
     }
 
     // add method to modify product discount

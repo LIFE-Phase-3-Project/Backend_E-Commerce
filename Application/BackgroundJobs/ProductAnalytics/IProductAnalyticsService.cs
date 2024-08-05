@@ -19,5 +19,6 @@ namespace Application.BackgroundJobs.ProductAnalytics
         Task<IEnumerable<TopProductDto>> GetTopSoldProductsBySubCategoryAsync(int subCategoryId);
         Task<IEnumerable<TopProductDto>> GetTopViewedProductsByCategoryAsync(int categoryId);
         Task<IEnumerable<TopProductDto>> GetTopViewedProductsBySubCategoryAsync(int subCategoryId);
+
     }
 }

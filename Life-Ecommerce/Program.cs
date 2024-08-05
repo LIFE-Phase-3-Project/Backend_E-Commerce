@@ -39,6 +39,7 @@ app.UseAuthorization();
 //app.UseMiddleware<AuthMiddleware>();
 RecurringJob.AddOrUpdate<ProductAnalyticsJobs>(job => job.RecalculateTopRatedProductsAsync(), Cron.Daily);
 RecurringJob.AddOrUpdate<ProductAnalyticsJobs>(job => job.RecalculateTopSoldProductsAsync(), Cron.Daily);
+RecurringJob.AddOrUpdate<ProductAnalyticsJobs>(job => job.RecalculateTopViewedProducts(), Cron.Daily);
 RecurringJob.AddOrUpdate<CleanUpGuestShoppingCarts>(job => job.CleanUpAsync(), Cron.Monthly);
 
 app.UseSession();

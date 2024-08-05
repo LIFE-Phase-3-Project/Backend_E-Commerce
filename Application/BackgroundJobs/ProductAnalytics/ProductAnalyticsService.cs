@@ -8,7 +8,7 @@ using Presistence;
 using Presistence.Repositories.ProductAnalytics;
 using StackExchange.Redis;
 
-namespace Application.Services.ProductAnalytics
+namespace Application.BackgroundJobs.ProductAnalytics
 {
 
 
@@ -59,7 +59,8 @@ namespace Application.Services.ProductAnalytics
             {
                 var topRatedSubCategoryProducts = await _productAnalyticsRepo.CalculateTopRatedProductsbySubCategory(subCategoryId);
                 await _db.StringSetAsync($"topratedsubcategory:{subCategoryId}", System.Text.Json.JsonSerializer.Serialize(topRatedSubCategoryProducts));
-                return topRatedSubCategoryProducts; }
+                return topRatedSubCategoryProducts;
+            }
         }
 
         public async Task<IEnumerable<TopProductDto>> GetTopSoldProductsByCategoryAsync(int categoryId)
@@ -85,7 +86,7 @@ namespace Application.Services.ProductAnalytics
                 return System.Text.Json.JsonSerializer.Deserialize<IEnumerable<TopProductDto>>(topSoldSubCategoryProducts);
             }
             else
-            { 
+            {
                 var topSoldSubCategoryProducts = await _productAnalyticsRepo.CalculateTopSoldProductsbySubCategory(subCategoryId);
                 await _db.StringSetAsync($"topsoldsubcategory:{subCategoryId}", System.Text.Json.JsonSerializer.Serialize(topSoldSubCategoryProducts));
                 return topSoldSubCategoryProducts;
@@ -106,7 +107,7 @@ namespace Application.Services.ProductAnalytics
         {
             IEnumerable<TopProductDto> topRatedCategoryProducts = null;
             IEnumerable<TopProductDto> topRatedSubCategoryProducts = null;
-            var categories = await  _categoryService.GetAllCategoriesAsync();
+            var categories = await _categoryService.GetAllCategoriesAsync();
             foreach (var category in categories)
             {
                 topRatedCategoryProducts = await _productAnalyticsRepo.CalculateTopRatedProductsbyCategory(category.CategoryId);

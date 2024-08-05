@@ -21,6 +21,7 @@ namespace Configurations
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .Enrich.FromLogContext()
+                .Filter.ByExcluding(logEvent => logEvent.MessageTemplate.Text.Contains("HealthCheck"))
                 .WriteTo.Console()
                 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchUri))
                 {

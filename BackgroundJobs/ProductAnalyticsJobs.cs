@@ -1,4 +1,5 @@
-﻿using Application.Services.ProductAnalytics;
+﻿using Application.BackgroundJobs.ProductAnalytics;
+
 namespace BackgroundJobs
 {
     public class ProductAnalyticsJobs

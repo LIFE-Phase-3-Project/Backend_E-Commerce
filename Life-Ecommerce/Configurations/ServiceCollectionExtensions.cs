@@ -28,7 +28,6 @@ using Application.Services.UserAddress;
 using Presistence.Repositories.ProductAnalytics;
 using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
-using Application.Services.ProductAnalytics;
 using Hangfire;
 using Hangfire.SqlServer;
 using BackgroundJobs;
@@ -36,6 +35,8 @@ using Life_Ecommerce.Hubs;
 using Presistence.Repositories.ChatRepo;
 using Application.Services.Chat;
 using Domain.Entities;
+using Application.BackgroundJobs.ProductAnalytics;
+using Application.BackgroundJobs.ShoppingCartCleanUp;
 
 
 namespace Configurations
@@ -69,14 +70,17 @@ namespace Configurations
                services.AddScoped<IPaymentService, PaymentService>();
                services.AddScoped<IStorageService, StorageService>();
                services.AddScoped<IDiscountService, DiscountService>();
-                services.AddScoped<IUserAddressService, UserAddressService>();
+               services.AddScoped<IUserAddressService, UserAddressService>();
 
 
-                services.AddScoped<IProductAnalyticsService, ProductAnalyticsService>();
-                services.AddScoped<IProductAnalyticsRepo, ProductAnalyticsRepo>();
-                services.AddScoped<ProductAnalyticsJobs>();
-                services.AddScoped<IChatRepository, ChatRepository>();
-                services.AddScoped<IChatService, ChatService>();
+               services.AddScoped<IProductAnalyticsService, ProductAnalyticsService>();
+               services.AddScoped<IProductAnalyticsRepo, ProductAnalyticsRepo>();
+
+               services.AddScoped<IChatRepository, ChatRepository>();
+               services.AddScoped<IChatService, ChatService>();
+               services.AddScoped<IGuestShoppingCartService, GuestShoppingCartService>();
+            services.AddScoped<ProductAnalyticsJobs>();
+            services.AddScoped<S>();
 
 
 

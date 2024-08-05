@@ -1,6 +1,6 @@
+using Application.BackgroundJobs.ProductAnalytics;
 using Application.Services.ImageStorage;
 using Application.Services.Product;
-using Application.Services.ProductAnalytics;
 using Domain.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
 using Presistence.Repositories.ProductAnalytics;

@@ -1,6 +1,4 @@
-﻿using Domain.DTOs.Review;
-using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 
@@ -24,18 +22,11 @@ namespace Application.Services.TokenService
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
 
-            if (jwtToken == null)
-            {
-                return null;
+                var userId = jwtToken.Claims.First(claim => claim.Type == "sub").Value;
+                return userId;
             }
 
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
-            if (userIdClaim == null)
-            {
             return null;
-        }
-
-            return userIdClaim.Value;
         }
 
         public string GetUserRole()

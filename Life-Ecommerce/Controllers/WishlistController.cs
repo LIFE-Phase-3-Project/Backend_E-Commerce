@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Application.Services.Wishlist;
+using Application.Services.TokenService;
 namespace Life_Ecommerce.Controllers
 {
     [Route("api/[controller]")]
@@ -7,17 +8,19 @@ namespace Life_Ecommerce.Controllers
     public class WishlistController : ControllerBase
     {
         private readonly IWishlistService _wishlistService;
-        public WishlistController(IWishlistService wishlistService)
+        private readonly TokenHelper _tokenHelper;
+        public WishlistController(IWishlistService wishlistService, TokenHelper tokenHelper)
         {
             _wishlistService = wishlistService;
+            _tokenHelper = tokenHelper;
         }
         [HttpPost("AddWishlistEntry/{ProductId}")]
         public async Task<ActionResult> AddWishlistEntry(int ProductId)
         {
-            var userId = HttpContext.Items["sub"] as string;
+            var userId = _tokenHelper.GetUserId();
             if (userId == null)
             {
-                return Unauthorized("You must be logged in to add items to your wishlist.");
+                return Unauthorized("You are not logged in.");
             }
             bool success = await _wishlistService.AddWishlistEntry(userId, ProductId);
             if (success) return Ok("Item added to wishlist successfully.");
@@ -26,10 +29,10 @@ namespace Life_Ecommerce.Controllers
         [HttpDelete("RemoveWishlistEntry/{ProductId}")]
         public async Task<ActionResult> RemoveWishlistEntry(int ProductId)
         {
-            var userId = HttpContext.Items["sub"] as string;
+            var userId = _tokenHelper.GetUserId();
             if (userId == null)
             {
-                return Unauthorized("You must be logged in to remove items from your wishlist.");
+                return Unauthorized("You are not logged in.");
             }
             await _wishlistService.RemoveWishlistEntry(userId, ProductId);
             return Ok("Item removed from wishlist successfully.");
@@ -37,10 +40,10 @@ namespace Life_Ecommerce.Controllers
         [HttpGet("GetWishlistEntries")]
         public async Task<ActionResult> GetWishlistEntries()
         {
-            var userId = HttpContext.Items["sub"] as string;
+            var userId = _tokenHelper.GetUserId();
             if (userId == null)
             {
-                return Unauthorized("You must be logged in to view your wishlist.");
+                return Unauthorized("You are not logged in.");
             }
             var entries = await _wishlistService.GetWishlistEntries(userId);
             if (entries == null) return BadRequest("Could not retrieve wishlist entries.");

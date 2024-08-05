@@ -1,4 +1,5 @@
 ﻿using Application.Services.Order;
+using Application.Services.TokenService;
 using Domain.DTOs.Order;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,12 @@ namespace Life_Ecommerce.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly TokenHelper _tokenHelper;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, TokenHelper tokenHelper)
         {
             _orderService = orderService;
+            _tokenHelper = tokenHelper;
         }
 
         [HttpPost]
@@ -32,6 +35,15 @@ namespace Life_Ecommerce.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllOrders()
         {
+            var userRole = _tokenHelper.GetUserRole();
+            if (userRole == null)
+            {
+                return Unauthorized("You are not logged in.");
+            }
+            else if (userRole != "Admin" && userRole != "SuperAdmin")
+            {
+                return Unauthorized("You are not authorized to perform this action.");
+            }
             var orders = await _orderService.GetAllOrders();
             return Ok(orders);
         }

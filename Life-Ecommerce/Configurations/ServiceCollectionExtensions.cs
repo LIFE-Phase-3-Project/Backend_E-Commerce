@@ -37,6 +37,7 @@ using Application.Services.Chat;
 using Domain.Entities;
 using Application.BackgroundJobs.ProductAnalytics;
 using Application.BackgroundJobs.ShoppingCartCleanUp;
+using Application.Services.TokenService;
 
 
 namespace Configurations
@@ -71,6 +72,8 @@ namespace Configurations
                services.AddScoped<IStorageService, StorageService>();
                services.AddScoped<IDiscountService, DiscountService>();
                services.AddScoped<IUserAddressService, UserAddressService>();
+               services.AddScoped<TokenHelper>();
+
 
 
                services.AddScoped<IProductAnalyticsService, ProductAnalyticsService>();

@@ -10,6 +10,8 @@ namespace Application.Services.UserRepository
         Task<UserDto> GetUserById(string id);
         Task<IEnumerable<UserDto>> GetUsersByRole(string role);
         Task<UserDto> UpdateUser(string token, UpdateUserDto objUser);
+        Task<UserDto> ChangeRole(string userId, string newRole);
+
         Task<bool> DeleteUser(string token);
         Task<bool> ChangePassword(string token, string oldPassword, string newPassword);
         Domain.Entities.User AuthenticateUser(string email, string password);

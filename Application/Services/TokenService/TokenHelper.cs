@@ -24,18 +24,21 @@ namespace Application.Services.TokenService
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
 
-            if (jwtToken == null)
-            {
-                return null;
+                if (jwtToken == null)
+                {
+                    return null;
+                }
+
+                var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
+                if (userIdClaim == null)
+                {
+                    return null;
+                }
+
+                return userIdClaim.Value;
             }
 
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
-            if (userIdClaim == null)
-            {
             return null;
-        }
-
-            return userIdClaim.Value;
         }
 
         public string GetUserRole()

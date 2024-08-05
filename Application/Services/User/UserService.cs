@@ -41,6 +41,13 @@ namespace Application.Services.UserRepository
 
             _unitOfWork.Repository<Domain.Entities.User>().Create(userToRegister);
             await _unitOfWork.CompleteAsync();
+
+            user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
             
             var subject = "Welcome to Life Ecommerce!";
             var message = $@"

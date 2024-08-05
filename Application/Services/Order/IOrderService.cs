@@ -7,11 +7,11 @@ namespace Application.Services.Order
 
          Task<bool> CreateOrder(string token, OrderCreateDto orderDto);
 
-        Task<IEnumerable<OrderDto>> GetAllOrders(); 
+        Task<IEnumerable<OrderWithDetailsDto>> GetAllOrders(); 
 
-        Task<OrderDto> GetOrderById(int orderId); 
+        Task<OrderWithDetailsDto> GetOrderById(int orderId); 
 
-        Task<IEnumerable<OrderDto>> GetOrdersByUserId(string userId); 
+        Task<IEnumerable<OrderWithDetailsDto>> GetOrdersByUserId(string userId); 
 
         Task<bool> UpdateOrderStatus(int orderId, string newStatus);
 

@@ -50,6 +50,7 @@ namespace Presistence
             ConfigurePayment(modelBuilder);
             ConfigureChatSession(modelBuilder);
             ConfigureReview(modelBuilder);
+            ConfigureOrder(modelBuilder);
         }
 
 
@@ -94,6 +95,16 @@ namespace Presistence
                 .WithOne(p => p.Category)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict); // Specify delete behavior
+        }
+
+        private void ConfigureOrder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasMany(o => o.OrderDetails)
+                      .WithOne(od => od.OrderData)
+                      .HasForeignKey(od => od.OrderId);
+            });
         }
 
 

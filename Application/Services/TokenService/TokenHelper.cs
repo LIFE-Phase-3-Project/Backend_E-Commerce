@@ -19,8 +19,10 @@ namespace Application.Services.TokenService
         {
             var token = _httpContextAccessor.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
+            if (!string.IsNullOrEmpty(token))
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
 
             if (jwtToken == null)
             {
@@ -30,8 +32,8 @@ namespace Application.Services.TokenService
             var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
             if (userIdClaim == null)
             {
-                return null;
-            }
+            return null;
+        }
 
             return userIdClaim.Value;
         }

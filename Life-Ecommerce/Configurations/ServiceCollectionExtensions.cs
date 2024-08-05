@@ -72,6 +72,8 @@ namespace Configurations
                services.AddScoped<IStorageService, StorageService>();
                services.AddScoped<IDiscountService, DiscountService>();
                services.AddScoped<IUserAddressService, UserAddressService>();
+               services.AddScoped<TokenHelper>();
+
 
 
                services.AddScoped<IProductAnalyticsService, ProductAnalyticsService>();

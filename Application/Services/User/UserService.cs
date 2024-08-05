@@ -105,6 +105,17 @@ namespace Application.Services.UserRepository
         }
 
 
+        public async Task<UserDto> ChangeRole(string userId, string newRole)
+        {
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
+            user.Role = newRole;
+            _unitOfWork.Repository<Domain.Entities.User>().Update(user);
+            _unitOfWork.Complete();
+            var userDto = _mapper.Map<UserDto>(user);
+            
+            return userDto;
+        }
+
         public async Task<bool> DeleteUser(string token)
         {
             var handler = new JwtSecurityTokenHandler();

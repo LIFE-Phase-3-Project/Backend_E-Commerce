@@ -49,7 +49,7 @@ namespace Life_Ecommerce.Controllers
             return Ok("Updated Successfully");
         }
 
-        [HttpPost]
+        [HttpPatch]
         [Route("ChangeRole/{userId}/{newRole}")]
         public async Task<IActionResult> ChangeRole(string userId, string newRole)
         {

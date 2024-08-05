@@ -18,12 +18,12 @@ public class CategoryController : ControllerBase
         _categoryService = categoryService;
     }
 
-    /*[HttpGet]
+    [HttpGet]
     public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
     {
         var categories = await _categoryService.GetAllCategoriesAsync();
         return Ok(categories);
-    }*/
+    }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Category>> GetCategory(int id)

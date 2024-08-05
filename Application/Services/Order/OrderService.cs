@@ -112,31 +112,30 @@ namespace Application.Services.Order
             return true;
         }
 
-        public async Task<IEnumerable<OrderDto>> GetAllOrders()
+        public async Task<IEnumerable<OrderWithDetailsDto>> GetAllOrders()
         {
-            var orders = await _unitOfWork.Repository<Domain.Entities.Order>()
-                .GetAll()
-                .ToListAsync();
+            var orders = await _orderRepository.GetAllOrdersAsync();
 
-            return _mapper.Map<IEnumerable<OrderDto>>(orders);
+            return _mapper.Map<IEnumerable<OrderWithDetailsDto>>(orders);
         }
 
-        public async Task<OrderDto> GetOrderById(int orderId)
+        public async Task<OrderWithDetailsDto> GetOrderById(int orderId)
         {
-            var order = await _unitOfWork.Repository<Domain.Entities.Order>()
-                .GetByIdAsync(orderId);
+            var order = await _orderRepository.GetOrderByIdAsync(orderId);
+
+
 
             if (order == null)
                 return null;
 
-            return _mapper.Map<OrderDto>(order);
+            return _mapper.Map<OrderWithDetailsDto>(order);
         }
 
-        public async Task<IEnumerable<OrderDto>> GetOrdersByUserId(string userId)
+        public async Task<IEnumerable<OrderWithDetailsDto>> GetOrdersByUserId(string userId)
         {
             var orders = await _orderRepository.GetOrdersByUserIdAsync(userId);
 
-            return _mapper.Map<IEnumerable<OrderDto>>(orders);
+            return _mapper.Map<IEnumerable<OrderWithDetailsDto>>(orders);
         }
 
         public async Task<List<MonthlyOrderDto>> GetOrdersPerMonth()

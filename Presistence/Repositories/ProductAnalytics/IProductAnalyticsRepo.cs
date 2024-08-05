@@ -16,7 +16,7 @@ namespace Presistence.Repositories.ProductAnalytics
 
         Task<IEnumerable<TopProductDto>> CalculateTopRatedProductsbySubCategory(int subCategoryId);
 
-        Task CalculateTopViewedProductsbyCategory(int categoryId);
+        Task<IEnumerable<TopProductDto>> CalculateTopViewedProductsbyCategory(int categoryId);
         Task<IEnumerable<TopProductDto>> CalculateTopViewedProductsbySubCategory(int subCategoryId);
 
 

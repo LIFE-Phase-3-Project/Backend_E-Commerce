@@ -1,6 +1,7 @@
+using Application.BackgroundJobs.ProductAnalytics;
 using Application.Services.ImageStorage;
 using Application.Services.Product;
-using Application.Services.ProductAnalytics;
+using Application.Services.TokenService;
 using Domain.DTOs.Product;
 using Microsoft.AspNetCore.Mvc;
 using Presistence.Repositories.ProductAnalytics;
@@ -15,13 +16,15 @@ public class ProductController : ControllerBase
     private readonly IStorageService _storageService;
     private readonly ILogger<ProductController> _logger;
     private readonly IProductAnalyticsService _productAnalyticsService;
+    private readonly TokenHelper _tokenHelper;
 
-    public ProductController(IProductService productService, IStorageService storageService, ILogger<ProductController> logger, IProductAnalyticsService productAnalyticsService)
+    public ProductController(IProductService productService, IStorageService storageService, ILogger<ProductController> logger, IProductAnalyticsService productAnalyticsService, TokenHelper token)
     {
         _productService = productService;
         _logger = logger;
         _storageService = storageService;
         _productAnalyticsService = productAnalyticsService;
+        _tokenHelper = token;
 
     }
 
@@ -36,12 +39,6 @@ public class ProductController : ControllerBase
         var paginatedProducts = await _productService.GetPaginatedProductsAsync(filters, page, pageSize);
 
         return Ok(paginatedProducts);
-    }
-    [HttpGet("testElastic")]
-    public async Task<IActionResult> TestElasticsearchConnection()
-    {
-        var result = await _productService.TestElasticsearchConnectionAsync();
-        return Ok(result);
     }
 
     [HttpGet("search-as-you-go")]
@@ -74,6 +71,15 @@ public class ProductController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<ActionResult> AddProduct([FromForm] CreateProductDto createProductDto)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in.");
+        }
+        else if (userRole != "Admin" && userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
         await _productService.AddProductAsync(createProductDto);
 
         return Ok("Product added succesfully to the database and indexed to Elastic");
@@ -82,6 +88,15 @@ public class ProductController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateProduct(int id, [FromForm] UpdateProductDto updateProductDto)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in.");
+        }
+        else if (userRole != "Admin" && userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
 
         var response = await _productService.UpdateProductAsync(id, updateProductDto);
         return Ok(response);
@@ -90,6 +105,15 @@ public class ProductController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProduct(int id)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in.");
+        }
+        else if (userRole != "Admin" && userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
         var result = await _productService.DeleteProductAsync(id);
 
         if (!result)
@@ -139,39 +163,32 @@ public class ProductController : ControllerBase
     [HttpDelete("softdelete/{productId}")]
     public async Task<ActionResult> SoftDeleteProduct(int productId)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in.");
+        }
+        else if (userRole != "Admin" && userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
         await _productService.SoftDeleteProduct(productId);
         return NoContent();
-    }
-
-    [HttpGet("top-rated-from-subCategory")]
-    public async Task<ActionResult> GetTopRatedProductsBySubCategory(int subCategoryId)
-    {
-       var products = await _productAnalyticsService.GetTopRatedProductsBySubCategoryAsync(subCategoryId);
-        return Ok(products);
-    }
-    [HttpGet("top-rated-from-Category")]
-    public async Task<ActionResult> GetTopRatedProductsByCategory(int categoryId)
-    {
-        var products = await _productAnalyticsService.GetTopRatedProductsByCategoryAsync(categoryId);
-        return Ok(products);
-    }
-    [HttpGet("top-sold-from-subCategory")]
-    public async Task<ActionResult> GetTopSoldProductsBySubCategory(int subCategoryId)
-    {
-        var products = await _productAnalyticsService.GetTopSoldProductsBySubCategoryAsync(subCategoryId);
-        return Ok(products);
-    }
-    [HttpGet("top-sold-from-Category")]
-    public async Task<ActionResult> GetTopSoldProductsByCategory(int categoryId)
-    {
-        var products = await _productAnalyticsService.GetTopSoldProductsByCategoryAsync(categoryId);
-        return Ok(products);
     }
 
     // add method to modify product discount
     [HttpPost("discount/{productId}")]
     public async Task<ActionResult> AddDiscountToProduct(int productId, decimal discount, DateTime ExpiryDate)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in.");
+        }
+        else if (userRole != "Admin" && userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
         await _productService.AddDiscountToProduct(productId, discount, ExpiryDate);
         return Ok("Discount added successfully.");
     }

@@ -14,5 +14,7 @@ namespace Domain.DTOs.Product
         public decimal DiscountedPrice { get; set; }
         public double Ratings { get; set; }
 
+        public long? Count { get; set;}
+
     }
 }

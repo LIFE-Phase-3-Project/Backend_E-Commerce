@@ -1,4 +1,5 @@
-﻿using Application.Services.ProductAnalytics;
+﻿using Application.BackgroundJobs.ProductAnalytics;
+
 namespace BackgroundJobs
 {
     public class ProductAnalyticsJobs
@@ -18,6 +19,11 @@ namespace BackgroundJobs
         public async Task RecalculateTopSoldProductsAsync()
         {
             await _productAnalyticsService.RecalculateTopSoldProductsAsync();
+        }
+
+        public async Task RecalculateTopViewedProducts()
+        {
+            await _productAnalyticsService.RecalculateTopViewedProductsAsync();
         }
     }
 }

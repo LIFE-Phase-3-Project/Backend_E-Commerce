@@ -12,7 +12,7 @@ namespace Domain.DTOs.Product
        public int ProductId { get; set; }
        public int CategoryId { get; set; }
        public int SubCategoryId { get; set; }
-        public DateTime RetrievedAt { get; set; }
+       public DateTime RetrievedAt { get; set; }
 
     }
 }

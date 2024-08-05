@@ -1,4 +1,5 @@
-﻿using Application.Services.UserAddress;
+﻿using Application.Services.TokenService;
+using Application.Services.UserAddress;
 using Domain.DTOs.UserAddress;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,21 +11,33 @@ namespace Life_Ecommerce.Controllers
     public class UserAddressController : ControllerBase
     {
         private readonly IUserAddressService _userAddressService;
+        private readonly TokenHelper _tokenHelper;
 
-        public UserAddressController(IUserAddressService userAddressService)
+        public UserAddressController(IUserAddressService userAddressService, TokenHelper tokenHelper)
         {
             _userAddressService = userAddressService;
+            _tokenHelper = tokenHelper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetUserAddresses(string userId)
+        public async Task<IActionResult> GetUserAddresses()
         {
+            var userId = _tokenHelper.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized("You are not logged in.");
+            }
             var userAddresses = await _userAddressService.GetUserAddresses(userId);
             return Ok(userAddresses);
         }
 
         [HttpGet("primary")]
-        public async Task<IActionResult> GetUserPrimaryAddress(string userId)
+        public async Task<IActionResult> GetUserPrimaryAddress()
         {
+            var userId = _tokenHelper.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized("You are not logged in.");
+            }
             var userPrimaryAddress = await _userAddressService.GetUserPrimaryAddress(userId);
             return Ok(userPrimaryAddress);
         }

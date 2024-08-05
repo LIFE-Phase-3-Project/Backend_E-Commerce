@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Services.ProductAnalytics
+namespace Application.BackgroundJobs.ProductAnalytics
 {
     public interface IProductAnalyticsService
     {
@@ -19,5 +19,6 @@ namespace Application.Services.ProductAnalytics
         Task<IEnumerable<TopProductDto>> GetTopSoldProductsBySubCategoryAsync(int subCategoryId);
         Task<IEnumerable<TopProductDto>> GetTopViewedProductsByCategoryAsync(int categoryId);
         Task<IEnumerable<TopProductDto>> GetTopViewedProductsBySubCategoryAsync(int subCategoryId);
+
     }
 }

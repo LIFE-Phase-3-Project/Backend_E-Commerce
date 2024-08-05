@@ -24,5 +24,7 @@ namespace Domain.Entities
         public int? PaymentId { get; set; }
 
         public Payment Payment { get; set; }
+        // Add this navigation property
+        public ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

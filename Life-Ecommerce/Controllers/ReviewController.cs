@@ -1,4 +1,5 @@
 using Application.Services.Review;
+using Application.Services.TokenService;
 using Domain.DTOs.Review;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,8 +10,9 @@ namespace Life_Ecommerce.Controllers;
 public class ReviewController : ControllerBase
 {
     private readonly IReviewService _reviewService;
+    private readonly TokenHelper _tokenHelper;
 
-    public ReviewController(IReviewService reviewService)
+    public ReviewController(IReviewService reviewService, TokenHelper tokenHelper )
     {
         _reviewService = reviewService;
     }
@@ -18,10 +20,11 @@ public class ReviewController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto reviewDto)
     {
-        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-        var userId = HttpContext.Items["sub"] as string;
-        reviewDto.UserId = userId;
-        var createdReview = await _reviewService.CreateReviewAsync(reviewDto, token);
+        var userId = _tokenHelper.GetUserId();
+        if (userId == null) {
+            return Unauthorized("You are not logged in.");
+        }
+        var createdReview = await _reviewService.CreateReviewAsync(reviewDto, userId);
         return Ok(createdReview);
         
     }

@@ -1,5 +1,6 @@
 ﻿using Application.Services.Order;
 using Application.Services.Payment;
+using Application.Services.TokenService;
 using Domain.DTOs.Payment;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -17,18 +18,29 @@ namespace Life_Ecommerce.Controllers
         private readonly IOrderService _orderService;
         private readonly ILogger<PaymentsController> _logger;
         private readonly IConfiguration _config;
+        private readonly TokenHelper _tokenHelper;
 
-        public PaymentsController(IPaymentService paymentService, IOrderService orderService, ILogger<PaymentsController> logger, IConfiguration config)
+        public PaymentsController(IPaymentService paymentService, IOrderService orderService, ILogger<PaymentsController> logger, IConfiguration config, TokenHelper tokenHelper)
         {
             _paymentService = paymentService;
             _orderService = orderService;
             _logger = logger;
             _config = config;
+            _tokenHelper = tokenHelper;
         }
 
         [HttpGet("payments")]
         public async Task<ActionResult<IEnumerable<Payment>>> GetPayments()
         {
+            var userRole = _tokenHelper.GetUserRole();
+            if (userRole == null)
+            {
+                return Unauthorized("You are not logged in.");
+            }
+            else if (userRole != "Admin" && userRole != "SuperAdmin")
+            {
+                return Unauthorized("You are not authorized to perform this action.");
+            }
             var payments = await _paymentService.GetPayments();
             return Ok(payments);
         }
@@ -52,6 +64,15 @@ namespace Life_Ecommerce.Controllers
         [HttpGet("payments-per-month")]
         public async Task<IActionResult> GetPaymentsPerMonth()
         {
+            var userRole = _tokenHelper.GetUserRole();
+            if (userRole == null)
+            {
+                return Unauthorized("You are not logged in.");
+            }
+            else if (userRole != "Admin" && userRole != "SuperAdmin")
+            {
+                return Unauthorized("You are not authorized to perform this action.");
+            }
             var monthlyPayments = await _paymentService.GetPaymentsPerMonth();
             return Ok(monthlyPayments);
         }

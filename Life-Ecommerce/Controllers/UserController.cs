@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Application.Services.UserRepository;
 using Domain.DTOs.User;
 using Domain.Entities;
+using StackExchange.Redis;
 
 namespace Life_Ecommerce.Controllers
 {
@@ -30,8 +31,8 @@ namespace Life_Ecommerce.Controllers
         [Route("GetAllUsers")]
         public async Task<IActionResult> Get(int page = 1, int pageSize = 10)
         {
-           // var userRole = HttpContext.Items["https://ecommerce-life-2.com/role"] as string;
-            if (true)
+            var role = _tokenHelper.GetUserRole();
+            if (role == "SuperAdmin")
             {
                 var users = await _userService.GetUsers(page, pageSize);
                 return Ok(users);

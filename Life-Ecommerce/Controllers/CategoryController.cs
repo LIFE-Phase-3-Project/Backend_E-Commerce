@@ -45,7 +45,11 @@ public class CategoryController : ControllerBase
     public async Task<ActionResult<Category>> PostCategory(CreateCategoryDto categoryDto)
     {
         var userRole = _tokenHelper.GetUserRole();
-        if (userRole == null || userRole != "Admin" || userRole != "SuperAdmin")
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in to perform this action.");
+        }
+        if (userRole != "Admin" || userRole != "SuperAdmin")
         {
             return Unauthorized("You are not authorized to perform this action.");
         }
@@ -57,7 +61,11 @@ public class CategoryController : ControllerBase
     public async Task<IActionResult> PutCategory(int id, CreateCategoryDto categoryDto)
     {
         var userRole = _tokenHelper.GetUserRole();
-        if (userRole == null || userRole != "Admin" || userRole != "SuperAdmin")
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in to perform this action.");
+        }
+        if (userRole != "Admin" || userRole != "SuperAdmin")
         {
             return Unauthorized("You are not authorized to perform this action.");
         }
@@ -74,7 +82,11 @@ public class CategoryController : ControllerBase
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var userRole = _tokenHelper.GetUserRole();
-        if (userRole == null || userRole != "Admin" || userRole != "SuperAdmin")
+        if (userRole == null)
+        {
+            return Unauthorized("You are not logged in to perform this action.");
+        }
+        if (userRole != "Admin" || userRole != "SuperAdmin")
         {
             return Unauthorized("You are not authorized to perform this action.");
         }

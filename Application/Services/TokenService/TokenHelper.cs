@@ -40,7 +40,7 @@ namespace Application.Services.TokenService
                     var handler = new JwtSecurityTokenHandler();
                     var jwtToken = handler.ReadJwtToken(token);
 
-                    var role = jwtToken.Claims.First(claim => claim.Type == "role").Value;
+                    var role = jwtToken.Claims.First(claim => claim.Type == "https://ecommerce-life-2.com/role").Value;
                     return role;
                 }
                 catch (Exception ex)

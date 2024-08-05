@@ -1,4 +1,5 @@
 ﻿using Application.Services.Discount;
+using Application.Services.TokenService;
 using Domain.DTOs.Discount;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +10,11 @@ namespace Life_Ecommerce.Controllers
     public class DiscountController : ControllerBase
     {
         private readonly IDiscountService _discountService;
-        public DiscountController(IDiscountService discountService)
+        private readonly TokenHelper _tokenHelper;
+        public DiscountController(IDiscountService discountService, TokenHelper tokenHelper)
         {
             _discountService = discountService;
+            _tokenHelper = tokenHelper;
         }
 
         [HttpGet("{userId}")]
@@ -24,6 +27,15 @@ namespace Life_Ecommerce.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateDiscount(CreateDiscountDto discount)
         {
+            var userRole = _tokenHelper.GetUserRole();
+            if (userRole == null)
+            {
+                return Unauthorized("You are not logged in.");
+            }
+            else if (userRole != "Admin" && userRole != "SuperAdmin")
+            {
+                return Unauthorized("You are not authorized to perform this action.");
+            }
             await _discountService.CreateDiscount(discount);
             return Ok(discount);
         }
@@ -38,6 +50,15 @@ namespace Life_Ecommerce.Controllers
         [HttpPost("update-discount")]
         public async Task<IActionResult> UpdateDiscount(CreateDiscountDto discount)
         {
+            var userRole = _tokenHelper.GetUserRole();
+            if (userRole == null)
+            {
+                return Unauthorized("You are not logged in.");
+            }
+            else if (userRole != "Admin" && userRole != "SuperAdmin")
+            {
+                return Unauthorized("You are not authorized to perform this action.");
+            }
             await _discountService.UpdateDiscount(discount);
             return Ok(discount);
         }

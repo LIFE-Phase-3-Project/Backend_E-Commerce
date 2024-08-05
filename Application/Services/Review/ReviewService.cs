@@ -19,23 +19,10 @@ public class ReviewService : IReviewService
         _mapper = mapper;
     }
 
-    public async Task<CreateReviewDto> CreateReviewAsync(CreateReviewDto reviewDto, string token)
+    public async Task<CreateReviewDto> CreateReviewAsync(CreateReviewDto reviewDto, string userId)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
 
-        if (jwtToken == null)
-        {
-            throw new SecurityTokenException("Invalid token");
-        }
-
-        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "sub");
-        if (userIdClaim == null)
-        {
-            throw new SecurityTokenException("UserId not found in token");
-        }
-
-        reviewDto.UserId = userIdClaim.Value;
+        reviewDto.UserId = userId;
 
         var review = _mapper.Map<Domain.Entities.Review>(reviewDto);
 

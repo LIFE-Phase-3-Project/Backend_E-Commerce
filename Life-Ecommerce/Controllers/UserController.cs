@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Application.Services.TokenService;
+using Microsoft.AspNetCore.Mvc;
 using Application.Services.UserRepository;
 using Domain.DTOs.User;
 using Domain.Entities;
@@ -10,10 +11,12 @@ namespace Life_Ecommerce.Controllers
     public class UserController : ControllerBase
     {
         public readonly IUserService _userService;
+        public readonly TokenHelper _tokenHelper;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService,TokenHelper tokenHelper)
         {
             _userService = userService;
+            _tokenHelper = tokenHelper;
         }
 
         [HttpPost]
@@ -44,6 +47,20 @@ namespace Life_Ecommerce.Controllers
 
             await _userService.UpdateUser(token, user);
             return Ok("Updated Successfully");
+        }
+
+        [HttpPatch]
+        [Route("ChangeRole/{userId}/{newRole}")]
+        public async Task<IActionResult> ChangeRole(string userId, string newRole)
+        {
+            var role = _tokenHelper.GetUserRole();
+            if (role == "SuperAdmin")
+            {
+                await _userService.ChangeRole(userId, newRole);
+                return Ok("Updated Successfully");
+            }
+
+            return Unauthorized();
         }
 
         [HttpPost("/login")]

@@ -49,8 +49,17 @@ namespace Presistence
             ConfigureOrderDetail(modelBuilder);
             ConfigurePayment(modelBuilder);
             ConfigureChatSession(modelBuilder);
+            ConfigureReview(modelBuilder);
+            ConfigureOrder(modelBuilder);
         }
 
+
+        private void ConfigureReview(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Review>()
+                .HasIndex(r => new { r.UserId, r.ProductId })
+                .IsUnique();
+        }
         private void ConfigureWishlistEntry(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<WishlistEntry>().HasKey(w => new { w.UserId, w.ProductId });
@@ -86,6 +95,16 @@ namespace Presistence
                 .WithOne(p => p.Category)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict); // Specify delete behavior
+        }
+
+        private void ConfigureOrder(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasMany(o => o.OrderDetails)
+                      .WithOne(od => od.OrderData)
+                      .HasForeignKey(od => od.OrderId);
+            });
         }
 
 

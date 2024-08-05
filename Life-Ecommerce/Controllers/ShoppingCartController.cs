@@ -47,37 +47,8 @@ namespace Life_Ecommerce.Controllers
             }
         }
 
-        [HttpPost("AddItemToCart/{ProductId}")]
-        public async Task<ActionResult> AddItem(int ProductId)
-        {
-            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
-            if (!string.IsNullOrEmpty(userId))
-            {
-                var success = await _shoppingCartService.AddItem(ProductId, userId, null);
-                if (success) return Ok("Item added successfully.");
-                else return BadRequest("Could not add item to cart.");
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(cartIdentifier))
-                {
-                    cartIdentifier = await _shoppingCartService.CreateCartForGuests();
-                    var cookieOptions = new CookieOptions
-                    {
-                        Expires = DateTime.Now.AddDays(7), // Expires after 7 days
-                        HttpOnly = true, // Enhance security by making the cookie accessible only through the HTTP protocol
-                        IsEssential = true,
-                        Secure = false, // Ensures the cookie is sent only over HTTPS
-                    };
+  
 
-                    var protectedCartIdentifier = _dataProtectionProvider.CreateProtector("CartIdentifierProtector").Protect(cartIdentifier);
-                    HttpContext.Response.Cookies.Append("CartIdentifier", protectedCartIdentifier, cookieOptions);
-                }
-                var success = await _shoppingCartService.AddItem(ProductId, null, cartIdentifier);
-                if (success) return Ok("Item added successfully.");
-                else return BadRequest("Could not add item to cart.");
-            }
-        }
 
         [HttpDelete("DeleteItem/{ProductId}")]
         public async Task<IActionResult> RemoveItem(int ProductId)
@@ -115,23 +86,62 @@ namespace Life_Ecommerce.Controllers
             else return Ok("Cart is empty");
         }
 
+        [HttpPost("AddItemToCart/{ProductId}")]
+        public async Task<ActionResult> AddItem(int ProductId)
+        {
+            var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            (bool success, string message) result;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                result = await _shoppingCartService.AddItem(ProductId, userId, null);
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(cartIdentifier))
+                {
+                    cartIdentifier = await _shoppingCartService.CreateCartForGuests();
+                    var cookieOptions = new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddDays(7), 
+                        HttpOnly = true, 
+                        IsEssential = true,
+                        Secure = false,
+                    };
+
+                    var protectedCartIdentifier = _dataProtectionProvider.CreateProtector("CartIdentifierProtector").Protect(cartIdentifier);
+                    HttpContext.Response.Cookies.Append("CartIdentifier", protectedCartIdentifier, cookieOptions);
+                }
+                result = await _shoppingCartService.AddItem(ProductId, null, cartIdentifier);
+            }
+
+            if (result.success) return Ok(result.message);
+            else return BadRequest(result.message);
+        }
+
         [HttpPut("UpdateQuantity/{ProductId}/{Quantity}")]
         public async Task<IActionResult> UpdateItemQuantity(int ProductId, int Quantity)
         {
+            if (Quantity <= 0) return BadRequest("Quantity must be greater than 0.");
             var (userId, cartIdentifier) = GetUserOrCartIdentifier();
+            (bool success, string message) result;
+
             if (!string.IsNullOrEmpty(userId))
             {
-                var response = _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, userId, null);
-                return Ok("Item quantity updated successfully.");
+                result = await _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, userId, null);
             }
             else if (!string.IsNullOrEmpty(cartIdentifier))
             {
-                var response = _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, null, cartIdentifier);
-                return Ok("Item quantity updated successfully.");
+                result = await _shoppingCartService.UpdateItemQuantity(ProductId, Quantity, null, cartIdentifier);
             }
-            else return BadRequest("Could not update item quantity.");
-        }
+            else
+            {
+                return BadRequest("Could not update item quantity.");
+            }
 
+            if (result.success) return Ok(result.message);
+            else return BadRequest(result.message);
+        }
         [HttpDelete("ClearCart")]
         public async Task<IActionResult> ClearCart()
         {
@@ -185,5 +195,7 @@ namespace Life_Ecommerce.Controllers
                 else return BadRequest("Could not remove discount.");
             }
         }
+
+       
     }
 }

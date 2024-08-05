@@ -60,6 +60,13 @@ namespace Application.Mapping
             CreateMap<CreateCashPaymentDto, Payment>();
 
             CreateMap<StartSessionRequest, ChatSession>();
+
+            CreateMap<Order, OrderWithDetailsDto>()
+            .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.OrderDetails));
+            CreateMap<OrderDetail, OrderDetailDto>()
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Product.Title))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Count));
         }
         
     }

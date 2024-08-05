@@ -85,26 +85,26 @@ namespace Application.Services.ShoppingCart
 
             return cartIdentifier;
         }
-        public async Task<bool> AddItem(int productId, string? userId, string cartIdentifier)
+        public async Task<(bool success, string message)> AddItem(int productId, string? userId, string cartIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();
             if (userId != null)
             {
-                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
+                cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
                           .GetByCondition(c => c.UserId == userId)
                           .FirstOrDefaultAsync();
                 if (cart == null)
                 {
                     var newCart = new Domain.Entities.ShoppingCart
                     {
-                        CartIdentifier = Guid.NewGuid().ToString(), // Generate a unique identifier
+                        CartIdentifier = Guid.NewGuid().ToString(), 
                         UserId = userId,
                         DateCreated = DateTime.Now,
                         DateModified = DateTime.Now,
                     };
 
                     _unitOfWork.Repository<Domain.Entities.ShoppingCart>().Create(newCart);
-                    await _unitOfWork.CompleteAsync(); // Ensure the new cart is saved before querying it again
+                    await _unitOfWork.CompleteAsync(); 
 
                     cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
                           .GetByCondition(c => c.UserId == userId)
@@ -116,38 +116,53 @@ namespace Application.Services.ShoppingCart
                 cart = await _unitOfWork.Repository<Domain.Entities.ShoppingCart>()
                       .GetByCondition(c => c.CartIdentifier == cartIdentifier)
                       .FirstOrDefaultAsync();
-
             }
-            if (cart != null) 
-            {
-                var cartItem = new CartItem
-                {
-                    ProductId = productId,
-                    ShoppingCartId = cart.Id,
-                    Quantity = 1
-                };
-                var existingItem = await _unitOfWork.Repository<CartItem>().GetByCondition(c => c.ShoppingCartId == cart.Id && c.ProductId == productId).FirstOrDefaultAsync();
 
-                if (existingItem != null) 
+            if (cart != null)
+            {
+                var product = await _unitOfWork.Repository<Domain.Entities.Product>().GetByIdAsync(productId);
+                if (product == null || product.Stock < 1)
                 {
+                    // Product does not exist or not enough stock
+                    return (false, $"Product is out of stock. Available stock: {product?.Stock ?? 0}");
+                }
+
+                var existingItem = await _unitOfWork.Repository<CartItem>()
+                    .GetByCondition(c => c.ShoppingCartId == cart.Id && c.ProductId == productId)
+                    .FirstOrDefaultAsync();
+
+                if (existingItem != null)
+                {
+                    if (product.Stock < existingItem.Quantity + 1)
+                    {
+                        // Not enough stock to add more items
+                        return (false, $"Not enough stock. You can add up to {product.Stock - existingItem.Quantity} more items.");
+                    }
+
                     existingItem.Quantity += 1;
                     cart.DateModified = DateTime.Now;
                     await _unitOfWork.CompleteAsync();
-                    return true;
-
-                } 
+                    return (true, "Item added successfully.");
+                }
                 else
                 {
+                    var cartItem = new CartItem
+                    {
+                        ProductId = productId,
+                        ShoppingCartId = cart.Id,
+                        Quantity = 1
+                    };
+
                     _unitOfWork.Repository<CartItem>().Create(cartItem);
                     cart.DateModified = DateTime.Now;
                     await _unitOfWork.CompleteAsync();
-                    return true;
+                    return (true, "Item added successfully.");
                 }
-
             }
 
-            return false; 
+            return (false, "Could not add item to cart.");
         }
+
 
         public Task ClearCart(string? userId, string cartIdentifier)
         {
@@ -320,28 +335,38 @@ namespace Application.Services.ShoppingCart
             return Task.FromResult(false);
         }
 
-        public Task<bool> UpdateItemQuantity(int ProductId, int Quantity, string? userId, string cardIdentifier)
+        public async Task<(bool success, string message)> UpdateItemQuantity(int productId, int quantity, string? userId, string cartIdentifier)
         {
             var cart = new Domain.Entities.ShoppingCart();
             if (userId != null)
             {
                 cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.UserId == userId).FirstOrDefault();
-                if (cart == null) return Task.FromResult(false);
+                if (cart == null) return (false, "Cart not found.");
             }
-            else if (cardIdentifier != null)
+            else if (cartIdentifier != null)
             {
-                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.CartIdentifier == cardIdentifier).FirstOrDefault();
-                if (cart == null) return Task.FromResult(false);
+                cart = _unitOfWork.Repository<Domain.Entities.ShoppingCart>().GetByCondition(c => c.CartIdentifier == cartIdentifier).FirstOrDefault();
+                if (cart == null) return (false, "Cart not found.");
             }
+
+            var product = await _unitOfWork.Repository<Domain.Entities.Product>().GetByIdAsync(productId);
+            if (product == null || product.Stock < quantity)
+            {
+                // Product does not exist or not enough stock
+                return (false, $"Not enough stock. Available stock: {product?.Stock ?? 0}");
+            }
+
             int cartId = cart.Id;
-            var itemToUpdate = _unitOfWork.Repository<CartItem>().GetByCondition(c => c.ShoppingCartId == cartId && c.ProductId == ProductId).FirstOrDefault();
+            var itemToUpdate = _unitOfWork.Repository<CartItem>().GetByCondition(c => c.ShoppingCartId == cartId && c.ProductId == productId).FirstOrDefault();
             if (itemToUpdate != null)
             {
-                itemToUpdate.Quantity = Quantity;
+                itemToUpdate.Quantity = quantity;
+                cart.DateModified = DateTime.Now;
                 _unitOfWork.Complete();
-                return Task.FromResult(true);
+                return (true, "Item quantity updated successfully.");
             }
-            return Task.FromResult(false);
+            return (false, "Item not found in cart.");
         }
+
     }
 }

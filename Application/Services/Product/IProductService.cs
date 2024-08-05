@@ -16,5 +16,5 @@ public interface IProductService
 
     Task AddDiscountToProduct(int productId, decimal discount, DateTime ExpiryDate);
     Task SoftDeleteProduct(int productId);
-    Task<bool> TestElasticsearchConnectionAsync();
+    Task LogProductRetrievalAsync(int productId, int categoryId, int subCategoryId);
 }

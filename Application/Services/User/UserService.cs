@@ -41,6 +41,13 @@ namespace Application.Services.UserRepository
 
             _unitOfWork.Repository<Domain.Entities.User>().Create(userToRegister);
             await _unitOfWork.CompleteAsync();
+
+            user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Email == u.Email).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
             
             var subject = "Welcome to Life Ecommerce!";
             var message = $@"
@@ -97,6 +104,17 @@ namespace Application.Services.UserRepository
             return true;
         }
 
+
+        public async Task<UserDto> ChangeRole(string userId, string newRole)
+        {
+            var user = await _unitOfWork.Repository<Domain.Entities.User>().GetById(x => x.Id == userId).FirstOrDefaultAsync();
+            user.Role = newRole;
+            _unitOfWork.Repository<Domain.Entities.User>().Update(user);
+            _unitOfWork.Complete();
+            var userDto = _mapper.Map<UserDto>(user);
+            
+            return userDto;
+        }
 
         public async Task<bool> DeleteUser(string token)
         {

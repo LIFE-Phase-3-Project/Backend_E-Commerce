@@ -9,6 +9,7 @@ using Domain.DTOs.Pagination;
 using Application.Services.ImageStorage;
 using Google.Apis.Logging;
 using Microsoft.Extensions.Logging;
+using Hangfire;
 
 
 
@@ -22,8 +23,9 @@ public class ProductService : IProductService
     private readonly IElasticClient _elasticClient;
     private readonly IStorageService _storageService;
     private readonly ILogger<ProductService> _logger;
+    private readonly IBackgroundJobClient _backgroundJobClient;
 
-    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IElasticClient elasticClient, ISearchService searchService, IStorageService storageService, ILogger<ProductService> logger)
+    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IElasticClient elasticClient, ISearchService searchService, IStorageService storageService, ILogger<ProductService> logger, IBackgroundJobClient backgroundJobClient)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -31,21 +33,9 @@ public class ProductService : IProductService
         _elasticClient = elasticClient;
         _storageService = storageService;
         _logger = logger;
+        _backgroundJobClient = backgroundJobClient;
     }
 
-    public async Task<bool> TestElasticsearchConnectionAsync()
-    {
-        var response = await _elasticClient.Cluster.HealthAsync();
-        var indexExists = await _elasticClient.Indices.ExistsAsync("eblin_products");
-        if (response.IsValid && indexExists.Exists)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
     public async Task<IEnumerable<ProductSearchDto>> SearchAsYouTypeAsync(string query)
     {
         var searchResults = await _searchService.SearchProductsAsYouType(query);
@@ -107,16 +97,7 @@ public class ProductService : IProductService
             return null;
         }
         var productDto = _mapper.Map<ProductDto>(product);
-       /* await _elasticClient.IndexAsync(new ProductLog
-        {
-            ProductId = id,
-            CategoryId = product.CategoryId,
-            SubCategoryId = product.SubCategoryId,
-            RetrievedAt = DateTime.UtcNow
-        }, idx => idx.Index("product_retrievals")); */
-        var productToIndex = _mapper.Map<ProductIndexDto>(product);
-        _logger.LogInformation($"Retrieving product with ID {id}, categoryId: {product.CategoryId} and subcategoryId: {product.SubCategoryId}" );
-        await _searchService.IndexProductAsync(productToIndex);
+        _backgroundJobClient.Enqueue(() => LogProductRetrievalAsync(product.Id, product.CategoryId, product.SubCategoryId));
         return productDto;
     }
 
@@ -234,5 +215,16 @@ public class ProductService : IProductService
             _unitOfWork.Complete();
         }
 
+    }
+
+    public async Task LogProductRetrievalAsync(int productId, int categoryId, int subCategoryId)
+    {
+        await _elasticClient.IndexAsync(new ProductLog
+        {
+            ProductId = productId,
+            CategoryId = categoryId,
+            SubCategoryId = subCategoryId,
+            RetrievedAt = DateTime.UtcNow
+        }, idx => idx.Index("product_retrievals"));
     }
 }

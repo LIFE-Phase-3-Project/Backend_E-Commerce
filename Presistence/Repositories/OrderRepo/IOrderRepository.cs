@@ -10,5 +10,7 @@ namespace Presistence.Repositories.OrderRepo
     public interface IOrderRepository
     {
         Task<IEnumerable<Order>> GetOrdersByUserIdAsync(string userId);
+        Task<IEnumerable<Order>> GetAllOrdersAsync();
+        Task<Order> GetOrderByIdAsync(int orderId);
     }
 }

@@ -1,4 +1,5 @@
 using Application.Services.Category;
+using Application.Services.TokenService;
 using Domain.DTOs.Category;
 using Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -12,10 +13,12 @@ namespace Life_Ecommerce.Controllers;
 public class CategoryController : ControllerBase
 {
     private readonly ICategoryService _categoryService;
+    private readonly TokenHelper _tokenHelper;
 
-    public CategoryController(ICategoryService categoryService)
+    public CategoryController(ICategoryService categoryService, TokenHelper tokenHelper)
     {
         _categoryService = categoryService;
+        _tokenHelper = tokenHelper;
     }
 
     [HttpGet]
@@ -41,6 +44,11 @@ public class CategoryController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Category>> PostCategory(CreateCategoryDto categoryDto)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null || userRole != "Admin" || userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
         await _categoryService.AddCategoryAsync(categoryDto);
         return Ok("Category added succesfully");
     }
@@ -48,6 +56,11 @@ public class CategoryController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> PutCategory(int id, CreateCategoryDto categoryDto)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null || userRole != "Admin" || userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
         if (categoryDto.CategoryName.IsNullOrEmpty())
         {
             return BadRequest("Name cannot be empty");
@@ -60,6 +73,11 @@ public class CategoryController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
+        var userRole = _tokenHelper.GetUserRole();
+        if (userRole == null || userRole != "Admin" || userRole != "SuperAdmin")
+        {
+            return Unauthorized("You are not authorized to perform this action.");
+        }
         var result = await _categoryService.DeleteCategoryAsync(id);
         if (!result)
         {

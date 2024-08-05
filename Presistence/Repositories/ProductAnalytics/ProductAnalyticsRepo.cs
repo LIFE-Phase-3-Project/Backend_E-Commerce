@@ -53,6 +53,7 @@ namespace Presistence.Repositories.ProductAnalytics
                     FirstImage = p.Image[0],
                     DiscountedPrice = p.DiscountedPrice,
                     Ratings = p.Ratings
+
                 })
                 .ToListAsync();
         }
@@ -70,7 +71,8 @@ namespace Presistence.Repositories.ProductAnalytics
                     Title = g.Key.Title,
                     FirstImage = g.Key.Image[0],
                     DiscountedPrice = g.Key.DiscountedPrice,
-                    Ratings = g.Key.Ratings
+                    Ratings = g.Key.Ratings,
+                    Count = g.Sum(od => od.Count)
                 })
                 .ToListAsync();
         }
@@ -88,19 +90,98 @@ namespace Presistence.Repositories.ProductAnalytics
                     Title = g.Key.Title,
                     FirstImage = g.Key.Image[0],
                     DiscountedPrice = g.Key.DiscountedPrice,
-                    Ratings = g.Key.Ratings
+                    Ratings = g.Key.Ratings,
+                    Count = g.Sum(od => od.Count)
                 })
                 .ToListAsync();
         }
 
-        public async Task CalculateTopViewedProductsbyCategory(int categoryId)
+        public async Task<IEnumerable<TopProductDto>> CalculateTopViewedProductsbyCategory(int categoryId)
         {
-            throw new NotImplementedException();
+            var searchResponse = await _elasticClient.SearchAsync<ProductLog>(s => s
+               .Index("product_retrievals")
+               .Size(0)
+               .Query(q => q
+                   .Term(t => t.CategoryId, categoryId)
+               )
+               .Aggregations(a => a
+                   .Terms("top_products", t => t
+                       .Field(f => f.ProductId)
+                       .Size(3)
+                       .Order(o => o.Descending("_count"))
+                   )
+               ));
+
+            var topProductsLogs = searchResponse.Aggregations.Terms("top_products").Buckets
+                .Select(b => new 
+                {
+                    ProductId = int.Parse(b.Key),
+                    ViewCount = b.DocCount.GetValueOrDefault()
+                })
+                .ToList();
+
+            var topProducts = new List<TopProductDto>();
+            foreach (var topProduct in topProductsLogs)
+            {
+                var product = await _context.Products.FindAsync(topProduct.ProductId);
+                if (product != null)
+                {
+                    topProducts.Add(new TopProductDto
+                    {
+                        Id = product.Id,
+                        Title = product.Title,
+                        FirstImage = product.Image[0],
+                        DiscountedPrice = product.DiscountedPrice,
+                        Ratings = product.Ratings,
+                        Count = topProduct.ViewCount
+                    });
+                }
+            }
+            return topProducts;
         }
 
-        public async Task<IEnumerable<TopProductDto>> CalculateTopViewedProductsbySubCategory(int SubCategoryId)
+        public async Task<IEnumerable<TopProductDto>> CalculateTopViewedProductsbySubCategory(int subCategoryId)
         {
-            throw new NotImplementedException();
+            var searchResponse = await _elasticClient.SearchAsync<ProductLog>(s => s
+                .Index("product_retrievals")
+                .Size(0)
+                .Query(q => q
+                    .Term(t => t.SubCategoryId, subCategoryId)
+                )
+                .Aggregations(a => a
+                    .Terms("top_products", t => t
+                        .Field(f => f.ProductId)
+                        .Size(3)
+                        .Order(o => o.Descending("_count"))
+                    )
+                ));
+
+            var topProductsLogs = searchResponse.Aggregations.Terms("top_products").Buckets
+                .Select(b => new
+                {
+                    ProductId = int.Parse(b.Key),
+                    ViewCount = b.DocCount.GetValueOrDefault()
+                })
+                .ToList();
+
+            var topProducts = new List<TopProductDto>();
+            foreach (var topProduct in topProductsLogs)
+            {
+                var product = await _context.Products.FindAsync(topProduct.ProductId);
+                if (product != null)
+                {
+                    topProducts.Add(new TopProductDto
+                    {
+                        Id = product.Id,
+                        Title = product.Title,
+                        FirstImage = product.Image[0],
+                        DiscountedPrice = product.DiscountedPrice,
+                        Ratings = product.Ratings,
+                        Count = topProduct.ViewCount
+                    });
+                }
+            }
+            return topProducts;
         }
 
     }

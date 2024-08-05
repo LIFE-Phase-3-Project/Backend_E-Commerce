@@ -101,8 +101,8 @@ namespace Configurations
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Elastic Search configuration
-            var uri = new Uri(configuration["ElasticSearch:Uri"]);
-            var password = configuration["ElasticSearch:Password"];
+            var uri = new Uri(configuration["${ElasticSearch__Uri}"]);
+            var password = configuration["${ElasticSearch__Password}"];
             var settings = new ConnectionSettings(uri)
                 .BasicAuthentication("elastic", password)
                 .DefaultIndex("products_v2");
